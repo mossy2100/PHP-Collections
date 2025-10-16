@@ -2,11 +2,12 @@
 
 declare(strict_types = 1);
 
-namespace Superclasses\Collections\src;
+namespace Galaxon\Collections;
 
 use InvalidArgumentException;
 use OutOfRangeException;
 use Override;
+use ArrayAccess;
 
 /**
  * A type-safe list implementation that enforces item types at runtime.
@@ -80,7 +81,7 @@ use Override;
  * $countables->append([1, 2, 3]);         // Arrays are countable
  * $countables->append(new ArrayObject()); // ArrayObject implements Countable
  */
-class SequenceOf extends Sequence
+class SequenceOf extends Sequence implements ArrayAccess
 {
     /**
      * The valid types for this sequence.
@@ -160,7 +161,6 @@ class SequenceOf extends Sequence
      * @example
      * $sequence->append(...$new_items);
      */
-    #[Override]
     public function append(mixed ...$items): static
     {
         // Validate all items.
@@ -186,7 +186,6 @@ class SequenceOf extends Sequence
      * @example
      * $sequence->prepend(...$new_items);
      */
-    #[Override]
     public function prepend(mixed ...$items): static
     {
         // Validate all items.
@@ -214,7 +213,6 @@ class SequenceOf extends Sequence
      *      If omitted or null, the slice will have everything from index up until the end of the sequence.
      * @return static The slice.
      */
-    #[Override]
     public function slice(int $index, ?int $length = null): static
     {
         // Call the parent method.
@@ -232,7 +230,6 @@ class SequenceOf extends Sequence
      * @param callable $fn The filter function that returns true for items to keep.
      * @return static A new sequence containing only the matching items.
      */
-    #[Override]
     public function filter(callable $fn): static
     {
         // Call the parent method.
@@ -269,6 +266,18 @@ class SequenceOf extends Sequence
 
         // Call the parent implementation.
         parent::offsetSet($offset, $value);
+    }
+
+    #[Override]
+    public function offsetExists(mixed $offset): bool
+    {
+        // TODO: Implement offsetExists() method.
+    }
+
+    #[Override]
+    public function offsetGet(mixed $offset): mixed
+    {
+        // TODO: Implement offsetGet() method.
     }
 
     /**

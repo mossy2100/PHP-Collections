@@ -1,7 +1,7 @@
 <?php
 declare(strict_types = 1);
 
-namespace Superclasses\Collections\src;
+namespace Galaxon\Collections;
 
 use LogicException;
 use Throwable;

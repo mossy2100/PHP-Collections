@@ -2,13 +2,12 @@
 
 declare(strict_types = 1);
 
-namespace Superclasses\Collections\src;
+namespace Galaxon\Collections;
 
 use ArrayIterator;
 use Countable;
 use InvalidArgumentException;
 use IteratorAggregate;
-use Superclasses\Math\src\Numbers;
 use Traversable;
 
 class TypeSet implements Countable, IteratorAggregate
@@ -155,12 +154,12 @@ class TypeSet implements Countable, IteratorAggregate
         }
 
         // Check number.
-        if ($this->contains('number') && Numbers::isNumber($value)) {
+        if ($this->contains('number') && self::isNumber($value)) {
             return true;
         }
 
         // Check uint.
-        if ($this->contains('uint') && Numbers::isUnsignedInt($value)) {
+        if ($this->contains('uint') && self::isUnsignedInt($value)) {
             return true;
         }
 
@@ -235,6 +234,29 @@ class TypeSet implements Countable, IteratorAggregate
         }
 
         return $result;
+    }
+
+    /**
+     * Check if a value is a number, i.e. an integer or a float.
+     * This varies from is_numeric(), which also returns true for numeric strings.
+     *
+     * @param mixed $value The value to check.
+     * @return bool True if the value is a number, false otherwise.
+     */
+    public static function isNumber(mixed $value): bool
+    {
+        return is_int($value) || is_float($value);
+    }
+
+    /**
+     * Check if a value is an unsigned integer.
+     *
+     * @param mixed $value The value to check.
+     * @return bool True if the value is an unsigned integer, false otherwise.
+     */
+    public static function isUnsignedInt(mixed $value): bool
+    {
+        return is_int($value) && $value >= 0;
     }
 
     // endregion

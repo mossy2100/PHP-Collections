@@ -2,8 +2,9 @@
 
 declare(strict_types = 1);
 
-namespace Superclasses\Collections\src;
+namespace Galaxon\Collections;
 
+use ArrayAccess;
 use DomainException;
 use OutOfBoundsException;
 use Override;
@@ -17,7 +18,7 @@ use Override;
  * $country_codes = new DictionaryOf('string', 'string');
  * $car_make = new DictionaryOf('string', '?string');
  */
-class DictionaryOf extends Dictionary
+class DictionaryOf extends Dictionary implements ArrayAccess
 {
     /**
      * SetOf of valid types for keys.
@@ -62,7 +63,6 @@ class DictionaryOf extends Dictionary
      * @param iterable $src The source collection.
      * @return static The new dictionary.
      */
-    #[Override]
     public static function fromIterable(iterable $src): static
     {
         // If the source collection is empty, return an empty dictionary.
@@ -134,5 +134,23 @@ class DictionaryOf extends Dictionary
 
         // Call the parent implementation.
         parent::offsetSet($offset, $value);
+    }
+
+    #[Override]
+    public function offsetExists(mixed $offset): bool
+    {
+        // TODO: Implement offsetExists() method.
+    }
+
+    #[Override]
+    public function offsetGet(mixed $offset): mixed
+    {
+        // TODO: Implement offsetGet() method.
+    }
+
+    #[Override]
+    public function offsetUnset(mixed $offset): void
+    {
+        // TODO: Implement offsetUnset() method.
     }
 }

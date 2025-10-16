@@ -2,7 +2,7 @@
 
 declare(strict_types = 1);
 
-namespace Superclasses\Collections\tests;
+namespace Galaxon\Collections\Tests;
 
 use ArrayObject;
 use Countable;

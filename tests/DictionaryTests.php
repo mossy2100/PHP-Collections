@@ -2,7 +2,7 @@
 
 declare(strict_types = 1);
 
-namespace Superclasses\Tests\Collections;
+namespace Galaxon\Collections\Tests;
 
 use DateTime;
 use Superclasses\Collections\src\Dictionary;
