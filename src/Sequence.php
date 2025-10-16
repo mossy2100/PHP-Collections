@@ -1,0 +1,869 @@
+<?php
+
+declare(strict_types = 1);
+
+namespace Superclasses\Collections\src;
+
+use ArrayAccess;
+use ArrayIterator;
+use Countable;
+use IteratorAggregate;
+use OutOfRangeException;
+use Override;
+use Traversable;
+use UnderflowException;
+
+/**
+ * A sequence implementation that is stricter than ordinary PHP arrays.
+ * Indices are always sequential integers starting from 0. Therefore, the largest index (a.k.a. index or key) will
+ * equal the number of items in the sequence minus 1.
+ * Sequence items can be set at positions beyond the current range, but intermediate items will be filled in with a
+ * default value, specified in the constructor.
+ */
+class Sequence implements ArrayAccess, Countable, IteratorAggregate
+{
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // region Properties
+
+    /**
+     * The items in the sequence.
+     *
+     * @var array
+     */
+    protected(set) array $items = [];
+
+    /**
+     * The default value.
+     *
+     * @var mixed
+     */
+    public mixed $defaultValue;
+
+    // endregion
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // region Constructor
+
+    /**
+     * Create a new sequence, optionally from an existing iterable.
+     *
+     * A default value may be specified, used to fill gaps when increasing the sequence length.
+     * @param iterable $src The source iterable (default empty array).
+     * @param mixed $default_value Default value for new items (default null).
+     * @see self::offsetSet()
+     *
+     */
+    public function __construct(iterable $src = [], mixed $default_value = null)
+    {
+        // Copy values from the source iterable into the new sequence.
+        foreach ($src as $item) {
+            $this->append($item);
+        }
+
+        // Set the default value.
+        $this->defaultValue = $default_value;
+    }
+
+    // endregion
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // region Helper methods
+
+    /**
+     * Validate index parameters and optionally check bounds.
+     *
+     * @param mixed $index The index to validate.
+     * @param bool $check_lower_bound Whether to check if an index is non-negative.
+     * @param bool $check_upper_bound Whether to check if an index is within array bounds.
+     * @throws TypeException If the index is not an integer.
+     * @throws OutOfRangeException If the index is outside the valid range for the sequence.
+     */
+    protected function checkIndex(mixed $index, bool $check_lower_bound = true, bool $check_upper_bound = true): void
+    {
+        // Check the index is an integer.
+        if (!is_int($index)) {
+            throw TypeException::create('index', 'int', $index);
+        }
+
+        // Check the index isn't negative.
+        if ($check_lower_bound && $index < 0) {
+            throw new OutOfRangeException("Index cannot be negative.");
+        }
+
+        // Check the index isn't too large.
+        if ($check_upper_bound && $index >= count($this->items)) {
+            throw new OutOfRangeException("Index is out of range.");
+        }
+    }
+
+    // endregion
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // region Get items from the sequence
+
+    /**
+     * Get the first item from the sequence.
+     *
+     * @return mixed The first item.
+     * @throws OutOfRangeException If the sequence is empty.
+     */
+    public function first(): mixed
+    {
+        return $this[0];
+    }
+
+    /**
+     * Get the last item from the sequence.
+     *
+     * @return mixed The last item.
+     * @throws OutOfRangeException If the sequence is empty.
+     */
+    public function last(): mixed
+    {
+        return $this[array_key_last($this->items)];
+    }
+
+    /**
+     * Get a slice of the sequence.
+     *
+     * Both the index and the length can be negative. They work the same as for array_slice().
+     * @see https://www.php.net/manual/en/function.array-slice.php
+     *
+     * @param int $index The start position of the slice.
+     *      If non-negative, the slice will start at that index in the sequence.
+     *      If negative, the slice will start that far from the end of the sequence.
+     * @param ?int $length The length of the slice.
+     *      If given and is positive, then the sequence will have up to that many elements in it.
+     *      If the sequence is shorter than the length, then only available items will be present.
+     *      If given and is negative, the slice will stop that many elements from the end of the sequence.
+     *      If omitted or null, then the slice will include everything from index up until the end of the sequence.
+     * @return static The slice.
+     */
+    public function slice(int $index, ?int $length = null): static
+    {
+        // Get the items.
+        $items = array_slice($this->items, $index, $length);
+
+        // Construct the result.
+        return new static($items, $this->defaultValue);
+    }
+
+    /**
+     * Searches the array for a given value and returns the first corresponding key if successful.
+     *
+     * This method is analogous to array_search().
+     * @see https://www.php.net/manual/en/function.array-search.php
+     *
+     * @param mixed $value The value to search for.
+     * @return int|null The index of the first matching value, or null if the value is not found.
+     */
+    public function search(mixed $value): ?int
+    {
+        return array_search($value, $this->items, true);
+    }
+
+    /**
+     * Returns the first element satisfying a callback function.
+     *
+     * This method is analogous to array_find().
+     * @see https://www.php.net/manual/en/function.array-find.php
+     *
+     * @param callable $fn The filter function that will return true for a matching item.
+     * @return mixed The value of the first element for which the callback returns true. If no matching element is found
+     *      the function returns null.
+     */
+    public function find(callable $fn): mixed
+    {
+        return array_find($this->items, $fn);
+    }
+
+    // endregion
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // region Add items to the sequence
+
+    /**
+     * Add one or more items to the end of the sequence.
+     *
+     * NB: This is a mutating method.
+     *
+     * @param mixed ...$items The items to add to the sequence.
+     * @return $this The sequence instance.
+     *
+     * @example
+     * $sequence->append($item);
+     * $sequence->append($item1, $item2, $item3);
+     * $sequence->append(...$items);
+     */
+    public function append(mixed ...$items): static
+    {
+        // Loop instead of using array_push() to avoid array copy.
+        foreach ($items as $item) {
+            $this->items[] = $item;
+        }
+
+        // Return this for chaining.
+        return $this;
+    }
+
+    /**
+     * Add one or more items to the start of the sequence.
+     *
+     * NB: This is a mutating method.
+     *
+     * @param mixed ...$items The items to add to the sequence.
+     * @return $this The sequence instance.
+     *
+     * @example
+     * $sequence->prepend($item);
+     * $sequence->prepend($item1, $item2, $item3);
+     * $sequence->prepend(...$items);
+     */
+    public function prepend(mixed ...$items): static
+    {
+        // Insert an element at the start of the sequence.
+        array_unshift($this->items, ...$items);
+
+        // Return this for chaining.
+        return $this;
+    }
+
+    /**
+     * Insert an item at the specified position. Later items will be shifted right.
+     *
+     * NB: This is a mutating method.
+     *
+     * @param int $index The zero-based index position to insert the item at.
+     * @param mixed $item The item to insert.
+     * @return $this The sequence instance.
+     */
+    public function insert(int $index, mixed $item): static {
+        // Ensure the index is valid.
+        $this->checkIndex($index);
+
+        // Shift elements after $index right by 1.
+        $max = count($this->items);
+        for ($i = $max; $i > $index; $i--) {
+            $this->items[$i] = $this->items[$i - 1];
+        }
+
+        // Set the new value of the item at position $index.
+        $this->items[$index] = $item;
+
+        // Return this for chaining.
+        return $this;
+    }
+
+    // endregion
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // region Remove items from the sequence
+
+    /**
+     * Remove the item at the given index from the sequence.
+     *
+     * The indices of items at higher indices than the one specified by $index will be reduced by 1, i.e. shifted down,
+     * and the sequence length will be reduced by 1.
+     *
+     * NB: This is a mutating method.
+     *
+     * @param int $index The zero-based index position of the item to remove.
+     * @return mixed The removed value.
+     * @throws TypeException If the index is not an integer.
+     * @throws OutOfRangeException If the index is outside the valid range for the sequence.
+     */
+    public function remove(int $index): mixed
+    {
+        // Ensure the index is valid.
+        $this->checkIndex($index);
+
+        // Get the item.
+        $item = $this->items[$index];
+
+        // Remove it from the sequence.
+        array_splice($this->items, $index, 1);
+
+        // Return the item.
+        return $item;
+    }
+
+    /**
+     * Remove all items matching a given value. Strict equality is used to find matching values.
+     *
+     * NB: This is a mutating method.
+     *
+     * @param mixed $value The value to remove.
+     * @return int The number of items removed.
+     */
+    public function removeByValue(mixed $value): int
+    {
+        // Get the number of items in the sequence.
+        $originalCount = count($this->items);
+
+        // Filter the sequence to remove the matching values.
+        $this->items = array_values(array_filter(
+            $this->items,
+            fn($item) => $item !== $value
+        ));
+
+        // Return the number of items removed.
+        return $originalCount - count($this->items);
+    }
+
+    /**
+     * Remove the first item from the sequence.
+     *
+     * NB: This is a mutating method.
+     *
+     * @return mixed The removed item.
+     * @throws UnderflowException If the sequence is empty.
+     */
+    public function removeFirst(): mixed
+    {
+        // Check for an empty sequence.
+        if (count($this->items) === 0) {
+            throw new UnderflowException("No items in the sequence.");
+        }
+
+        // Remove and return the first item.
+        return array_shift($this->items);
+    }
+
+    /**
+     * Remove the last item from the sequence.
+     *
+     * NB: This is a mutating method.
+     *
+     * @return mixed The removed item.
+     * @throws UnderflowException If the sequence is empty.
+     */
+    public function removeLast(): mixed
+    {
+        // Check for an empty sequence.
+        if (count($this->items) === 0) {
+            throw new UnderflowException("No items in the sequence.");
+        }
+
+        // Remove and return the last item.
+        return array_pop($this->items);
+    }
+
+    /**
+     * Clear all items
+     */
+    public function clear(): void
+    {
+        $this->items = [];
+    }
+
+    // endregion
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // region Boolean methods
+
+    /**
+     * Check if the sequence is empty.
+     *
+     * @return bool If the sequence is empty.
+     */
+    public function isEmpty(): bool
+    {
+        return $this->items === [];
+    }
+
+    /**
+     * Check if the sequence contains a specific index.
+     *
+     * @param int $index The index to search for.
+     * @return bool True if the index exists in the sequence, false otherwise.
+     */
+    public function hasIndex(int $index): bool
+    {
+        return key_exists($index, $this->items);
+    }
+
+    /**
+     * Check if the sequence contains a specific value.
+     * Strict equality is used to compare values.
+     *
+     * @param mixed $value The value to search for.
+     * @return bool True if the value exists in the sequence, false otherwise.
+     */
+    public function hasValue(mixed $value): bool
+    {
+        return in_array($value, $this->items, true);
+    }
+
+    /**
+     * Check if all items in the sequence pass a test.
+     *
+     * This method is analogous to array_all().
+     * @see https://www.php.net/manual/en/function.array-all.php
+     *
+     * @param callable $fn The test function.
+     * @return bool True if all items pass the test, false otherwise.
+     */
+    public function all(callable $fn): bool
+    {
+        return array_all($this->items, $fn);
+    }
+
+    /**
+     * Check if any items in the sequence pass a test.
+     *
+     * This method is analogous to array_any().
+     * @see https://www.php.net/manual/en/function.array-any.php
+     *
+     * @param callable $fn The test function.
+     * @return bool True if any items pass the test, false otherwise.
+     */
+    public function any(callable $fn): bool
+    {
+        return array_any($this->items, $fn);
+    }
+
+    // endregion
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // region Sort methods
+
+    /**
+     * Return a new sequence with the items sorted in ascending order.
+     *
+     * This method is analogous to sort(), except that it's non-mutating.
+     * @see https://www.php.net/manual/en/function.sort.php
+     *
+     * @param int $flags The sorting flags.
+     * @return static
+     */
+    public function sort(int $flags = SORT_REGULAR): static
+    {
+        // Copy the items array so the method is non-mutating.
+        $items = $this->items;
+        sort($items, $flags);
+        return new static($items, $this->defaultValue);
+    }
+
+    /**
+     * Return a new sequence with the items sorted in descending order.
+     *
+     * This method is analogous to rsort(), except that it's non-mutating.
+     * @see https://www.php.net/manual/en/function.rsort.php
+     *
+     * @param int $flags The sorting flags.
+     * @return static
+     */
+    public function sortReverse(int $flags = SORT_REGULAR): static
+    {
+        // Copy the items array so the method is non-mutating.
+        $items = $this->items;
+        rsort($items, $flags);
+        return new static($items, $this->defaultValue);
+    }
+
+    /**
+     * Return a new sequence with the items sorted using a custom comparison function.
+     *
+     * This method is analogous to usort(), except that it's non-mutating.
+     * @see https://www.php.net/manual/en/function.usort.php
+     *
+     * @param callable $fn The comparison function.
+     * @return static
+     */
+    public function sortBy(callable $fn): static
+    {
+        // Copy the items array so the method is non-mutating.
+        $items = $this->items;
+        usort($items, $fn);
+        return new static($items, $this->defaultValue);
+    }
+
+    // endregion
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // region Miscellaneous methods
+
+    /**
+     * Split the sequence into chunks of a given size.
+     * The last chunk may be smaller than the specified size.
+     *
+     * This method is analogous to array_chunk().
+     * @see https://www.php.net/manual/en/function.array-chunk.php
+     *
+     * @param int $size The size of each chunk.
+     * @return static[] An array of chunks.
+     */
+    public function chunk(int $size): array
+    {
+        $chunks = array_chunk($this->items, $size);
+        $result = [];
+        foreach ($chunks as $chunk) {
+            $result[] = new static($chunk, $this->defaultValue);
+        }
+        return $result;
+    }
+
+    /**
+     * Counts the occurrences of each distinct value in a sequence.
+     *
+     * This method is analogous to array_count_values().
+     * @see https://www.php.net/manual/en/function.array-count-values.php
+     *
+     * @return Dictionary A dictionary mapping values to the number of occurrences.
+     */
+    public function countValues(): Dictionary
+    {
+        $value_count = new Dictionary();
+        foreach ($this->items as $item) {
+            if ($value_count->hasKey($item)) {
+                $value_count[$item]++;
+            }
+            else {
+                $value_count[$item] = 1;
+            }
+        }
+        return $value_count;
+    }
+
+    /**
+     * Fill the sequence with a given value.
+     *
+     * This method is analogous to array_fill().
+     * @see https://www.php.net/manual/en/function.array-fill.php
+     *
+     * @param int $start_index The zero-based index position to start filling.
+     * @param int $count The number of items to fill.
+     * @param mixed $value The value to fill with.
+     */
+    public function fill(int $start_index, int $count, mixed $value = null): void
+    {
+        // If no value is specified, use the default value.
+        // Use func_num_args() here to check if the value was specified, instead of comparing it with null, because they
+        // might actually want to fill with nulls.
+        if (func_num_args() === 2) {
+            $value = $this->defaultValue;
+        }
+
+        // Set the specified sequence items.
+        for ($i = 0; $i < $count; $i++) {
+            $this[$start_index + $i] = $value;
+        }
+    }
+
+    /**
+     * Return a sequence with all items matching a certain filter.
+     *
+     * This method is analogous to array_filter().
+     * @see https://www.php.net/manual/en/function.array-filter.php
+     *
+     * @param callable $fn The filter function that returns true for items to keep.
+     * @return static A new sequence containing only the matching items.
+     */
+    public function filter(callable $fn): static
+    {
+        // Get the matching values.
+        $items = array_filter($this->items, fn($item) => $fn($item));
+
+        // Construct the result.
+        return new static($items, $this->defaultValue);
+    }
+
+    /**
+     * Applies the callback to the items in the sequence.
+     *
+     * @param callable $fn The callback function to apply to each item.
+     * @return static A new sequence containing the results of the callback function.
+     */
+    public function map(callable $fn): static
+    {
+        $items = array_map($fn, $this->items);
+        return new static($items, $this->defaultValue);
+    }
+
+    /**
+     * Merge two sequences.
+     *
+     * @param Sequence $other The sequence to merge with.
+     * @return static A new sequence containing the merged items.
+     */
+    public function merge(self $other): static
+    {
+        $items = array_merge($this->items, $other->items);
+        return new static($items, $this->defaultValue);
+    }
+
+    /**
+     * Return a new sequence with the same items as the $this sequence but in reverse order.
+     *
+     * @return static A new sequence with the same items as the $this sequence but in reverse order.
+     */
+    public function reverse(): static
+    {
+        $items = array_reverse($this->items);
+        return new static($items, $this->defaultValue);
+    }
+
+    // endregion
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // region Aggregation methods
+
+    /**
+     * Reduce the sequence to a single value using a callback function.
+     *
+     * @param callable $fn Callback function (accumulator, item) => new_accumulator.
+     * @param mixed $init Initial value for the aggregation.
+     * @return mixed The final result.
+     */
+    public function reduce(callable $fn, mixed $init): mixed
+    {
+        return array_reduce($this->items, $fn, $init);
+    }
+
+    /**
+     * Find the product of the values in the sequence.
+     *
+     * @return float|int The product of the values in the sequence.
+     */
+    public function product(): float|int
+    {
+        return array_product($this->items);
+    }
+
+    /**
+     * Find the sum of the values in the sequence.
+     *
+     * @return float|int The sum of the values in the sequence.
+     */
+    public function sum(): float|int
+    {
+        return array_sum($this->items);
+    }
+
+    /**
+     * Find the concatenation of the values in the sequence, optionally separated by a given string (the "glue").
+     *
+     * @param string $glue The string to separate the values with.
+     * @return string The concatenation of the values in the sequence.
+     */
+    public function join(string $glue = ''): string
+    {
+        return implode($glue, $this->items);
+    }
+
+    // endregion
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // region Choose random methods
+
+    /**
+     * Randomly choose one or more items from the sequence.
+     * Both keys and values are returned, as an array.
+     *
+     * NB: This method is non-mutating.
+     *
+     * @param int $count The number of items to choose (default: 1).
+     * @return array An array containing the chosen items (keys and values) in random order.
+     * @throws UnderflowException If the sequence is empty.
+     * @throws OutOfRangeException If the count is out of range.
+     * @throws OutOfRangeException If the sequence doesn't have enough items to choose the specified count.'
+     */
+    public function chooseRand(int $count = 1): array
+    {
+        // Guards.
+        if ($this->count() === 0) {
+            throw new UnderflowException("No items in the sequence to choose from.");
+        }
+        if ($count <= 0) {
+            throw new OutOfRangeException("Count must be greater than 0.");
+        }
+        if ($count > $this->count()) {
+            throw new OutOfRangeException("Not enough items in the sequence to choose $count items.");
+        }
+
+        // Get the keys of the randomly chosen items.
+        $keys = array_rand($this->items, $count);
+
+        // Make sure it's an array, as array_rand() will return a single key value when count is 1.
+        if (!is_array($keys)) {
+            $keys = [$keys];
+        }
+
+        // Convert the keys into key-value pairs.
+        $result = [];
+        foreach ($keys as $key) {
+            $result[$key] = $this->items[$key];
+        }
+        return $result;
+    }
+
+    /**
+     * Randomly remove one or more items from the sequence.
+     *
+     * NB: This method is mutating.
+     *
+     * @param int $count The number of items to remove (default: 1).
+     * @return array An array containing the removed values in random order.
+     * @throws UnderflowException If the sequence is empty.
+     * @throws OutOfRangeException If the count is out of range.
+     * @throws OutOfRangeException If the sequence doesn't have enough items to choose the specified count.'
+     */
+    public function removeRand(int $count = 1): array
+    {
+        // Randomly choose one or more items.
+        $items = $this->chooseRand($count);
+
+        // Sort the items by key in descending order.
+        // We want to remove the items with the highest keys first,
+        // because each call to remove() will re-index the sequence.
+        // Clone the array of selected items to preserve randomness.
+        $sorted_items = $items;
+        krsort($sorted_items);
+
+        // Remove the items from the sequence.
+        foreach ($sorted_items as $key => $value) {
+            $this->remove($key);
+        }
+
+        // Return the chosen values.
+        return array_values($items);
+    }
+
+    // endregion
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // region ArrayAccess implementation
+
+    /**
+     * Append or set a sequence item.
+     *
+     * If the index is out of range, the sequence will be increased in size to accommodate it.
+     * Any intermediate positions will be filled with the default value.
+     * NB: If the default is an object, all items set to the default will reference the same object.
+     * If you don't want this behaviour, set each sequence item individually.
+     *
+     * @param mixed $offset The zero-based index position to set, or null to append.
+     * @param mixed $value The value to set.
+     * @throws TypeException If the index is neither null nor an integer.
+     * @throws OutOfRangeException If the index is out of range.
+     */
+    #[Override]
+    public function offsetSet(mixed $offset, mixed $value): void
+    {
+        if ($offset === null) {
+            // Append a new item to the sequence.
+            // $sequence[] = $value
+            $this->append($value);
+        }
+        else {
+            // Update an item.
+            // $sequence[$key] = $value
+
+            // Check the index is valid.
+            $this->checkIndex($offset, check_upper_bound: false);
+
+            // Fill in any missing items with defaults.
+            $start = count($this->items);
+            for ($i = $start; $i < $offset; $i++) {
+                $this->items[$i] = $this->defaultValue;
+            }
+
+            // Set the item value.
+            $this->items[$offset] = $value;
+        }
+    }
+
+    /**
+     * Get a value from the sequence.
+     *
+     * @param mixed $offset The zero-based index position to get.
+     * @return mixed The value at the specified index.
+     * @throws TypeException If the index is not an integer.
+     * @throws OutOfRangeException If the index is outside the valid range for the sequence.
+     */
+    #[Override]
+    public function offsetGet(mixed $offset): mixed
+    {
+        // Check the index is valid.
+        $this->checkIndex($offset);
+
+        // Get the item at the specified index.
+        return $this->items[$offset];
+    }
+
+    /**
+     * Check if a given index is valid.
+     *
+     * @param mixed $offset The sequence index position.
+     * @return bool If the given index is an integer and within the current valid range for the sequence.
+     * @throws TypeException If the index is not an integer.
+     */
+    #[Override]
+    public function offsetExists(mixed $offset): bool
+    {
+        // Check the index is an integer.
+        if (!is_int($offset)) {
+            throw TypeException::create('offset', 'int', $offset);
+        }
+
+        return $this->hasIndex($offset);
+    }
+
+    /**
+     * Set a sequence item to null.
+     *
+     * This method isn't usually called as a method, but rather as a result of calling unset($sequence[$offset]).
+     *
+     * Doing this doesn't remove an item from the sequence, as it does with ordinary PHP arrays. This is because this
+     * data structure maintains zero-indexed sequential keys. Therefore, removing an item from the sequence would
+     * require re-indexing later items. This could be unexpected behavior.
+     *
+     * To remove an item from the sequence, use one of the remove*() methods.
+     *
+     * @param mixed $offset The zero-based index position to unset.
+     * @throws OutOfRangeException If the index is outside the valid range for the sequence.
+     */
+    #[Override]
+    public function offsetUnset(mixed $offset): void
+    {
+        // Check the index is valid.
+        $this->checkIndex($offset);
+
+        // Set the item to null.
+        $this->items[$offset] = null;
+    }
+
+    // endregion
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // region Countable implementation
+
+    /**
+     * Get the number of items in the sequence.
+     *
+     * @return int The number of items in the sequence.
+     */
+    #[Override]
+    public function count(): int
+    {
+        return count($this->items);
+    }
+
+    // endregion
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // region IteratorAggregate implementation
+
+    /**
+     * Get iterator for foreach loops.
+     *
+     * @return Traversable The iterator.
+     */
+    #[Override]
+    public function getIterator(): Traversable
+    {
+        return new ArrayIterator($this->items);
+    }
+
+    // endregion
+}
