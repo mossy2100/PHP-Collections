@@ -9,10 +9,10 @@ use Countable;
 use InvalidArgumentException;
 use IteratorAggregate;
 use Traversable;
+use Galaxon\Math\is_uint;
 
 class TypeSet implements Countable, IteratorAggregate
 {
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // region Properties
 
     /**
@@ -24,7 +24,6 @@ class TypeSet implements Countable, IteratorAggregate
 
     // endregion
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // region Constructor
 
     /**
@@ -65,7 +64,6 @@ class TypeSet implements Countable, IteratorAggregate
 
     // endregion
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // region Helper methods
 
     /**
@@ -159,7 +157,7 @@ class TypeSet implements Countable, IteratorAggregate
         }
 
         // Check uint.
-        if ($this->contains('uint') && self::isUnsignedInt($value)) {
+        if ($this->contains('uint') && is_uint($value)) {
             return true;
         }
 
@@ -236,32 +234,8 @@ class TypeSet implements Countable, IteratorAggregate
         return $result;
     }
 
-    /**
-     * Check if a value is a number, i.e. an integer or a float.
-     * This varies from is_numeric(), which also returns true for numeric strings.
-     *
-     * @param mixed $value The value to check.
-     * @return bool True if the value is a number, false otherwise.
-     */
-    public static function isNumber(mixed $value): bool
-    {
-        return is_int($value) || is_float($value);
-    }
-
-    /**
-     * Check if a value is an unsigned integer.
-     *
-     * @param mixed $value The value to check.
-     * @return bool True if the value is an unsigned integer, false otherwise.
-     */
-    public static function isUnsignedInt(mixed $value): bool
-    {
-        return is_int($value) && $value >= 0;
-    }
-
     // endregion
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // region Add methods
 
     /**
