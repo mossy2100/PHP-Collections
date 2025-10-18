@@ -4,10 +4,10 @@ declare(strict_types = 1);
 
 namespace Galaxon\Collections\Tests;
 
+use Galaxon\Collections\TypeSet;
 use ArrayObject;
 use Countable;
 use DateTime;
-use Superclasses\Collections\src\TypeSet;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 

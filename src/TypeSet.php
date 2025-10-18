@@ -4,12 +4,16 @@ declare(strict_types = 1);
 
 namespace Galaxon\Collections;
 
+// Interfaces and related classes.
 use ArrayIterator;
 use Countable;
-use InvalidArgumentException;
 use IteratorAggregate;
 use Traversable;
-use Galaxon\Math\is_uint;
+// Errors and exceptions.
+use InvalidArgumentException;
+use TypeError;
+// Math functions.
+use Galaxon\Math\Math;
 
 class TypeSet implements Countable, IteratorAggregate
 {
@@ -29,11 +33,16 @@ class TypeSet implements Countable, IteratorAggregate
     /**
      * Constructor.
      *
-     * @param string|iterable $types The type names to add to the set.
+     * @param string|iterable|null $types The type names to add to the set.
      * @throws InvalidArgumentException If any type is invalid.
      */
-    public function __construct(string|iterable $types = '')
+    public function __construct(string|iterable|null $types = null)
     {
+        // If no types are provided, the set is empty.
+        if ($types === null) {
+            return;
+        }
+
         // Convert a type string, including union type syntax (e.g. 'string|int'), into an array of type names.
         if (is_string($types)) {
             $types = explode('|', $types);
@@ -43,7 +52,7 @@ class TypeSet implements Countable, IteratorAggregate
         foreach ($types as $type) {
             // Check the type.
             if (!is_string($type)) {
-                throw new InvalidArgumentException("Types must be provided as strings.");
+                throw new TypeError("Types must be provided as strings.");
             }
 
             // Trim just in case the user did something like 'string | int'.
@@ -67,25 +76,25 @@ class TypeSet implements Countable, IteratorAggregate
     // region Helper methods
 
     /**
-     * Convert a string or iterable of types into a TypeSet, if necessary.
+     * Convert a string, iterable, or null, into a TypeSet.
      *
-     * @param string|iterable|self $types The value to convert.
+     * @param string|iterable|null $types The value to convert.
      * @return self The converted TypeSet.
      */
-    public static function toTypeSet(string|iterable|self $types = ''): self
+    public static function toTypeSet(string|iterable|null $types): self
     {
-        return $types instanceof self ? $types : new self($types);
+        return $types instanceof self ? clone $types : new self($types);
     }
 
     /**
      * Checks if the provided string looks like a valid type. That includes core types, pseudotypes, resource types,
      * and classes.
      *
-     * For examples of resource names:
-     * @see https://www.php.net/manual/en/resource.php
-     *
      * For valid class names:
      * @see https://www.php.net/manual/en/language.oop5.basic.php
+     *
+     * * For examples of resource names:
+     * * @see https://www.php.net/manual/en/resource.php
      *
      * @param string $type The type to check.
      * @return bool True if the type is a valid type, false otherwise.
@@ -94,15 +103,11 @@ class TypeSet implements Countable, IteratorAggregate
     {
         $type = trim($type);
 
-        // Check for empty string.
-        if ($type === '') {
-            return false;
-        }
-
         // Check for core types, pseudotypes, and generic "resource" and "object".
+        // Note "number" and "uint" are pseudotypes invented purely for these collections.
         $simple_types = [
-            'null', 'int', 'float', 'string', 'bool', 'array', 'object', 'resource', 'callable',
-            'iterable', 'mixed', 'scalar', 'number', 'uint'
+            'null', 'int', 'float', 'string', 'bool', 'array', 'object', 'resource',
+            'callable', 'iterable','mixed', 'scalar', 'number', 'uint'
         ];
         if (in_array($type, $simple_types, true)) {
             return true;
@@ -110,7 +115,7 @@ class TypeSet implements Countable, IteratorAggregate
 
         // Check for class names. Anonymous classes are not supported.
         $class = "[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*";
-        if (preg_match("/^\\\\?({$class})(?:\\\\{$class})*$/", $type)) {
+        if (preg_match("/^\\\\?($class)(?:\\\\$class)*$/", $type)) {
             return true;
         }
 
@@ -152,12 +157,12 @@ class TypeSet implements Countable, IteratorAggregate
         }
 
         // Check number.
-        if ($this->contains('number') && self::isNumber($value)) {
+        if ($this->contains('number') && Math::isNumber($value)) {
             return true;
         }
 
         // Check uint.
-        if ($this->contains('uint') && is_uint($value)) {
+        if ($this->contains('uint') && Math::isUint($value)) {
             return true;
         }
 
@@ -198,6 +203,20 @@ class TypeSet implements Countable, IteratorAggregate
         }
 
         return false;
+    }
+
+    /**
+     * Checks if the given value matches the set of types.
+     *
+     * @param mixed $value The value to check.
+     * @throws TypeError If the value type is not allowed.
+     */
+    public function checkType(mixed $value, string $label = ''): void
+    {
+        if (!$this->match($value)) {
+            $msg = 'Disallowed ' . ($label ? $label . ' ' : '') . 'type: ' . get_debug_type($value) . '.';
+            throw new TypeError($msg);
+        }
     }
 
     /**

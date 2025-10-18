@@ -12,10 +12,13 @@ use Stringable;
 use Traversable;
 
 /**
- * Implements a set of values.
+ * Implements a set of values with optional type constraints.
+ * It is equivalent to Set<T> in Java or C#, except multiple tyoes can be specified.
  */
 class Set implements Stringable, Countable, IteratorAggregate
 {
+    // region Properties
+
     /**
      * Backing store for set items, implemented as a map of unique string key => original value.
      * This approach reduces the cost of checking for membership from O(n) to O(1).
@@ -23,6 +26,13 @@ class Set implements Stringable, Countable, IteratorAggregate
      * @var array<string, mixed>
      */
     private array $_items = [];
+
+    /**
+     * Valid types for items in the set. Null means any type is allowed.
+     *
+     * @var TypeSet|null
+     */
+    protected(set) ?TypeSet $types;
 
     /**
      * Items in the set.
@@ -34,15 +44,25 @@ class Set implements Stringable, Countable, IteratorAggregate
         get => $this->toArray();
     }
 
+    // endregion
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // region Constructor
+
     /**
      * Constructor.
      *
-     * @param iterable $items Items to add to the set.
+     * @param string|iterable|TypeSet|null $types Optional type constraints for set items.
      */
-    public function __construct(iterable $items = [])
+    public function __construct(string|iterable|TypeSet|null $types = null)
     {
-        $this->addAll($items);
+        $this->types = $types === null ? null : TypeSet::toTypeSet($types);
     }
+
+    // endregion
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // region Helper methods
 
     /**
      * Determine if an item is allowed to be added to this set.
@@ -53,8 +73,13 @@ class Set implements Stringable, Countable, IteratorAggregate
      */
     protected function isItemAllowed(mixed $item): bool
     {
-        return true;
+        return $this->types === null || $this->types->match($item);
     }
+
+    // endregion
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // region Conversion methods
 
     /**
      * Return the set as an array.
@@ -66,25 +91,33 @@ class Set implements Stringable, Countable, IteratorAggregate
         return array_values($this->_items);
     }
 
+    // endregion
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Methods for adding and removing members. These methods are mutating and return the calling object.
+    // region Methods for adding and removing members
+    // These methods are mutating and return the calling object.
 
     /**
      * Add one item to the set.
      *
      * @param mixed $item The item to add to the set.
+     * @param bool $add_type If true, add the type of the item to the set.
      * @return $this The modified set.
      */
-    public function addOne(mixed $item): static
+    public function addItem(mixed $item, bool $add_type = false): self
     {
-        // Check if the item is allowed in the set.
-        if (!$this->isItemAllowed($item)) {
+        // Add the type if asked.
+        if ($add_type) {
+            $this->types->addValueType($item);
+        }
+        elseif (!$this->isItemAllowed($item)) {
+            // If a value with this type is not allowed, throw an exception.
             throw new InvalidArgumentException("This item is not allowed.");
         }
 
         // Add the item if new.
-        $key = Type::getStringKey($item);
-        if (!key_exists($key, $this->_items)) {
+        $key = Type::getString($item);
+        if (!array_key_exists($key, $this->_items)) {
             $this->_items[$key] = $item;
         }
 
@@ -93,16 +126,17 @@ class Set implements Stringable, Countable, IteratorAggregate
     }
 
     /**
-     * Add multiple items to the set.
+     * Add all items from an iterable into the set, with the option to add their types to the TypeSet as well.
      *
      * @param iterable $items The items to add to the set.
+     * @param bool $add_types If true, also add the types from the items.
      * @return $this The modified set.
      */
-    public function addAll(iterable $items): static
+    public function addItems(iterable $items, bool $add_types = false): self
     {
         // Add each item.
         foreach ($items as $item) {
-            $this->addOne($item);
+            $this->addItem($item, $add_types);
         }
 
         // Return $this for chaining.
@@ -112,16 +146,14 @@ class Set implements Stringable, Countable, IteratorAggregate
     /**
      * Add one or more items to the set.
      *
-     * This is the general-purpose version of the method, which permits adding one or more items as a variable number of
-     * arguments.
+     * This is the general-purpose version of the method, which permits adding one or more items as separate arguments.
      *
      * @param mixed ...$items The items to add to the set.
      * @return $this The modified set.
      */
-    public function add(mixed ...$items): static
+    public function add(mixed ...$items): self
     {
-        // Add the items.
-        return $this->addAll($items);
+        return $this->addItems($items);
     }
 
     /**
@@ -130,7 +162,7 @@ class Set implements Stringable, Countable, IteratorAggregate
      * @param mixed $item_to_remove The item to remove from the set, if present.
      * @return $this The modified set.
      */
-    public function removeOne(mixed $item_to_remove): static
+    public function removeItem(mixed $item_to_remove): self
     {
         return $this->remove($item_to_remove);
     }
@@ -141,12 +173,12 @@ class Set implements Stringable, Countable, IteratorAggregate
      * @param iterable $items_to_remove The items to remove from the set, if present.
      * @return $this The modified set.
      */
-    public function removeAll(iterable $items_to_remove): static
+    public function removeItems(iterable $items_to_remove): self
     {
         // No type check needed; if it's in the set, remove it.
         foreach ($items_to_remove as $item) {
-            $key = Type::getStringKey($item);
-            if (key_exists($key, $this->_items)) {
+            $key = Type::getString($item);
+            if (array_key_exists($key, $this->_items)) {
                 unset($this->_items[$key]);
             }
         }
@@ -161,9 +193,9 @@ class Set implements Stringable, Countable, IteratorAggregate
      * @param mixed ...$items_to_remove The items to remove from the set, if present.
      * @return $this The modified set.
      */
-    public function remove(mixed ...$items_to_remove): static
+    public function remove(mixed ...$items_to_remove): self
     {
-        return $this->removeAll($items_to_remove);
+        return $this->removeItems($items_to_remove);
     }
 
     /**
@@ -171,7 +203,7 @@ class Set implements Stringable, Countable, IteratorAggregate
      *
      * @return $this
      */
-    public function clear(): static
+    public function clear(): self
     {
         // Remove all the items.
         $this->_items = [];
@@ -180,39 +212,52 @@ class Set implements Stringable, Countable, IteratorAggregate
         return $this;
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // SetOf operations. These are non-mutating and return new sets.
+    // endregion
+
+    // region Set operations
+    // These are non-mutating and return new sets.
 
     /**
      * Return the union of this set and another set.
+     * The resulting set will allow the types allowed by both sets.
      *
      * @param self $other The set to union with.
-     * @return static A new set equal to the union of the two sets.
+     * @return self A new set equal to the union of the two sets.
      */
-    public function union(self $other): static
+    public function union(self $other): self
     {
-        $out = new static();
+        // Determine types for result set.
+        $types = ($this->types === null && $other->types === null) ? null : new TypeSet();
+        if ($this->types !== null) {
+            $types->addTypes($this->types);
+        }
+        if ($other->types !== null) {
+            $types->addTypes($other->types);
+        }
 
-        // Left-biased union: values from $this take precedence on key collision.
-        $out->_items = $this->_items + $other->_items;
+        // Construct the new set.
+        $result = new self();
 
-        // Return the new set.
-        return $out;
+        // Get the items. We can use the union operator to merge sets because the same items have the same keys.
+        $result->_items = $this->_items + $other->_items;
+
+        return $result;
     }
 
     /**
      * Return the intersection of this set and another set.
+     * The resulting set will allow the same types as the $this set.
      *
      * @param self $other The set to intersect with.
-     * @return static A new set equal to the intersection of the two sets.
+     * @return self A new set equal to the intersection of the two sets.
      */
-    public function intersect(self $other): static
+    public function intersect(self $other): self
     {
-        $out = new static();
+        $out = new self($this->types);
 
         // Add items present in both sets.
         foreach ($this->_items as $k => $v) {
-            if (key_exists($k, $other->_items)) {
+            if (array_key_exists($k, $other->_items)) {
                 $out->_items[$k] = $v;
             }
         }
@@ -223,17 +268,18 @@ class Set implements Stringable, Countable, IteratorAggregate
 
     /**
      * Return the difference of this set and another set.
+     * The resulting set will allow the same types as the $this set.
      *
      * @param self $other The set to subtract from.
-     * @return static A new set equal to the difference of the two sets.
+     * @return self A new set equal to the difference of the two sets.
      */
-    public function diff(self $other): static
+    public function diff(self $other): self
     {
-        $out = new static();
+        $out = new self($this->types);
 
         // Add items present in this set that are not present in the other set.
         foreach ($this->_items as $k => $v) {
-            if (!key_exists($k, $other->_items)) {
+            if (!array_key_exists($k, $other->_items)) {
                 $out->_items[$k] = $v;
             }
         }
@@ -242,8 +288,11 @@ class Set implements Stringable, Countable, IteratorAggregate
         return $out;
     }
 
+    // endregion
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Inspection and comparison methods. These all return booleans.
+    // region Inspection and comparison methods
+    // These all return booleans.
 
     /**
      * Check if the set contains a given item.
@@ -253,10 +302,10 @@ class Set implements Stringable, Countable, IteratorAggregate
      * @param mixed $item The item to check for.
      * @return bool
      */
-    public function containsOne(mixed $item): bool
+    public function containsItem(mixed $item): bool
     {
-        $key = Type::getStringKey($item);
-        return key_exists($key, $this->_items);
+        $key = Type::getString($item);
+        return array_key_exists($key, $this->_items);
     }
 
     /**
@@ -268,7 +317,7 @@ class Set implements Stringable, Countable, IteratorAggregate
     public function containsAll(iterable $items): bool
     {
         foreach ($items as $item) {
-            if (!$this->containsOne($item)) {
+            if (!$this->containsItem($item)) {
                 return false;
             }
         }
@@ -299,7 +348,7 @@ class Set implements Stringable, Countable, IteratorAggregate
     public function containsAny(iterable $items): bool
     {
         foreach ($items as $it) {
-            if ($this->containsOne($it)) {
+            if ($this->containsItem($it)) {
                 return true;
             }
         }
@@ -314,12 +363,7 @@ class Set implements Stringable, Countable, IteratorAggregate
      */
     public function containsNone(iterable $items): bool
     {
-        foreach ($items as $it) {
-            if ($this->containsOne($it)) {
-                return false;
-            }
-        }
-        return true;
+        return !$this->containsAny($items);
     }
 
     /**
@@ -353,7 +397,7 @@ class Set implements Stringable, Countable, IteratorAggregate
      */
     public function subset(self $other): bool
     {
-        return ($this::class === $other::class) && array_all($this->_items, fn($item) => $other->contains($item));
+        return ($this::class === $other::class) && array_all($this->_items, static fn($item) => $other->contains($item));
     }
 
     /**
@@ -397,11 +441,13 @@ class Set implements Stringable, Countable, IteratorAggregate
      */
     public function disjoint(self $other): bool
     {
-        return array_all($this->_items, fn($item) => !$other->contains($item));
+        return array_all($this->_items, static fn($item) => !$other->contains($item));
     }
 
+    // endregion
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Stringable implementation
+    // region Stringable implementation
 
     /**
      * Generate a string representation of the set.
@@ -410,11 +456,13 @@ class Set implements Stringable, Countable, IteratorAggregate
      */
     public function __toString(): string
     {
-        return '{' . implode(', ', array_map('Stringify\stringify', $this->_items)) . '}';
+        return '{' . implode(', ', array_map(static fn($item) => (string)$item, $this->_items)) . '}';
     }
 
+    // endregion
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Countable implementation
+    // region Countable implementation
 
     /**
      * Get the number of items in the set.
@@ -426,8 +474,10 @@ class Set implements Stringable, Countable, IteratorAggregate
         return count($this->_items);
     }
 
+    // endregion
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // IteratorAggregate implementation
+    // region IteratorAggregate implementation
 
     /**
      * Get iterator for foreach loops.
@@ -438,4 +488,6 @@ class Set implements Stringable, Countable, IteratorAggregate
     {
         return new ArrayIterator($this->toArray());
     }
+
+    // endregion
 }

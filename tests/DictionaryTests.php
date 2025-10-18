@@ -26,10 +26,10 @@ $d[new DateTime('2025-09-01')] = 314;
 // var_dump($d->entries());
 
 // $a = ["test", "cat"];
-// echo DictionaryOf::getStringKey($a) . PHP_EOL;
+// echo DictionaryOf::getString($a) . PHP_EOL;
 
 // $a = ["test, s:3:cat"];
-// echo DictionaryOf::getStringKey($a) . PHP_EOL;
+// echo DictionaryOf::getString($a) . PHP_EOL;
 
 
 // function floatToStr(float $f) {
@@ -79,12 +79,12 @@ echo 'resource id = ' . get_resource_id($fp) . PHP_EOL;
 // $dict = DictionaryOf::fromIterable($mixed);
 // echo $dict->valueTypes;  // "string|int|float|bool|DateTime"
 
-echo Type::getStringKey(null) . PHP_EOL;
-echo Type::getStringKey(true) . PHP_EOL;
-echo Type::getStringKey(false) . PHP_EOL;
-echo Type::getStringKey(123) . PHP_EOL;
-echo Type::getStringKey(123.45e67) . PHP_EOL;
-echo Type::getStringKey("cats are nice") . PHP_EOL;
-echo Type::getStringKey([1, 2, false, "dogs are nice too"]) . PHP_EOL;
-echo Type::getStringKey(new DateTime()) . PHP_EOL;
-echo Type::getStringKey($fp) . PHP_EOL;
+echo Type::getString(null) . PHP_EOL;
+echo Type::getString(true) . PHP_EOL;
+echo Type::getString(false) . PHP_EOL;
+echo Type::getString(123) . PHP_EOL;
+echo Type::getString(123.45e67) . PHP_EOL;
+echo Type::getString("cats are nice") . PHP_EOL;
+echo Type::getString([1, 2, false, "dogs are nice too"]) . PHP_EOL;
+echo Type::getString(new DateTime()) . PHP_EOL;
+echo Type::getString($fp) . PHP_EOL;

@@ -11,7 +11,7 @@ use Override;
  * Unlike Set, which allows members of any type, this class allows you to specify what types the members must have.
  * It is intended to be equivalent to SetOf<T> in Java or C#.
  */
-class SetOf extends Set
+class SetOf extends Set1
 {
     /**
      * Valid types for items in the set.
@@ -51,11 +51,11 @@ class SetOf extends Set
      *
      * The resulting set will allow the types allowed by both sets.
      *
-     * @param Set $other The other set with items to include.
+     * @param Set1 $other The other set with items to include.
      * @return static A new set with elements from $this and $other.
      */
     #[Override]
-    public function union(Set $other): static
+    public function union(Set1 $other): static
     {
         // Need to allow types from both sets.
         $types = $this->types;
@@ -75,11 +75,11 @@ class SetOf extends Set
      *
      * The resulting set will allow the same types as the $this set.
      *
-     * @param Set $other The other set to intersect the $this set with.
+     * @param Set1 $other The other set to intersect the $this set with.
      * @return static A new set with elements common to $this and $other.
      */
     #[Override]
-    public function intersect(Set $other): static
+    public function intersect(Set1 $other): static
     {
         // Assume the result set has the same type constraints as this set.
         $out = new self($this->types);
@@ -100,11 +100,11 @@ class SetOf extends Set
      *
      * The resulting set will allow the same types as the $this set.
      *
-     * @param Set $other The set with items to remove.
+     * @param Set1 $other The set with items to remove.
      * @return static A new set with elements from $this that are not in $other.
      */
     #[Override]
-    public function diff(Set $other): static
+    public function diff(Set1 $other): static
     {
         // Assume the result set has the same type constraints as this set.
         $out = new self($this->types);
