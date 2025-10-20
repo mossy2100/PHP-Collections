@@ -83,8 +83,8 @@ class Set1 implements Stringable, Countable, IteratorAggregate
         }
 
         // Add the item if new.
-        $key = Type::getString($item);
-        if (!key_exists($key, $this->_items)) {
+        $key = Type::getStringKey($item);
+        if (!array_key_exists($key, $this->_items)) {
             $this->_items[$key] = $item;
         }
 
@@ -145,8 +145,8 @@ class Set1 implements Stringable, Countable, IteratorAggregate
     {
         // No type check needed; if it's in the set, remove it.
         foreach ($items_to_remove as $item) {
-            $key = Type::getString($item);
-            if (key_exists($key, $this->_items)) {
+            $key = Type::getStringKey($item);
+            if (array_key_exists($key, $this->_items)) {
                 unset($this->_items[$key]);
             }
         }
@@ -212,7 +212,7 @@ class Set1 implements Stringable, Countable, IteratorAggregate
 
         // Add items present in both sets.
         foreach ($this->_items as $k => $v) {
-            if (key_exists($k, $other->_items)) {
+            if (array_key_exists($k, $other->_items)) {
                 $out->_items[$k] = $v;
             }
         }
@@ -233,7 +233,7 @@ class Set1 implements Stringable, Countable, IteratorAggregate
 
         // Add items present in this set that are not present in the other set.
         foreach ($this->_items as $k => $v) {
-            if (!key_exists($k, $other->_items)) {
+            if (!array_key_exists($k, $other->_items)) {
                 $out->_items[$k] = $v;
             }
         }
@@ -255,8 +255,8 @@ class Set1 implements Stringable, Countable, IteratorAggregate
      */
     public function containsOne(mixed $item): bool
     {
-        $key = Type::getString($item);
-        return key_exists($key, $this->_items);
+        $key = Type::getStringKey($item);
+        return array_key_exists($key, $this->_items);
     }
 
     /**

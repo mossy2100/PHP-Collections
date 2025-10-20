@@ -379,7 +379,7 @@ class Sequence implements ArrayAccess, Countable, IteratorAggregate
      */
     public function hasIndex(int $index): bool
     {
-        return key_exists($index, $this->items);
+        return array_key_exists($index, $this->items);
     }
 
     /**

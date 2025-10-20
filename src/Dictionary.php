@@ -15,6 +15,8 @@ use Override;
 use OutOfBoundsException;
 use TypeError;
 use ArgumentCountError;
+// Galaxon
+use Galaxon\Math\Stringify;
 
 /**
  * Dictionary class that permits keys and values of any type, including scalar, complex, nullable,
@@ -139,7 +141,7 @@ class Dictionary implements ArrayAccess, Countable, IteratorAggregate
      */
     public function hasKey(mixed $key): bool
     {
-        return array_key_exists(Type::getString($key), $this->_items);
+        return array_key_exists(Type::getStringKey($key), $this->_items);
     }
 
     /**
@@ -190,7 +192,7 @@ class Dictionary implements ArrayAccess, Countable, IteratorAggregate
         $this->valueTypes->checkType($value, 'value');
 
         // Get the string version of this key.
-        $string_key = Type::getString($offset);
+        $string_key = Type::getStringKey($offset);
 
         // Store the key-value pair in the items array.
         $this->_items[$string_key] = new KeyValuePair($offset, $value);
@@ -206,11 +208,11 @@ class Dictionary implements ArrayAccess, Countable, IteratorAggregate
     public function offsetGet(mixed $offset): mixed
     {
         // Get the string version of this key.
-        $string_key = Type::getString($offset);
+        $string_key = Type::getStringKey($offset);
 
         // Check key exists.
         if (!array_key_exists($string_key, $this->_items)) {
-            throw new OutOfBoundsException("Unknown key: " . Type::getShortString($offset) . ".");
+            throw new OutOfBoundsException("Unknown key: " . Stringify::abbrev($offset) . ".");
         }
 
         // Get the corresponding value.
@@ -239,11 +241,11 @@ class Dictionary implements ArrayAccess, Countable, IteratorAggregate
     public function offsetUnset(mixed $offset): void
     {
         // Get the string version of this key.
-        $string_key = Type::getString($offset);
+        $string_key = Type::getStringKey($offset);
 
         // Check key exists.
         if (!array_key_exists($string_key, $this->_items)) {
-            throw new OutOfBoundsException("Unknown key: " . Type::getShortString($offset) . ".");
+            throw new OutOfBoundsException("Unknown key: " . Stringify::abbrev($offset) . ".");
         }
 
         // Unset the array item.

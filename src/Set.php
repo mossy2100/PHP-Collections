@@ -116,7 +116,7 @@ class Set implements Stringable, Countable, IteratorAggregate
         }
 
         // Add the item if new.
-        $key = Type::getString($item);
+        $key = Type::getStringKey($item);
         if (!array_key_exists($key, $this->_items)) {
             $this->_items[$key] = $item;
         }
@@ -177,7 +177,7 @@ class Set implements Stringable, Countable, IteratorAggregate
     {
         // No type check needed; if it's in the set, remove it.
         foreach ($items_to_remove as $item) {
-            $key = Type::getString($item);
+            $key = Type::getStringKey($item);
             if (array_key_exists($key, $this->_items)) {
                 unset($this->_items[$key]);
             }
@@ -304,7 +304,7 @@ class Set implements Stringable, Countable, IteratorAggregate
      */
     public function containsItem(mixed $item): bool
     {
-        $key = Type::getString($item);
+        $key = Type::getStringKey($item);
         return array_key_exists($key, $this->_items);
     }
 

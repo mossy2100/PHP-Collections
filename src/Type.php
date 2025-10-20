@@ -4,6 +4,8 @@ declare(strict_types = 1);
 
 namespace Galaxon\Collections;
 
+use Galaxon\Math\Stringify;
+use Stringable;
 use TypeError;
 use ValueError;
 use JsonException;
@@ -84,7 +86,7 @@ class Type
 
     // endregion
 
-    // region Methods for converting values into strings
+    // region Method for converting values into unique strings for use as keys.
 
     /**
      * Convert any PHP value into a unique string.
@@ -92,7 +94,7 @@ class Type
      * @param mixed $value The value to convert.
      * @return string The unique string key.
      */
-    public static function getString(mixed $value): string
+    public static function getStringKey(mixed $value): string
     {
         $type = get_debug_type($value);
         $result = '';
@@ -100,102 +102,47 @@ class Type
         // Core types.
         switch ($type) {
             case 'null':
-                $result = 'null';
+                $result = 'n';
                 break;
 
             case 'bool':
-                $result = $value ? 'true' : 'false';
+                $result = 'b:' . ($value ? 'T' : 'F');
                 break;
 
             case 'int':
-                $result = (string)$value;
+                $result = 'i:' . $value;
                 break;
 
             case 'float':
-                $result = Double::toString($value);
+                // Use toHex() because it will be unique for every possible float value, including special values.
+                $result = 'f:' . Double::toHex($value);
                 break;
 
             case 'string':
-                $result = '"' . addslashes($value) . '"';
+                $result = 's:' . strlen($value) . ":$value";
                 break;
 
             case 'array':
-                $result = self::arrayToString($value);
+                $result = 'a:' . count($value) . ':' . Stringify::stringifyArray($value);
                 break;
 
             default:
                 // Resources.
                 if (str_starts_with($type, 'resource')) {
-                    // Return the resource type and ID as a tag.
-                    $resource_type = get_resource_type($value);
-                    $resource_id = get_resource_id($value);
-                    $result = "<resource type=\"$resource_type\" id=\"$resource_id\">";
+                    $result = 'r:' . get_resource_type($value) . ':' . get_resource_id($value);
                 }
                 // Objects.
                 elseif (is_object($value)) {
-                    // Return the class and object ID as a tag.
-                    $object_id = spl_object_id($value);
-                    $result = "<$type id=\"$object_id\">";
+                    $result = "o:$type:" . spl_object_id($value);
                 }
                 else {
                     // Not sure if this can ever actually happen. gettype() can return 'unknown type' but
-                    // get_debug_type() has no equivalent.
+                    // get_debug_type() has no equivalent. Defensive programming.
                     throw new TypeError("Key has unknown type.");
                 }
                 break;
         }
 
-        return $result;
-    }
-
-    /**
-     * Get a short string representation of the given value for use in error messages, log messages, and the like.
-     *
-     * @param mixed $value The value to get the string representation for.
-     * @param int $max_len The maximum length of the result.
-     * @return string The short string representation.
-     *
-     */
-    public static function getShortString(mixed $value, int $max_len = 20): string {
-        // Get the value as a string.
-        $result = self::getString($value);
-
-        // Trim if necessary.
-        if ($max_len > 4 && strlen($result) > $max_len) {
-            $result = substr($result, 0, $max_len - 3) . '...';
-        }
-
-        return $result;
-    }
-
-    /**
-     * Method to convert an array into a string.
-     *
-     * @param array $array The array to convert.
-     * @return string A string representation of the array.
-     * @throws ValueError If the array contains circular references.
-     */
-    public static function arrayToString(array $array) {
-        // Detect circular references.
-        try {
-            json_encode($array, JSON_THROW_ON_ERROR);
-        }
-        catch (JsonException $e) {
-            throw new ValueError(
-                "An array containing circular references cannot be converted to a string. " . $e->getMessage());
-        }
-
-        // Construct the string.
-        $result = '[';
-        $j = 0;
-        foreach ($array as $key => $value) {
-            if ($j > 0) {
-                $result .= ', ';
-            }
-            $result .= self::getString($key) . ' => ' . self::getString($value);
-            $j++;
-        }
-        $result .= ']';
         return $result;
     }
 
