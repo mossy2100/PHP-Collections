@@ -4,12 +4,9 @@ declare(strict_types = 1);
 
 namespace Galaxon\Collections;
 
-use Galaxon\Math\Stringify;
-use Stringable;
-use TypeError;
-use ValueError;
-use JsonException;
 use Galaxon\Math\Double;
+use Galaxon\Math\Stringify;
+use TypeError;
 
 class Type
 {
@@ -25,23 +22,106 @@ class Type
      * - float
      * - string
      * - array
-     * - resource
      * - object
+     * - resource
      * - unknown
      *
      * @param mixed $value The value to get the type of.
      * @return string The simple type of the value.
      */
-    public static function getSimpleType(mixed $value): string {
-        // Try get_debug_type first as this returns the new, canonical type names.
+    public static function getSimpleType(mixed $value): string
+    {
+        // Try get_debug_type() first as this returns the new, canonical type names.
         $type = get_debug_type($value);
         if (in_array($type, ['null', 'bool', 'int', 'float', 'string', 'array'], true)) {
             return $type;
         }
 
-        // In theory, this should only ever return "object" or "resource", although "unknown" may also be possible,
-        // based on the documentation for gettype(). The documentation for get_debug_type() has no equivalent.
-        return explode(' ', gettype($value))[0];
+        // Call the old function, gettype(), and return the first word ("object", "resource", or "unknown").
+        // (NB: The documentation for get_debug_type() has no equivalent for "unknown type".)
+        $type = gettype($value);
+        return explode(' ', $type)[0];
+    }
+
+    /**
+     * Convert any PHP value into a unique string, for use as a key in a collection.
+     *
+     * @param mixed $value The value to convert.
+     * @return string The unique string key.
+     */
+    public static function getStringKey(mixed $value): string
+    {
+        $type = get_debug_type($value);
+        $result = '';
+
+        // Core types.
+        switch ($type) {
+            case 'null':
+                $result = 'n';
+                break;
+
+            case 'bool':
+                $result = 'b:' . ($value ? 'T' : 'F');
+                break;
+
+            case 'int':
+                $result = 'i:' . $value;
+                break;
+
+            case 'float':
+                // Use toHex() because it will be unique for every possible float value, including special values.
+                // The same cannot be said for a cast to string, or sprintf().
+                $result = 'f:' . Double::toHex($value);
+                break;
+
+            case 'string':
+                $result = 's:' . strlen($value) . ":$value";
+                break;
+
+            case 'array':
+                $result = 'a:' . count($value) . ':' . Stringify::stringifyArray($value);
+                break;
+
+            default:
+                // Objects.
+                if (is_object($value)) {
+                    $result = 'o:' . spl_object_id($value);
+                }
+                // Resources.
+                elseif (str_starts_with($type, 'resource')) {
+                    $result = 'r:' . get_resource_id($value);
+                }
+                // Unknown.
+                else {
+                    // Not sure if this can ever actually happen. gettype() can return 'unknown type' but
+                    // get_debug_type() has no equivalent. Defensive programming.
+                    throw new TypeError("Value has unknown type.");
+                }
+                break;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Create a new TypeError using information about the parameter and expected type.
+     *
+     * @param string $var_name The name of the argument or variable that failed validation, e.g. 'index'.
+     * @param string $expected_type The expected type (e.g., 'int', 'string', 'callable').
+     * @param mixed $value The actual value that was provided (optional).
+     */
+    public static function createError(string $var_name, string $expected_type, mixed $value = null): TypeError {
+        $message = "Variable '$var_name' must be of type $expected_type";
+
+        if (func_num_args() > 2) {
+            $actual_type = get_debug_type($value);
+            $message .= ", $actual_type given.";
+        }
+        else {
+            $message .= '.';
+        }
+
+        return new TypeError($message);
     }
 
     // endregion
@@ -72,78 +152,16 @@ class Type
         // Get traits from current class and all parent classes.
         do {
             $class_traits = class_uses($class);
-            $traits       = array_merge($traits, $class_traits);
+            $traits = array_merge($traits, $class_traits);
 
             // Also get traits used by the traits themselves.
             foreach ($class_traits as $trait) {
                 $trait_traits = self::getTraitsRecursive($trait);
-                $traits       = array_merge($traits, $trait_traits);
+                $traits = array_merge($traits, $trait_traits);
             }
         } while ($class = get_parent_class($class));
 
         return array_unique($traits);
-    }
-
-    // endregion
-
-    // region Method for converting values into unique strings for use as keys.
-
-    /**
-     * Convert any PHP value into a unique string.
-     *
-     * @param mixed $value The value to convert.
-     * @return string The unique string key.
-     */
-    public static function getStringKey(mixed $value): string
-    {
-        $type = get_debug_type($value);
-        $result = '';
-
-        // Core types.
-        switch ($type) {
-            case 'null':
-                $result = 'n';
-                break;
-
-            case 'bool':
-                $result = 'b:' . ($value ? 'T' : 'F');
-                break;
-
-            case 'int':
-                $result = 'i:' . $value;
-                break;
-
-            case 'float':
-                // Use toHex() because it will be unique for every possible float value, including special values.
-                $result = 'f:' . Double::toHex($value);
-                break;
-
-            case 'string':
-                $result = 's:' . strlen($value) . ":$value";
-                break;
-
-            case 'array':
-                $result = 'a:' . count($value) . ':' . Stringify::stringifyArray($value);
-                break;
-
-            default:
-                // Resources.
-                if (str_starts_with($type, 'resource')) {
-                    $result = 'r:' . get_resource_type($value) . ':' . get_resource_id($value);
-                }
-                // Objects.
-                elseif (is_object($value)) {
-                    $result = "o:$type:" . spl_object_id($value);
-                }
-                else {
-                    // Not sure if this can ever actually happen. gettype() can return 'unknown type' but
-                    // get_debug_type() has no equivalent. Defensive programming.
-                    throw new TypeError("Key has unknown type.");
-                }
-                break;
-        }
-
-        return $result;
     }
 
     // endregion

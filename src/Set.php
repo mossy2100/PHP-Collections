@@ -4,182 +4,60 @@ declare(strict_types = 1);
 
 namespace Galaxon\Collections;
 
-use ArrayIterator;
-use Countable;
-use InvalidArgumentException;
-use IteratorAggregate;
-use Stringable;
-use Traversable;
-
 /**
  * Implements a set of values with optional type constraints.
- * It is equivalent to Set<T> in Java or C#, except multiple tyoes can be specified.
+ * It is equivalent to Set<T> in Java or C#, except multiple types can be specified.
  */
-class Set implements Stringable, Countable, IteratorAggregate
+final class Set extends Collection
 {
-    // region Properties
+    // region Constructor and factory methods
 
     /**
-     * Backing store for set items, implemented as a map of unique string key => original value.
-     * This approach reduces the cost of checking for membership from O(n) to O(1).
+     * Construct a new Set by copying values and their types from a source iterable.
      *
-     * @var array<string, mixed>
+     * @param iterable $src The iterable to copy from.
+     * @return static The new Set.
      */
-    private array $_items = [];
-
-    /**
-     * Valid types for items in the set. Null means any type is allowed.
-     *
-     * @var TypeSet|null
-     */
-    protected(set) ?TypeSet $types;
-
-    /**
-     * Items in the set.
-     * Implemented as a getter-only virtual property with a backing field.
-     *
-     * @var list<mixed>
-     */
-    public array $items {
-        get => $this->toArray();
-    }
-
-    // endregion
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // region Constructor
-
-    /**
-     * Constructor.
-     *
-     * @param string|iterable|TypeSet|null $types Optional type constraints for set items.
-     */
-    public function __construct(string|iterable|TypeSet|null $types = null)
+    public static function fromIterable(iterable $src): static
     {
-        $this->types = $types === null ? null : TypeSet::toTypeSet($types);
+        // Construct the new Set.
+        $set = new self();
+
+        // Add types from the source iterable.
+        foreach ($src as $item) {
+            // Add the item type to the allowed types.
+            $set->valueTypes->addValueType($item);
+
+            // Add the item to the Set.
+            $set->add($item);
+        }
+
+        return $set;
     }
 
     // endregion
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // region Helper methods
-
-    /**
-     * Determine if an item is allowed to be added to this set.
-     * This method is meant to be overridden in derived classes.
-     *
-     * @param mixed $item The item to check.
-     * @return bool If the item is allowed to be added to the set.
-     */
-    protected function isItemAllowed(mixed $item): bool
-    {
-        return $this->types === null || $this->types->match($item);
-    }
-
-    // endregion
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // region Conversion methods
-
-    /**
-     * Return the set as an array.
-     *
-     * @return array The set as an array.
-     */
-    public function toArray(): array
-    {
-        return array_values($this->_items);
-    }
-
-    // endregion
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // region Methods for adding and removing members
-    // These methods are mutating and return the calling object.
 
     /**
-     * Add one item to the set.
+     * Add one or more items to the Set.
      *
-     * @param mixed $item The item to add to the set.
-     * @param bool $add_type If true, add the type of the item to the set.
-     * @return $this The modified set.
-     */
-    public function addItem(mixed $item, bool $add_type = false): self
-    {
-        // Add the type if asked.
-        if ($add_type) {
-            $this->types->addValueType($item);
-        }
-        elseif (!$this->isItemAllowed($item)) {
-            // If a value with this type is not allowed, throw an exception.
-            throw new InvalidArgumentException("This item is not allowed.");
-        }
-
-        // Add the item if new.
-        $key = Type::getStringKey($item);
-        if (!array_key_exists($key, $this->_items)) {
-            $this->_items[$key] = $item;
-        }
-
-        // Return $this for chaining.
-        return $this;
-    }
-
-    /**
-     * Add all items from an iterable into the set, with the option to add their types to the TypeSet as well.
+     * NB: This is a mutating method.
      *
-     * @param iterable $items The items to add to the set.
-     * @param bool $add_types If true, also add the types from the items.
-     * @return $this The modified set.
-     */
-    public function addItems(iterable $items, bool $add_types = false): self
-    {
-        // Add each item.
-        foreach ($items as $item) {
-            $this->addItem($item, $add_types);
-        }
-
-        // Return $this for chaining.
-        return $this;
-    }
-
-    /**
-     * Add one or more items to the set.
-     *
-     * This is the general-purpose version of the method, which permits adding one or more items as separate arguments.
-     *
-     * @param mixed ...$items The items to add to the set.
-     * @return $this The modified set.
+     * @param mixed ...$items The items to add to the Set.
+     * @return $this The modified Set.
      */
     public function add(mixed ...$items): self
     {
-        return $this->addItems($items);
-    }
+        // Add each item.
+        foreach ($items as $item) {
+            // Check if the item is allowed in the set.
+            $this->valueTypes->checkType($item);
 
-    /**
-     * Remove an item from the set.
-     *
-     * @param mixed $item_to_remove The item to remove from the set, if present.
-     * @return $this The modified set.
-     */
-    public function removeItem(mixed $item_to_remove): self
-    {
-        return $this->remove($item_to_remove);
-    }
-
-    /**
-     * Remove one or more items from the set, provided as an iterable.
-     *
-     * @param iterable $items_to_remove The items to remove from the set, if present.
-     * @return $this The modified set.
-     */
-    public function removeItems(iterable $items_to_remove): self
-    {
-        // No type check needed; if it's in the set, remove it.
-        foreach ($items_to_remove as $item) {
+            // Add the item if new.
             $key = Type::getStringKey($item);
-            if (array_key_exists($key, $this->_items)) {
-                unset($this->_items[$key]);
+            if (!array_key_exists($key, $this->items)) {
+                $this->items[$key] = $item;
             }
         }
 
@@ -188,28 +66,66 @@ class Set implements Stringable, Countable, IteratorAggregate
     }
 
     /**
-     * Remove one or more items from the set.
+     * Remove one or more items from the Set.
      *
-     * @param mixed ...$items_to_remove The items to remove from the set, if present.
-     * @return $this The modified set.
-     */
-    public function remove(mixed ...$items_to_remove): self
-    {
-        return $this->removeItems($items_to_remove);
-    }
-
-    /**
-     * Remove all items from the set.
+     * NB: This is a mutating method.
      *
-     * @return $this
+     * @param mixed ...$items The items to remove from the Set, if present.
+     * @return $this The modified Set.
      */
-    public function clear(): self
+    public function remove(mixed ...$items): self
     {
-        // Remove all the items.
-        $this->_items = [];
+        // Remove each item.
+        foreach ($items as $item) {
+            // No type check needed. If it's in the set, remove it.
+            $key = Type::getStringKey($item);
+            if (array_key_exists($key, $this->items)) {
+                unset($this->items[$key]);
+            }
+        }
 
         // Return $this for chaining.
         return $this;
+    }
+
+    // endregion
+
+    // region Inspection methods
+
+    /**
+     * Check if the Set contains one or more items.
+     *
+     * Strict equality is used to compare items, i.e. the item must match on both value and type.
+     *
+     * @param mixed ...$items The items to check for.
+     * @return bool True if the Set contains all the items, false otherwise.
+     */
+    public function contains(mixed ...$items): bool
+    {
+        // Check each item.
+        return array_all($items, fn($item) => array_key_exists(Type::getStringKey($item), $this->items));
+    }
+
+    /**
+     * Check if the set contains any of the given items.
+     *
+     * @param mixed ...$items The items to check for.
+     * @return bool If the set contains any of the items.
+     */
+    public function containsAny(mixed ...$items): bool
+    {
+        return array_any($items, fn($it) => $this->contains($it));
+    }
+
+    /**
+     * Check if the set contains none of the given items.
+     *
+     * @param mixed ...$items The items to check for.
+     * @return bool If the set contains none of the items.
+     */
+    public function containsNone(mixed ...$items): bool
+    {
+        return !$this->containsAny(...$items);
     }
 
     // endregion
@@ -226,20 +142,15 @@ class Set implements Stringable, Countable, IteratorAggregate
      */
     public function union(self $other): self
     {
-        // Determine types for result set.
-        $types = ($this->types === null && $other->types === null) ? null : new TypeSet();
-        if ($this->types !== null) {
-            $types->addTypes($this->types);
-        }
-        if ($other->types !== null) {
-            $types->addTypes($other->types);
-        }
-
         // Construct the new set.
-        $result = new self();
+        // The types for the result Set should include types from both input sets.
+        // In theory, these should be the same (why would you want a union of two sets with different types?),
+        // but it's no trouble to allow for the possibility.
+        $result = new self($this->valueTypes);
+        $result->valueTypes->add($other->valueTypes);
 
-        // Get the items. We can use the union operator to merge sets because the same items have the same keys.
-        $result->_items = $this->_items + $other->_items;
+        // Get the items. We can use the union operator because the same items will have the same keys.
+        $result->items = $this->items + $other->items;
 
         return $result;
     }
@@ -253,17 +164,18 @@ class Set implements Stringable, Countable, IteratorAggregate
      */
     public function intersect(self $other): self
     {
-        $out = new self($this->types);
+        // Construct the new set using the types from the calling object.
+        $result = new self($this->valueTypes);
 
         // Add items present in both sets.
-        foreach ($this->_items as $k => $v) {
-            if (array_key_exists($k, $other->_items)) {
-                $out->_items[$k] = $v;
+        foreach ($this->items as $k => $v) {
+            if (array_key_exists($k, $other->items)) {
+                $result->items[$k] = $v;
             }
         }
 
         // Return the new set.
-        return $out;
+        return $result;
     }
 
     /**
@@ -275,136 +187,54 @@ class Set implements Stringable, Countable, IteratorAggregate
      */
     public function diff(self $other): self
     {
-        $out = new self($this->types);
+        // Construct the new set using the types from the calling object.
+        $result = new self($this->valueTypes);
 
         // Add items present in this set that are not present in the other set.
-        foreach ($this->_items as $k => $v) {
-            if (!array_key_exists($k, $other->_items)) {
-                $out->_items[$k] = $v;
+        foreach ($this->items as $k => $v) {
+            if (!array_key_exists($k, $other->items)) {
+                $result->items[$k] = $v;
             }
         }
 
         // Return the new set.
-        return $out;
+        return $result;
     }
 
     // endregion
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // region Inspection and comparison methods
-    // These all return booleans.
+    // region Comparison methods
 
     /**
-     * Check if the set contains a given item.
+     * Checks if two sets are equal, i.e. containing the same elements.
      *
-     * Strict checking is used, i.e. the item must match on value as well as type.
-     *
-     * @param mixed $item The item to check for.
-     * @return bool
-     */
-    public function containsItem(mixed $item): bool
-    {
-        $key = Type::getStringKey($item);
-        return array_key_exists($key, $this->_items);
-    }
-
-    /**
-     * Check if the set contains one or more given items provided as an iterable.
-     *
-     * @param iterable $items The items to check for.
-     * @return bool
-     */
-    public function containsAll(iterable $items): bool
-    {
-        foreach ($items as $item) {
-            if (!$this->containsItem($item)) {
-                return false;
-            }
-        }
-
-        // If we got here, all items were found.
-        return true;
-    }
-
-    /**
-     * Check if the set contains one or more given items
-     *
-     * Strict checking is used, i.e. the item must match on value as well as type.
-     *
-     * @param mixed ...$items The items to check for.
-     * @return bool
-     */
-    public function contains(mixed ...$items): bool
-    {
-        return $this->containsAll($items);
-    }
-
-    /**
-     * Check if the set contains any of the given items provided as an iterable.
-     *
-     * @param iterable $items The items to check for.
-     * @return bool If the set contains any of the items.
-     */
-    public function containsAny(iterable $items): bool
-    {
-        foreach ($items as $it) {
-            if ($this->containsItem($it)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Check if the set contains none of the given items provided as an iterable.
-     *
-     * @param iterable $items The items to check for.
-     * @return bool If the set contains none of the items.
-     */
-    public function containsNone(iterable $items): bool
-    {
-        return !$this->containsAny($items);
-    }
-
-    /**
-     * Checks if a set is empty.
-     *
-     * @return bool
-     */
-    public function isEmpty(): bool
-    {
-        return $this->count() === 0;
-    }
-
-    /**
-     * Checks if two sets are equal (the same type and contain the same elements).
+     * The order of the elements in each Set is irrelevant.
+     * The type constraints for each Set are also not considered.
      *
      * @param self $other
      * @return bool
      */
     public function equals(self $other): bool
     {
-        return ($this::class === $other::class) && ($this->count() === $other->count()) && $this->subset($other);
+        return ($this->count() === $other->count()) && $this->subset($other);
     }
 
     /**
      * Checks if a set is a subset of another set.
      *
-     * They must be objects of the same class, but they can have different allowed types.
-     *
-     * @param self $other
+     * @param self $other The set to compare with.
      * @return bool If $this is a subset of $other.
      */
     public function subset(self $other): bool
     {
-        return ($this::class === $other::class) && array_all($this->_items, static fn($item) => $other->contains($item));
+        return array_all($this->items, static fn($item) => $other->contains($item));
     }
 
     /**
      * Checks if a set is a proper subset of another set.
      *
-     * @param self $other
-     * @return bool
+     * @param self $other The set to compare with.
+     * @return bool If $this is a proper subset of $other.
      */
     public function properSubset(self $other): bool
     {
@@ -414,8 +244,8 @@ class Set implements Stringable, Countable, IteratorAggregate
     /**
      * Checks if a set is a superset of another set.
      *
-     * @param self $other
-     * @return bool
+     * @param self $other The set to compare with.
+     * @return bool If $this is a superset of $other.
      */
     public function superset(self $other): bool
     {
@@ -425,8 +255,8 @@ class Set implements Stringable, Countable, IteratorAggregate
     /**
      * Checks if a set is a proper superset of another set.
      *
-     * @param self $other
-     * @return bool
+     * @param self $other The set to compare with.
+     * @return bool If $this is a proper superset of $other.
      */
     public function properSuperset(self $other): bool
     {
@@ -434,59 +264,64 @@ class Set implements Stringable, Countable, IteratorAggregate
     }
 
     /**
-     * Checks if two sets are disjoint (have no elements in common).
+     * Checks if two sets are disjoint, i.e. they have no elements in common.
      *
      * @param self $other The set to compare with.
      * @return bool True if the sets are disjoint; false otherwise.
      */
     public function disjoint(self $other): bool
     {
-        return array_all($this->_items, static fn($item) => !$other->contains($item));
+        return array_all($this->items, static fn($item) => !$other->contains($item));
     }
 
     // endregion
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // region Stringable implementation
 
     /**
-     * Generate a string representation of the set.
+     * Generate a string representation of the Set.
      *
      * @return string
      */
     public function __toString(): string
     {
-        return '{' . implode(', ', array_map(static fn($item) => (string)$item, $this->_items)) . '}';
+        return '{' . implode(', ', array_map(static fn($item) => (string)$item, $this->items)) . '}';
     }
 
     // endregion
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // region Countable implementation
+    // region Conversion methods
 
     /**
-     * Get the number of items in the set.
+     * Convert the Set to a Dictionary.
      *
-     * @return int
+     * The Set's internal array indexes, unimportant within the context of a Set, will become keys in the new
+     * Dictionary. The values aren't sorted.
+     *
+     * @return Dictionary The new Dictionary.
      */
-    public function count(): int
+    public function toDictionary(): Dictionary
     {
-        return count($this->_items);
+        // Construct the new Dictionary.
+        $dict = new Dictionary('int', $this->valueTypes);
+
+        // Copy the items into the new Dictionary.
+        foreach ($this->items as $key => $value) {
+            $dict[$key] = $value;
+        }
+
+        // Return the new Dictionary.
+        return $dict;
     }
 
-    // endregion
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // region IteratorAggregate implementation
-
     /**
-     * Get iterator for foreach loops.
+     * Convert the Set to a Sequence.
      *
-     * @return Traversable The iterator.
+     * @return Sequence The new Sequence.
      */
-    public function getIterator(): Traversable
+    public function toSequence(): Sequence
     {
-        return new ArrayIterator($this->toArray());
+        return Sequence::fromIterable($this);
     }
 
     // endregion

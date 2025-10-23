@@ -4,17 +4,26 @@ declare(strict_types = 1);
 
 namespace Galaxon\Collections;
 
-// Interfaces and related classes.
-use ArrayIterator;
+// Interfaces
 use Countable;
 use IteratorAggregate;
 use Traversable;
-// Errors and exceptions.
+
+// Throwables
 use InvalidArgumentException;
 use TypeError;
-// Math functions.
+use ValueError;
+
+// Other
+use ArrayIterator;
+
+// Galaxon
 use Galaxon\Math\Math;
 
+/**
+ *
+ *
+ */
 class TypeSet implements Countable, IteratorAggregate
 {
     // region Properties
@@ -33,41 +42,14 @@ class TypeSet implements Countable, IteratorAggregate
     /**
      * Constructor.
      *
-     * @param string|iterable|null $types The type names to add to the set.
+     * @param string|iterable|null $types The types to add to the TypeSet.
      * @throws InvalidArgumentException If any type is invalid.
      */
     public function __construct(string|iterable|null $types = null)
     {
-        // If no types are provided, the set is empty.
-        if ($types === null) {
-            return;
-        }
-
-        // Convert a type string, including union type syntax (e.g. 'string|int'), into an array of type names.
-        if (is_string($types)) {
-            $types = explode('|', $types);
-        }
-
-        // Add types to the set.
-        foreach ($types as $type) {
-            // Check the type.
-            if (!is_string($type)) {
-                throw new TypeError("Types must be provided as strings.");
-            }
-
-            // Trim just in case the user did something like 'string | int'.
-            $type = trim($type);
-
-            // Support the question mark nullable notation (e.g. '?string').
-            if (strlen($type) > 1 && $type[0] === '?') {
-                // Add null and the type being made nullable.
-                $this->addType('null');
-                $this->addType(substr($type, 1));
-            }
-            else {
-                // This will throw if the type is invalid.
-                $this->addType($type);
-            }
+        // If some types have been provided, add them to the TypeSet.
+        if ($types !== null) {
+            $this->add($types);
         }
     }
 
@@ -77,6 +59,13 @@ class TypeSet implements Countable, IteratorAggregate
 
     /**
      * Convert a string, iterable, or null, into a TypeSet.
+     *
+     * @description
+     * This method is used to convert a value to a TypeSet.
+     * If the value is a string, it is split into individual types.
+     * If the value is an iterable, it is converted to a string and split into individual types.
+     * If the value is null, an empty TypeSet is returned.
+     * If the value is already a TypeSet, it is cloned.
      *
      * @param string|iterable|null $types The value to convert.
      * @return self The converted TypeSet.
@@ -103,8 +92,8 @@ class TypeSet implements Countable, IteratorAggregate
     {
         $type = trim($type);
 
-        // Check for core types, pseudotypes, and generic "resource" and "object".
-        // Note "number" and "uint" are pseudotypes invented purely for these collections.
+        // Check for core types and pseudotypes. Only the modern, canonical names are supported.
+        // NB: "number" and "uint" are pseudotypes invented purely for these collections.
         $simple_types = [
             'null', 'int', 'float', 'string', 'bool', 'array', 'object', 'resource',
             'callable', 'iterable','mixed', 'scalar', 'number', 'uint'
@@ -209,7 +198,7 @@ class TypeSet implements Countable, IteratorAggregate
      * Checks if the given value matches the set of types.
      *
      * @param mixed $value The value to check.
-     * @throws TypeError If the value type is not allowed.
+     * @throws TypeError If the type is not allowed by the TypeSet.
      */
     public function checkType(mixed $value, string $label = ''): void
     {
@@ -258,14 +247,16 @@ class TypeSet implements Countable, IteratorAggregate
     // region Add methods
 
     /**
-     * Add a type to the set.
+     * Add a type to the TypeSet.
+     *
+     * This is a private helper method called from add().
      *
      * @param string $type The type to add to the set.
      * @return $this The modified set.
-     * @throws InvalidArgumentException If the type is invalid (e.g. an empty string, '?', or an anonymous class).
+     * @throws ValueError If the type name is invalid.
      * @see TypeSet::isValid()
      */
-    public function addType(string $type): self
+    private function _add(string $type): self
     {
         // Ignore blanks.
         $type = trim($type);
@@ -273,9 +264,9 @@ class TypeSet implements Countable, IteratorAggregate
             return $this;
         }
 
-        // Check if the type string is valid.
+        // Check if the type string is valid. This isn't bulletproof, but it will prevent most incorrect strings.
         if (!$this->isValid($type)) {
-            throw new InvalidArgumentException("Invalid type: $type.");
+            throw new ValueError("Invalid type: $type.");
         }
 
         // Add the type if new.
@@ -288,16 +279,40 @@ class TypeSet implements Countable, IteratorAggregate
     }
 
     /**
-     * Add multiple types to the set.
+     * Add types to the TypeSet.
      *
-     * @param iterable $types The types to add to the set.
-     * @return self The modified set.
+     * @param string|iterable $types The types to add to the TypeSet.
+     * @return $this The modified TypeSet.
+     * @throws TypeError If a type is not provided as a string.
+     * @throws ValueError If a type name is invalid.
      */
-    public function addTypes(iterable $types): self
+    public function add(string|iterable $types): self
     {
-        // Add each type.
+        // Convert a type string, including union type syntax (e.g. 'string|int'), into an array of type names.
+        if (is_string($types)) {
+            $types = explode('|', $types);
+        }
+
+        // Add types to the set.
         foreach ($types as $type) {
-            $this->addType($type);
+            // Check the type.
+            if (!is_string($type)) {
+                throw new TypeError("Types must be provided as strings.");
+            }
+
+            // Trim just in case the user did something like 'string | int'.
+            $type = trim($type);
+
+            // Support the question mark nullable notation (e.g. '?string').
+            if (strlen($type) > 1 && $type[0] === '?') {
+                // Add null and the type being made nullable.
+                $this->_add('null');
+                $this->_add(substr($type, 1));
+            }
+            else {
+                // This will throw if the type is invalid.
+                $this->_add($type);
+            }
         }
 
         // Return $this for chaining.
@@ -305,20 +320,19 @@ class TypeSet implements Countable, IteratorAggregate
     }
 
     /**
-     * Get the type name from a value and add it to the set.
+     * Get the type name from a value and add it to the TypeSet.
      *
      * @param mixed $value The value to get the type name from.
      * @return $this The modified set.
      */
     public function addValueType(mixed $value): self
     {
-        return $this->addType(get_debug_type($value));
+        return $this->_add(get_debug_type($value));
     }
 
     // endregion
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // region Contains methods
+    // region Inspection methods
 
     /**
      * Check if the set contains a given type.
@@ -387,9 +401,26 @@ class TypeSet implements Countable, IteratorAggregate
         return empty($this->types);
     }
 
+    /**
+     * Check if the TypeSet allows values of any type.
+     *
+     * @return bool True if the TypeSet allows values of any types, false otherwise.
+     */
+    public function anyOk(): bool {
+        return $this->isEmpty() || $this->contains('mixed');
+    }
+
+    /**
+     * Check if the TypeSet allows null values.
+     *
+     * @return bool True if the TypeSet allows null values, false otherwise.
+     */
+    public function nullOk(): bool {
+        return $this->contains('null') || $this->anyOk();
+    }
+
     // endregion
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // region Countable implementation
 
     /**
@@ -404,7 +435,6 @@ class TypeSet implements Countable, IteratorAggregate
 
     // endregion
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // region IteratorAggregate implementation
 
     /**

@@ -60,7 +60,7 @@ class SetOf extends Set1
         // Need to allow types from both sets.
         $types = $this->types;
         if ($other instanceof self) {
-            $types = $types->addTypes($other->types);
+            $types = $types->add($other->types);
         }
 
         // Construct the new set.
