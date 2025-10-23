@@ -52,7 +52,6 @@ class Type
     public static function getStringKey(mixed $value): string
     {
         $type = get_debug_type($value);
-        $result = '';
 
         // Core types.
         switch ($type) {

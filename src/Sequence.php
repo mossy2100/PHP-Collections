@@ -422,6 +422,24 @@ final class Sequence extends Collection implements ArrayAccess
 
     // endregion
 
+    // region Contains method implementation
+
+    /**
+     * Check if the Sequence contains a value.
+     *
+     * Strict equality is used, i.e. the item must match on both value and type.
+     *
+     * @param mixed $value The item to check for.
+     * @return bool True if the Sequence contains the item, false otherwise.
+     */
+    #[Override]
+    public function contains(mixed $value): bool
+    {
+        return in_array($value, $this->items, true);
+    }
+
+    // endregion
+
     // region Get items from the sequence
 
     /**
@@ -506,26 +524,6 @@ final class Sequence extends Collection implements ArrayAccess
     // region Inspection methods
 
     /**
-     * Check if the Sequence contains one or more values.
-     *
-     * Strict equality is used to compare values, i.e. the item must match on both value and type.
-     *
-     * @param mixed ...$items The items to check for.
-     * @return bool True if the Sequence contains all the items, false otherwise.
-     */
-    public function contains(mixed ...$items): bool
-    {
-        // Check each item.
-        foreach ($items as $item) {
-            if (!in_array($item, $this->items, true)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
      * Check if all items in the sequence pass a test.
      *
      * This method is analogous to array_all().
@@ -534,7 +532,7 @@ final class Sequence extends Collection implements ArrayAccess
      * @param callable $fn The test function.
      * @return bool True if all items pass the test, false otherwise.
      */
-    public function all(callable $fn): bool
+    public function forAll(callable $fn): bool
     {
         return array_all($this->items, $fn);
     }
@@ -548,7 +546,7 @@ final class Sequence extends Collection implements ArrayAccess
      * @param callable $fn The test function.
      * @return bool True if any items pass the test, false otherwise.
      */
-    public function any(callable $fn): bool
+    public function forAny(callable $fn): bool
     {
         return array_any($this->items, $fn);
     }

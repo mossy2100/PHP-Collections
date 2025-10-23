@@ -115,27 +115,95 @@ final class Dictionary extends Collection implements ArrayAccess
 
     // endregion
 
-    // region Methods for checking existence
+    // region Methods for adding and removing items
 
     /**
-     * Check if a key exists in the dictionary.
+     * Add a key-value pair to the dictionary.
      *
-     * @param mixed $key The key to check.
-     * @return bool True if the key exists, false otherwise.
+     * This method can be called with one parameter only, which can be a KeyValuePair or an array with two items,
+     * or it can be called with two parameters, the key and the value.
+     *
+     * @param mixed $key_or_pair The key to add, or a KeyValuePair, or an array with two items.
+     * @param mixed $value The value to add, or null if the one-parameter form is used.
+     * @return $this The modified Dictionary.
+     * @throws TypeError If the key or value has a disallowed type.
+     * @throws ArgumentCountError If the wrong number of parameters is supplied.
      */
-    public function hasKey(mixed $key): bool
-    {
-        return array_key_exists(Type::getStringKey($key), $this->items);
+    public function add(mixed $key_or_pair, mixed $value = null): self {
+        // Support calling the method with one parameter only, which can be a KeyValuePair, or an array with two items.
+        $n_args = func_num_args();
+        if ($n_args === 1) {
+            if ($key_or_pair instanceof KeyValuePair) {
+                $key = $key_or_pair->key;
+                $value = $key_or_pair->value;
+            }
+            elseif (is_array($key_or_pair) && count($key_or_pair) === 2) {
+                [$key, $value] = $key_or_pair;
+            }
+            else {
+                throw new TypeError("Invalid key-value pair: " . Stringify::abbrev($key_or_pair));
+            }
+        }
+        elseif ($n_args === 2) {
+            $key = $key_or_pair;
+        }
+        else {
+            throw new ArgumentCountError("The add() method takes 1 or 2 arguments, got $n_args.");
+        }
+
+        // Check the types are valid.
+        $this->keyTypes->checkType($key, 'key');
+        $this->valueTypes->checkType($value, 'value');
+
+        // Leverage offsetSet() to generate the lookup key and the key-value pair.
+        $this[$key] = $value;
+
+        // Return this for chaining.
+        return $this;
     }
 
     /**
+     * Remove an item by key.
+     *
+     * @param mixed $key The key to remove.
+     * @return self The modified Dictionary.
+     */
+    public function removeByKey(mixed $key): self {
+        if ($this->offsetExists($key)) {
+            $this->offsetUnset($key);
+        }
+        return $this;
+    }
+
+    /**
+     * Remove one or more items by value.
+     *
+     * @param mixed $value The value to remove.
+     * @return self The modified Dictionary.
+     */
+    public function removeByValue(mixed $value): self {
+        foreach ($this->items as $string_key => $pair) {
+            if ($pair->value === $value) {
+                $this->offsetUnset($string_key);
+            }
+        }
+        return $this;
+    }
+
+    // endregion
+
+    // region Contains method implementation
+
+    /**
      * Check if a value exists in the dictionary.
+     *
      * This method can be slow with large dictionaries; consider caching results or generating a reverse lookup table.
      *
-     * @param mixed $value The value to check.
+     * @param mixed $value The value to check for.
      * @return bool True if the value exists, false otherwise.
      */
-    public function hasValue(mixed $value): bool
+    #[Override]
+    public function contains(mixed $value): bool
     {
         return array_any($this->items, static fn($item) => $item->value === $value);
     }
@@ -341,7 +409,7 @@ final class Dictionary extends Collection implements ArrayAccess
     #[Override]
     public function offsetExists(mixed $offset): bool
     {
-        return $this->hasKey($offset);
+        return array_key_exists(Type::getStringKey($offset), $this->items);
     }
 
     /**

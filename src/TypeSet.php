@@ -381,8 +381,8 @@ class TypeSet implements Countable, IteratorAggregate
         $types = self::toTypeSet($types);
 
         // Check each.
-        foreach ($types as $it) {
-            if ($this->contains($it)) {
+        foreach ($types as $type) {
+            if ($this->contains($type)) {
                 return true;
             }
         }

@@ -4,6 +4,9 @@ declare(strict_types = 1);
 
 namespace Galaxon\Collections;
 
+// Attributes
+use Override;
+
 /**
  * Implements a set of values with optional type constraints.
  * It is equivalent to Set<T> in Java or C#, except multiple types can be specified.
@@ -90,42 +93,20 @@ final class Set extends Collection
 
     // endregion
 
-    // region Inspection methods
+    // region Contains method implementation
 
     /**
      * Check if the Set contains one or more items.
      *
      * Strict equality is used to compare items, i.e. the item must match on both value and type.
      *
-     * @param mixed ...$items The items to check for.
-     * @return bool True if the Set contains all the items, false otherwise.
+     * @param mixed $value The items to check for.
+     * @return bool True if the Set contains the item, false otherwise.
      */
-    public function contains(mixed ...$items): bool
+    #[Override]
+    public function contains(mixed $value): bool
     {
-        // Check each item.
-        return array_all($items, fn($item) => array_key_exists(Type::getStringKey($item), $this->items));
-    }
-
-    /**
-     * Check if the set contains any of the given items.
-     *
-     * @param mixed ...$items The items to check for.
-     * @return bool If the set contains any of the items.
-     */
-    public function containsAny(mixed ...$items): bool
-    {
-        return array_any($items, fn($it) => $this->contains($it));
-    }
-
-    /**
-     * Check if the set contains none of the given items.
-     *
-     * @param mixed ...$items The items to check for.
-     * @return bool If the set contains none of the items.
-     */
-    public function containsNone(mixed ...$items): bool
-    {
-        return !$this->containsAny(...$items);
+        return array_key_exists(Type::getStringKey($value), $this->items);
     }
 
     // endregion
