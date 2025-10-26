@@ -491,6 +491,12 @@ final class Sequence extends Collection implements ArrayAccess
      */
     public function first(): mixed
     {
+        // Guard against empty Sequences.
+        if ($this->empty()) {
+            throw new OutOfRangeException("No items in the Sequence.");
+        }
+
+        // Get the first item.
         return $this[0];
     }
 
@@ -502,6 +508,12 @@ final class Sequence extends Collection implements ArrayAccess
      */
     public function last(): mixed
     {
+        // Guard against empty Sequences.
+        if ($this->empty()) {
+            throw new OutOfRangeException("No items in the Sequence.");
+        }
+
+        // Get the last item.
         return $this[array_key_last($this->items)];
     }
 
@@ -664,12 +676,7 @@ final class Sequence extends Collection implements ArrayAccess
 
         // Count the occurrences of each distinct value.
         foreach ($this->items as $item) {
-            if ($value_count->offsetExists($item)) {
-                $value_count[$item]++;
-            }
-            else {
-                $value_count[$item] = 1;
-            }
+            $value_count[$item] = ($value_count[$item] ?? 0) + 1;
         }
 
         return $value_count;

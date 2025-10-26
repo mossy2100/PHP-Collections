@@ -12,12 +12,13 @@ use Traversable;
 // Throwables
 use TypeError;
 use ValueError;
+use RuntimeException;
 
 // Other
 use ArrayIterator;
 
 // Galaxon
-use Galaxon\Math\Math;
+use Galaxon\Core\Number;
 
 /**
  * Encapsulates a set of types, represented as strings.
@@ -132,12 +133,12 @@ class TypeSet implements Countable, IteratorAggregate
         }
 
         // Check number.
-        if ($this->contains('number') && Math::isNumber($value)) {
+        if ($this->contains('number') && Number::isNumber($value)) {
             return true;
         }
 
         // Check uint.
-        if ($this->contains('uint') && Math::isUint($value)) {
+        if ($this->contains('uint') && Number::isUint($value)) {
             return true;
         }
 
@@ -280,7 +281,14 @@ class TypeSet implements Countable, IteratorAggregate
      * @return bool True if the type is a resource type, false otherwise.
      */
     private static function isResourceType(string $type): bool {
-        return preg_match("/^resource \([\w. ]+\)$/", $type);
+        $ok = preg_match("/^resource \([\w. ]+\)$/", $type);
+
+        if ($ok === false) {
+            $error = preg_last_error_msg();
+            throw new RuntimeException("PCRE error when testing for valid resource type name: $error");
+        }
+
+        return $ok === 1;
     }
 
     /**
@@ -296,7 +304,14 @@ class TypeSet implements Countable, IteratorAggregate
      */
     private static function isClassType(string $type): bool {
         $class_name_part = "[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*";
-        return preg_match("/^\\\\?($class_name_part)(?:\\\\$class_name_part)*$/", $type);
+        $ok = preg_match("/^\\\\?($class_name_part)(?:\\\\$class_name_part)*$/", $type);
+
+        if ($ok === false) {
+            $error = preg_last_error_msg();
+            throw new RuntimeException("PCRE error when testing for valid class name: $error");
+        }
+
+        return $ok === 1;
     }
 
     /**

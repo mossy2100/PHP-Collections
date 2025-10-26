@@ -4,12 +4,19 @@ declare(strict_types=1);
 
 namespace Galaxon\Collections\Tests\Sequence;
 
+// Galaxon
 use Galaxon\Collections\Sequence;
+
+// PHPUnit
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+
+// Throwables
 use OutOfRangeException;
 use UnderflowException;
 use TypeError;
+
+// Other
 use DateTime;
 
 /**
@@ -27,7 +34,7 @@ class SequenceArrayAccessTest extends TestCase
         $seq = new Sequence('int');
         $seq[] = 10;
         $seq[] = 20;
-        
+
         // Test: Verify items were appended
         $this->assertCount(2, $seq);
         $this->assertSame(10, $seq[0]);
@@ -43,7 +50,7 @@ class SequenceArrayAccessTest extends TestCase
         $seq = new Sequence('string');
         $seq->append('a', 'b', 'c');
         $seq[1] = 'x';
-        
+
         // Test: Verify item was set
         $this->assertSame('x', $seq[1]);
     }
@@ -57,7 +64,7 @@ class SequenceArrayAccessTest extends TestCase
         $seq = new Sequence('int');
         $seq->append(1, 2);
         $seq[5] = 99;
-        
+
         // Test: Verify gaps filled with default (0)
         $this->assertCount(6, $seq);
         $this->assertSame(0, $seq[2]);
@@ -73,7 +80,7 @@ class SequenceArrayAccessTest extends TestCase
     {
         // Test: Attempt to set wrong type
         $this->expectException(TypeError::class);
-        
+
         $seq = new Sequence('int');
         $seq[0] = 'string';
     }
@@ -85,7 +92,7 @@ class SequenceArrayAccessTest extends TestCase
     {
         // Test: Attempt to use string as index
         $this->expectException(TypeError::class);
-        
+
         $seq = new Sequence('int');
         $seq['key'] = 10;
     }
@@ -97,7 +104,7 @@ class SequenceArrayAccessTest extends TestCase
     {
         // Test: Attempt to use negative index
         $this->expectException(OutOfRangeException::class);
-        
+
         $seq = new Sequence('int');
         $seq[-1] = 10;
     }
@@ -110,7 +117,7 @@ class SequenceArrayAccessTest extends TestCase
         // Test: Get item using array syntax
         $seq = new Sequence('string');
         $seq->append('apple', 'banana', 'cherry');
-        
+
         // Test: Verify correct item retrieved
         $this->assertSame('banana', $seq[1]);
     }
@@ -122,7 +129,7 @@ class SequenceArrayAccessTest extends TestCase
     {
         // Test: Attempt to get item at invalid index
         $this->expectException(OutOfRangeException::class);
-        
+
         $seq = new Sequence('int');
         $seq->append(1, 2, 3);
         $value = $seq[10];
@@ -136,7 +143,7 @@ class SequenceArrayAccessTest extends TestCase
         // Test: Check if index exists
         $seq = new Sequence('int');
         $seq->append(1, 2, 3);
-        
+
         // Test: Verify isset works correctly
         $this->assertTrue(isset($seq[0]));
         $this->assertTrue(isset($seq[2]));
@@ -150,7 +157,7 @@ class SequenceArrayAccessTest extends TestCase
     {
         // Test: Attempt to check string index
         $this->expectException(TypeError::class);
-        
+
         $seq = new Sequence('int');
         $exists = isset($seq['key']);
     }
@@ -164,7 +171,7 @@ class SequenceArrayAccessTest extends TestCase
         $seq = new Sequence('?int');
         $seq->append(1, 2, 3);
         unset($seq[1]);
-        
+
         // Test: Verify item is now null but count unchanged
         $this->assertCount(3, $seq);
         $this->assertNull($seq[1]);
@@ -178,7 +185,7 @@ class SequenceArrayAccessTest extends TestCase
         // Test: Attempt to unset in non-nullable Sequence
         $this->expectException(TypeError::class);
         $this->expectExceptionMessage("Cannot unset an item if null is not an allowed type");
-        
+
         $seq = new Sequence('int');
         $seq->append(1, 2, 3);
         unset($seq[1]);
@@ -192,12 +199,12 @@ class SequenceArrayAccessTest extends TestCase
         // Test: Iterate using foreach
         $seq = new Sequence('int');
         $seq->append(10, 20, 30);
-        
+
         $sum = 0;
         foreach ($seq as $value) {
             $sum += $value;
         }
-        
+
         // Test: Verify iteration worked
         $this->assertSame(60, $sum);
     }
@@ -210,12 +217,12 @@ class SequenceArrayAccessTest extends TestCase
         // Test: Iterate with index
         $seq = new Sequence('string');
         $seq->append('a', 'b', 'c');
-        
+
         $indexes = [];
         foreach ($seq as $index => $value) {
             $indexes[] = $index;
         }
-        
+
         // Test: Verify indexes are correct
         $this->assertSame([0, 1, 2], $indexes);
     }
@@ -229,7 +236,7 @@ class SequenceArrayAccessTest extends TestCase
         $seq = new Sequence('int');
         $seq->append(1, 2, 3, 4, 5);
         $chosen = $seq->chooseRand(1);
-        
+
         // Test: Verify one item chosen
         $this->assertCount(1, $chosen);
         // Test: Verify chosen item is from sequence
@@ -248,7 +255,7 @@ class SequenceArrayAccessTest extends TestCase
         $seq = new Sequence('int');
         $seq->append(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
         $chosen = $seq->chooseRand(3);
-        
+
         // Test: Verify correct number chosen
         $this->assertCount(3, $chosen);
         // Test: Verify all chosen items are from sequence
@@ -264,7 +271,7 @@ class SequenceArrayAccessTest extends TestCase
     {
         // Test: Attempt to choose from empty Sequence
         $this->expectException(UnderflowException::class);
-        
+
         $seq = new Sequence('int');
         $seq->chooseRand();
     }
@@ -276,7 +283,7 @@ class SequenceArrayAccessTest extends TestCase
     {
         // Test: Attempt to choose more items than available
         $this->expectException(OutOfRangeException::class);
-        
+
         $seq = new Sequence('int');
         $seq->append(1, 2, 3);
         $seq->chooseRand(5);
@@ -291,7 +298,7 @@ class SequenceArrayAccessTest extends TestCase
         $seq = new Sequence('int');
         $seq->append(1, 2, 3, 4, 5);
         $removed = $seq->removeRand(1);
-        
+
         // Test: Verify item removed
         $this->assertCount(1, $removed);
         $this->assertCount(4, $seq);
@@ -309,7 +316,7 @@ class SequenceArrayAccessTest extends TestCase
         $seq->append(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
         $originalCount = $seq->count();
         $removed = $seq->removeRand(3);
-        
+
         // Test: Verify correct number removed
         $this->assertCount(3, $removed);
         $this->assertCount($originalCount - 3, $seq);
@@ -324,7 +331,7 @@ class SequenceArrayAccessTest extends TestCase
         $defaultDate = new DateTime('2025-01-01');
         $seq = new Sequence('DateTime', $defaultDate);
         $seq[2] = new DateTime('2025-01-15'); // Fill gaps with clones
-        
+
         // Test: Verify default objects are clones
         $this->assertCount(3, $seq);
         $date0 = $seq[0];
@@ -342,7 +349,7 @@ class SequenceArrayAccessTest extends TestCase
         $seq = new Sequence('int');
         $seq->append(1, 2, 3, 4, 5);
         $array = $seq->toArray();
-        
+
         // Test: Verify conversion
         $this->assertIsArray($array);
         $this->assertSame([1, 2, 3, 4, 5], $array);

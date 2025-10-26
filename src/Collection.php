@@ -13,14 +13,11 @@ use Traversable;
 // Attributes
 use Override;
 
-// Throwables
-use TypeError;
-
 // Other
 use ArrayIterator;
 
 // Galaxon
-use Galaxon\Math\Stringify;
+use Galaxon\Core\Stringify;
 
 /**
  * Base class for all collections in this package.

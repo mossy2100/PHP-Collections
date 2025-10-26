@@ -17,7 +17,7 @@ use OutOfBoundsException;
 use TypeError;
 
 // Galaxon
-use Galaxon\Math\Stringify;
+use Galaxon\Core\Stringify;
 
 /**
  * Dictionary class that permits keys and values of any type, including scalar, complex, nullable,

@@ -8,8 +8,8 @@ namespace Galaxon\Collections;
 use TypeError;
 
 // Galaxon
-use Galaxon\Math\Double;
-use Galaxon\Math\Stringify;
+use Galaxon\Core\Double;
+use Galaxon\Core\Stringify;
 
 /**
  * Some convenience methods for working with types.
