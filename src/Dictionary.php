@@ -148,12 +148,12 @@ final class Dictionary extends Collection implements ArrayAccess
             $key = $key_or_pair;
         }
         else {
-            throw new ArgumentCountError("The add() method takes 1 or 2 arguments, got $n_args.");
+            throw new ArgumentCountError("The add() method takes 1 or 2 parameters, got $n_args.");
         }
 
         // Check the types are valid.
-        $this->keyTypes->checkType($key, 'key');
-        $this->valueTypes->checkType($value, 'value');
+        $this->keyTypes->check($key, 'key');
+        $this->valueTypes->check($value, 'value');
 
         // Leverage offsetSet() to generate the lookup key and the key-value pair.
         $this[$key] = $value;
@@ -195,7 +195,7 @@ final class Dictionary extends Collection implements ArrayAccess
     // region Contains method implementation
 
     /**
-     * Check if a value exists in the dictionary.
+     * Check if the Dictionary contains a value.
      *
      * This method can be slow with large dictionaries; consider caching results or generating a reverse lookup table.
      *
@@ -208,6 +208,20 @@ final class Dictionary extends Collection implements ArrayAccess
         return array_any($this->items, static fn($item) => $item->value === $value);
     }
 
+    /**
+     * Check if the Dictionary contains a key.
+     *
+     * This is an alias for offsetExists(), which isn't normally called directly.
+     * This method has a better name, as the documentation uses "key" rather than "offset".
+     *
+     * @param mixed $key The key to check for.
+     * @return bool True if the Dictionary contains the key, false otherwise.
+     */
+    public function keyExists(mixed $key): bool
+    {
+        return $this->offsetExists($key);
+    }
+
     // endregion
 
     // region Sorting methods
@@ -215,8 +229,8 @@ final class Dictionary extends Collection implements ArrayAccess
     /**
      * Sort the Dictionary by a custom callback function.
      *
-     * @param callable $fn The callback function. This should take two arguments (the values to compare) and return an
-     * integer equal to -1 (less than), 0 (equal), or 1 (greater than).
+     * @param callable $fn The callback function. This should take two arguments (the key-value pairs to compare) and
+     * return an integer equal to -1 (less than), 0 (equal), or 1 (greater than).
      * @return $this The sorted Dictionary.
      */
     public function sort(callable $fn): self {
@@ -276,14 +290,13 @@ final class Dictionary extends Collection implements ArrayAccess
     }
 
     /**
-     * Merge two dictionaries.
+     * Merge two Dictionaries.
      *
-     * If the same key exists in both, the second key-value pair (from $other) will be kept.
-     * No exception will be thrown.
-     * This is the same behaviour as array_merge().
+     * If the same key exists in both, the second key-value pair (from $other) will be kept and no exception will be
+     * thrown. This is the same behaviour as array_merge().
      *
-     * @param self $other The dictionary to merge with this dictionary.
-     * @return self The new dictionary containing pairs from both source dictionaries.
+     * @param self $other The Dictionary to merge with this Dictionary.
+     * @return self The new Dictionary containing pairs from both source Dictionaries.
      */
     public function merge(self $other): self {
         // Create a new dictionary with the combined type constraints.
@@ -305,6 +318,9 @@ final class Dictionary extends Collection implements ArrayAccess
     }
 
     /**
+     * TODO See about moving this to Collection. Should work for all collection types and there shouldn't be much
+     * difference.
+     *
      * Filter a dictionary using a callback function. The resulting dictionary will have the same type constraints,
      * and will only contain the key-value pairs that the filter callback returns true for.
      *
@@ -369,8 +385,8 @@ final class Dictionary extends Collection implements ArrayAccess
     public function offsetSet(mixed $offset, mixed $value): void
     {
         // Check the types are valid.
-        $this->keyTypes->checkType($offset, 'key');
-        $this->valueTypes->checkType($value, 'value');
+        $this->keyTypes->check($offset, 'key');
+        $this->valueTypes->check($value, 'value');
 
         // Get the string version of this key.
         $string_key = Type::getStringKey($offset);

@@ -17,64 +17,24 @@ use UnderflowException;
 use Override;
 
 /**
- * A sequence implementation that is stricter than ordinary PHP arrays.
+ * A type-specific list implementation.
  *
  * 1. Indexes are always sequential integers starting from 0, as with PHP lists. The largest index (a.k.a. offset or
- * key) will equal the number of items in the sequence minus 1.
+ * key) will equal the number of items in the Sequence minus 1.
  *
- * 2. Allowed types for list items can be specified in the constructor, enabling the Sequence to function like a generic
- * array (or equivalent) in C# or Java, i.e. `new Sequence('int')` is equivalent to `new List<int>` in C#.
+ * 2. Allowed types for Sequence values can be specified in the constructor, enabling the Sequence to function like a
+ * generic array (or equivalent) in C# or Java, i.e. `new Sequence('int')` is equivalent to `new List<int>` in C#.
  * Allowed types must be specified as strings (with union types and nullable syntax supported), or an iterable with
- * values equal to type names.
- * (NB: Intersection types and DNF syntax is currently NOT supported.)
+ * values equal to type names. See TypeSet for more details.
+ * (NB: Intersection types and DNF syntax are currently NOT supported.)
  *
  * 3. Sequence items can be set at positions beyond the current range, but intermediate items will be filled in with a
  * default value. Sensible defaults are used for common types, or a default value can be specified in the constructor.
- * If the default is an object, all items set to the default will clone the provided object.
- * The default value cannot be a resource.
+ * If the default value is an object, it will be cloned as needed.
  *
- * 4. Array-like access using square brackets [] is supported via ArrayAccess and Iterator interfaces.
- *
- * ## Supported Type Specifications
- *
- * ### Basic Types
- * - 'string' - String values
- * - 'int' - Integer values
- * - 'float' - Floating point values
- * - 'bool' - Boolean values
- * - 'null' - Null values
- * - 'array' - Array values
- * - 'object' - Any object instance
- * - 'resource' - Any resource type
- *
- * ### Pseudotypes
- * - 'mixed' - Any type (no restrictions)
- * - 'scalar' - Any scalar type (string|int|float|bool)
- * - 'iterable' - Arrays, iterators, generators (anything iterable)
- * - 'callable' - Functions, methods, closures, invokables
- *
- * ### Custom pseudotypes invented for this package
- * - 'number' - Either number type (int|float)
- * - 'uint' - Unsigned integer type (int where value >= 0)
- *
- * ### Specific Types
- * - Class names: 'DateTime', 'MyNameSpace\MyClass' (leading '\' optional; includes inheritance)
- * - Interface names: 'Countable', 'JsonSerializable' (includes implementations)
- * - Resource types: 'resource (stream)', 'resource (curl)', etc.
- *
- * ### Union Types
- * Use pipe syntax to allow multiple types:
- * - 'string|int' - String OR integer values
- * - 'array|object' - Array OR object values
- * - 'DateTime|null' - DateTime objects OR null
- *
- * ### Nullable Types
- * Use question mark syntax for nullable types:
- * - '?string' - Equivalent to 'string|null'
- * - '?DateTime' - Equivalent to 'DateTime|null'
- *
- * ### Unsupported pseudo-types: void, never, false, true, self, static.
- *
+ * 4. Array-like access using square brackets [] and iteration using foreach is supported via the ArrayAccess and
+ * Iterator interfaces.
+
  * ## Automatic Defaults
  * For value types, the following defaults are used:
  * - null or mixed → null
@@ -83,8 +43,8 @@ use Override;
  * - string → '' (empty string)
  * - bool → false
  * - array → [] (empty array)
- * If the allowed types only include classes, then a default value must be provided, which will be cloned as needed.
- * A resource type cannot be provided as a default value.
+ * If the allowed types only permit specific classes, interfaces, or traits, then a default value of a matching type
+ * must be provided, which will be cloned as needed.
  *
  * @example Basic usage
  * $strings = new Sequence('string');
@@ -121,32 +81,35 @@ final class Sequence extends Collection implements ArrayAccess
     // region Constructor and factory methods
 
     /**
-     * Create a new sequence, with optional type restriction and default value.
+     * Create a new Sequence, with optional type restriction and default value.
      *
-     * A default value may be specified, which is used to fill gaps when increasing the sequence length or calling
-     * fill(). It cannot be a resource, as these can't be copied.
-     * If the default value is not provided, it will be determined automatically for non-objects.
-     * If the default value is an object, it will be cloned when needed, so the object provided to the constructor will
-     * not actually be used.
+     * A default value may be specified, which is used to fill gaps when increasing the Sequence length as a side
+     * effect of calling insert(), fill(), or offsetSet() (either directly or via square bracket syntax).
+     * If a default value is not provided, it will be determined automatically if the TypeSet includes at least one
+     * scalar type or array.
+     * If the default value is an object, it will be cloned as needed.
+     * It doesn't really make sense to have a resource as a default value, but for now, it's allowed.
      *
-     * @param string|iterable|null $types Type specification (e.g., 'string', 'int|null', ['string', 'int']).
+     * @param string|iterable|null $types Type specification (e.g., 'string', 'int|null', ['string', 'int'], '?int').
      * The default is null, which means values of any type are allowed.
-     * @param mixed $default_value Default value for new items (default null). It cannot be a resource.
-     * @throws ValueError If no default value is provided and none can be determined.
-     * @throws TypeError If a default value is provided, but it's not valid for the specified type set.
+     * @param mixed $default_value Default value for new items (default null).
+     * @throws ValueError If no default value is provided and none can be determined automatically.
+     * @throws TypeError If a default value is provided, but it's invalid for the specified type set.
      */
     public function __construct(string|iterable|null $types = null, mixed $default_value = null)
     {
+        // Construct the base Collection.
         parent::__construct($types);
 
-        // If a default value isn't specified, try to determine a sane default for common types.
+        // Check if a default value was specified.
         if (func_num_args() === 1) {
+            // Try to determine a sane default for common types.
             if (!$this->valueTypes->tryGetDefaultValue($default_value)) {
-                throw new ValueError("Default value must be provided (or allow nulls).");
+                throw new ValueError("A default value could not be determined. Either provide a default value or include 'null' in the allowed types.");
             }
-        } elseif (!$this->valueTypes->match($default_value) || is_resource($default_value)) {
-            // The default value is invalid for the specified type set.
-            throw new TypeError("Default value has an invalid type.");
+        } elseif (!$this->valueTypes->match($default_value)) {
+            // The default value is invalid for the specified TypeSet.
+            throw new TypeError("The default value has an invalid type. Either provide a default value of an allowed type, or set it to null and include 'null' in the allowed types for this Sequence.");
         }
 
         // Set the default value.
@@ -154,20 +117,20 @@ final class Sequence extends Collection implements ArrayAccess
     }
 
     /**
-     * Construct a new sequence by copying values and their types from a source iterable.
+     * Construct a new Sequence by copying values and their types from a source iterable.
      *
      * @param iterable $src The iterable to copy from.
-     * @return static The new sequence instance.
+     * @return static The new Sequence instance.
      */
     public static function fromIterable(iterable $src): static {
         $seq = new self();
 
         // Add types from the source iterable.
         foreach ($src as $item) {
-            // Add the item type to the sequence types, if requested.
+            // Add the item type to the Sequence types, if requested.
             $seq->valueTypes->addValueType($item);
 
-            // Add the item to the sequence.
+            // Add the item to the Sequence.
             $seq->append($item);
         }
 
@@ -175,14 +138,14 @@ final class Sequence extends Collection implements ArrayAccess
     }
 
     /**
-     * Create a new sequence with the same types and default value as the calling object, and items copied from a
+     * Create a new Sequence with the same types and default value as the calling object, and items copied from a
      * source iterable (typically items from the calling Sequence, although not necessarily).
      *
      * @param iterable $items The iterable to copy items from.
-     * @return self The new sequence.
+     * @return self The new Sequence.
      */
     public function fromSubset(iterable $items = []): self {
-        // Construct the new sequence.
+        // Construct the new Sequence.
         $seq = new self($this->valueTypes, $this->defaultValue);
 
         // Copy items.
@@ -191,20 +154,82 @@ final class Sequence extends Collection implements ArrayAccess
         return $seq;
     }
 
+    /**
+     * Generate a new Sequence of numbers spanning a given range, using a given step size.
+     *
+     * A step size of 0 is not allowed, as this would cause an infinite loop.
+     *
+     * This method is analogous to range(), except it does not support strings.
+     * @see https://www.php.net/manual/en/function.range.php
+     *
+     * Note: When using floats, be aware of floating-point precision issues.
+     * The final value may not be exactly $end due to rounding errors.
+     *
+     * @example
+     * Sequence::range(1, 10);          // [1, 2, 3, ..., 10]
+     * Sequence::range(0, 1, 0.1);      // [0.0, 0.1, 0.2, ..., 1.0]
+     * Sequence::range(10, 1, -1);      // [10, 9, 8, ..., 1]
+     *
+     * @param int|float $start The start of the range.
+     * @param int|float $end The end of the range.
+     * @param int|float $step The step size (default 1).
+     * @return self The new Sequence.
+     * @throws ValueError If the step size is invalid for the range specified.
+     */
+    public static function range(int|float $start, int|float $end, int|float $step = 1): self
+    {
+        // Validate step size. Use loose comparison here to validate either an int or float argument.
+        if ($step == 0) {
+            throw new ValueError("The step size cannot be zero.");
+        }
+        if ($start <= $end && $step < 0) {
+            throw new ValueError("The step size must be positive for an increasing range.");
+        }
+        if ($start >= $end && $step > 0) {
+            throw new ValueError("The step size must be negative for a decreasing range.");
+        }
+
+        // If any of the arguments are floats, generate a Sequence of floats; otherwise, ints.
+        $type = is_float($start) || is_float($end) || is_float($step) ? 'float' : 'int';
+
+        // Construct the new Sequence.
+        $seq = new self($type);
+
+        // Cast $start to float, if necessary, to ensure all generated values are also float.
+        if ($type === 'float') {
+            $start = (float)$start;
+        }
+
+        // Generate the range.
+        if ($step > 0) {
+            // Ascending.
+            for ($i = $start; $i <= $end; $i += $step) {
+                $seq->append($i);
+            }
+        } else {
+            // Descending.
+            for ($i = $start; $i >= $end; $i += $step) {
+                $seq->append($i);
+            }
+        }
+
+        // Return the new Sequence.
+        return $seq;
+    }
+
     // endregion
 
-    // region Checking methods
+    // region Private helper methods
 
     /**
-     * Validate index parameters and optionally check bounds.
+     * Validate an index (a.k.a. offset) argument.
      *
      * @param mixed $index The index to validate.
-     * @param bool $check_lower_bound Whether to check if an index is non-negative.
      * @param bool $check_upper_bound Whether to check if an index is within array bounds.
      * @throws TypeError If the index is not an integer.
-     * @throws OutOfRangeException If the index is outside the valid range for the sequence.
+     * @throws OutOfRangeException If the index is outside the valid range for the Sequence.
      */
-    private function checkIndex(mixed $index, bool $check_lower_bound = true, bool $check_upper_bound = true): void
+    private function checkIndex(mixed $index, bool $check_upper_bound = true): void
     {
         // Check the index is an integer.
         if (!is_int($index)) {
@@ -212,7 +237,7 @@ final class Sequence extends Collection implements ArrayAccess
         }
 
         // Check the index isn't negative.
-        if ($check_lower_bound && $index < 0) {
+        if ($index < 0) {
             throw new OutOfRangeException("Index cannot be negative.");
         }
 
@@ -223,10 +248,10 @@ final class Sequence extends Collection implements ArrayAccess
     }
 
     /**
-     * Gets a new default value for the sequence.
+     * Get a new default value.
      *
-     * If the provided default value is an object, a clone of it is returned.
-     * Otherwise the default value will have value semantics, so no clone operation is required.
+     * If the default value is an object, clone it.
+     * This is probably more useful than filling a Sequence with references to the same object.
      *
      * @return mixed The new default value.
      */
@@ -236,15 +261,15 @@ final class Sequence extends Collection implements ArrayAccess
 
     // endregion
 
-    // region Add items to the sequence
+    // region Add items to the Sequence
 
     /**
-     * Add one or more items to the end of the sequence.
+     * Add one or more items to the end of the Sequence.
      *
      * NB: This is a mutating method.
      *
-     * @param mixed ...$items The items to add to the sequence.
-     * @return $this The sequence instance.
+     * @param mixed ...$items The items to add to the Sequence.
+     * @return $this The Sequence instance.
      *
      * @example
      * $sequence->append($item);
@@ -255,9 +280,9 @@ final class Sequence extends Collection implements ArrayAccess
     {
         foreach ($items as $item) {
             // Check the item type.
-            $this->valueTypes->checkType($item);
+            $this->valueTypes->check($item);
 
-            // Append an element to the end of the sequence.
+            // Append an element to the end of the Sequence.
             $this->items[] = $item;
         }
 
@@ -266,12 +291,12 @@ final class Sequence extends Collection implements ArrayAccess
     }
 
     /**
-     * Add one or more items to the start of the sequence.
+     * Add one or more items to the start of the Sequence.
      *
      * NB: This is a mutating method.
      *
-     * @param mixed ...$items The items to add to the sequence.
-     * @return $this The sequence instance.
+     * @param mixed ...$items The items to add to the Sequence.
+     * @return $this The Sequence instance.
      *
      * @example
      * $sequence->prepend($item);
@@ -282,9 +307,9 @@ final class Sequence extends Collection implements ArrayAccess
     {
         foreach ($items as $item) {
             // Check the item type.
-            $this->valueTypes->checkType($item);
+            $this->valueTypes->check($item);
 
-            // Prepand an element at the start of the sequence.
+            // Prepand an element at the start of the Sequence.
             array_unshift($this->items, $item);
         }
 
@@ -299,28 +324,30 @@ final class Sequence extends Collection implements ArrayAccess
      *
      * @param int $index The zero-based index position to insert the item at.
      * @param mixed $item The item to insert.
-     * @return $this The sequence instance.
+     * @return $this The Sequence instance.
+     * @throws OutOfRangeException If the index is less than 0.
      */
     public function insert(int $index, mixed $item): self {
         // Check the item type.
-        $this->valueTypes->checkType($item);
+        $this->valueTypes->check($item);
 
-        // For indexes beyond the end of the sequence, no items need to be shifted, so defer to offsetSet().
+        // Check the index is valid.
+        $this->checkIndex($index, false);
+
+        // For indexes beyond the end of the Sequence, no items need to be shifted, so defer to offsetSet().
+        // That will take care of gap-filling with default values.
         $orig_count = count($this->items);
         if ($index >= $orig_count) {
             $this->offsetSet($index, $item);
             return $this;
         }
 
-        // Ensure the index is valid.
-        $this->checkIndex($index);
-
         // Shift elements after $index right by 1.
         for ($j = $orig_count; $j > $index; $j--) {
             $this->items[$j] = $this->items[$j - 1];
         }
 
-        // Set the new value of the item at position $index.
+        // Set the new value of the item at $index.
         $this->items[$index] = $item;
 
         // Return this for chaining.
@@ -329,30 +356,29 @@ final class Sequence extends Collection implements ArrayAccess
 
     // endregion
 
-    // region Remove items from the sequence
+    // region Remove items from the Sequence
 
     /**
-     * Remove the item at the given index from the sequence.
+     * Remove the item at the given index from the Sequence.
      *
      * The indexes of items at higher indexes than the one specified by $index will be reduced by 1, i.e. shifted down,
-     * and the sequence length will be reduced by 1.
+     * and the Sequence length will be reduced by 1.
      *
      * NB: This is a mutating method.
      *
-     * @param int $index The zero-based index position of the item to remove.
+     * @param int $index The zero-based index of the item to remove.
      * @return mixed The removed value.
-     * @throws TypeError If the index is not an integer.
-     * @throws OutOfRangeException If the index is outside the valid range for the sequence.
+     * @throws OutOfRangeException If the index is outside the valid range for the Sequence.
      */
-    public function remove(int $index): mixed
+    public function removeByIndex(int $index): mixed
     {
-        // Ensure the index is valid.
+        // Check the index is valid.
         $this->checkIndex($index);
 
         // Get the item.
         $item = $this->items[$index];
 
-        // Remove it from the sequence.
+        // Remove it from the Sequence.
         array_splice($this->items, $index, 1);
 
         // Return the item.
@@ -369,10 +395,10 @@ final class Sequence extends Collection implements ArrayAccess
      */
     public function removeByValue(mixed $value): int
     {
-        // Get the number of items in the sequence.
+        // Get the number of items in the Sequence.
         $orig_count = count($this->items);
 
-        // Filter the sequence to remove the matching values.
+        // Filter the Sequence to remove the matching values.
         $this->items = array_values(array_filter(
             $this->items,
             static fn($item) => $item !== $value
@@ -383,18 +409,18 @@ final class Sequence extends Collection implements ArrayAccess
     }
 
     /**
-     * Remove the first item from the sequence.
+     * Remove the first item from the Sequence.
      *
      * NB: This is a mutating method.
      *
      * @return mixed The removed item.
-     * @throws UnderflowException If the sequence is empty.
+     * @throws UnderflowException If the Sequence is empty.
      */
     public function removeFirst(): mixed
     {
-        // Check for an empty sequence.
+        // Check for an empty Sequence.
         if (count($this->items) === 0) {
-            throw new UnderflowException("No items in the sequence.");
+            throw new UnderflowException("No items in the Sequence.");
         }
 
         // Remove and return the first item.
@@ -402,18 +428,18 @@ final class Sequence extends Collection implements ArrayAccess
     }
 
     /**
-     * Remove the last item from the sequence.
+     * Remove the last item from the Sequence.
      *
      * NB: This is a mutating method.
      *
      * @return mixed The removed item.
-     * @throws UnderflowException If the sequence is empty.
+     * @throws UnderflowException If the Sequence is empty.
      */
     public function removeLast(): mixed
     {
-        // Check for an empty sequence.
+        // Check for an empty Sequence.
         if (count($this->items) === 0) {
-            throw new UnderflowException("No items in the sequence.");
+            throw new UnderflowException("No items in the Sequence.");
         }
 
         // Remove and return the last item.
@@ -438,15 +464,30 @@ final class Sequence extends Collection implements ArrayAccess
         return in_array($value, $this->items, true);
     }
 
+    /**
+     * Check if the Sequence contains an index.
+     *
+     * This is an alias for offsetExists(), which isn't normally called directly.
+     * One small difference is that the parameter must be an int.
+     * This method has a better name, as the documentation uses "index" rather than "offset" or "key".
+     *
+     * @param int $index The index to check for.
+     * @return bool True if the Sequence contains the index, false otherwise.
+     */
+    public function indexExists(int $index): bool
+    {
+        return $this->offsetExists($index);
+    }
+
     // endregion
 
-    // region Get items from the sequence
+    // region Get items from the Sequence
 
     /**
-     * Get the first item from the sequence.
+     * Get the first item from the Sequence.
      *
      * @return mixed The first item.
-     * @throws OutOfRangeException If the sequence is empty.
+     * @throws OutOfRangeException If the Sequence is empty.
      */
     public function first(): mixed
     {
@@ -454,10 +495,10 @@ final class Sequence extends Collection implements ArrayAccess
     }
 
     /**
-     * Get the last item from the sequence.
+     * Get the last item from the Sequence.
      *
      * @return mixed The last item.
-     * @throws OutOfRangeException If the sequence is empty.
+     * @throws OutOfRangeException If the Sequence is empty.
      */
     public function last(): mixed
     {
@@ -465,19 +506,19 @@ final class Sequence extends Collection implements ArrayAccess
     }
 
     /**
-     * Get a slice of the sequence.
+     * Get a slice of the Sequence.
      *
      * Both the index and the length can be negative. They work the same as for array_slice().
      * @see https://www.php.net/manual/en/function.array-slice.php
      *
      * @param int $index The start position of the slice.
-     *      If non-negative, the slice will start at that index in the sequence.
-     *      If negative, the slice will start that far from the end of the sequence.
+     *      If non-negative, the slice will start at that index in the Sequence.
+     *      If negative, the slice will start that far from the end of the Sequence.
      * @param ?int $length The length of the slice.
-     *      If given and is positive, then the sequence will have up to that many elements in it.
-     *      If the sequence is shorter than the length, then only available items will be present.
-     *      If given and is negative, the slice will stop that many elements from the end of the sequence.
-     *      If omitted or null, then the slice will include everything from index up until the end of the sequence.
+     *      If given and is positive, then the Sequence will have up to that many elements in it.
+     *      If the Sequence is shorter than the length, then only available items will be present.
+     *      If given and is negative, the slice will stop that many elements from the end of the Sequence.
+     *      If omitted or null, then the slice will include everything from index up until the end of the Sequence.
      * @return self The slice.
      */
     public function slice(int $index, ?int $length = null): self
@@ -521,48 +562,16 @@ final class Sequence extends Collection implements ArrayAccess
 
     // endregion
 
-    // region Inspection methods
-
-    /**
-     * Check if all items in the sequence pass a test.
-     *
-     * This method is analogous to array_all().
-     * @see https://www.php.net/manual/en/function.array-all.php
-     *
-     * @param callable $fn The test function.
-     * @return bool True if all items pass the test, false otherwise.
-     */
-    public function forAll(callable $fn): bool
-    {
-        return array_all($this->items, $fn);
-    }
-
-    /**
-     * Check if any items in the sequence pass a test.
-     *
-     * This method is analogous to array_any().
-     * @see https://www.php.net/manual/en/function.array-any.php
-     *
-     * @param callable $fn The test function.
-     * @return bool True if any items pass the test, false otherwise.
-     */
-    public function forAny(callable $fn): bool
-    {
-        return array_any($this->items, $fn);
-    }
-
-    // endregion
-
     // region Sort methods
 
     /**
-     * Return a new sequence with the items sorted in ascending order.
+     * Return a new Sequence with the items sorted in ascending order.
      *
-     * This method is analogous to sort(), except that it's non-mutating.
+     * This method is analogous to sort(), except it's non-mutating.
      * @see https://www.php.net/manual/en/function.sort.php
      *
      * @param int $flags The sorting flags.
-     * @return self The sorted sequence.
+     * @return self The sorted Sequence.
      */
     public function sort(int $flags = SORT_REGULAR): self
     {
@@ -575,13 +584,13 @@ final class Sequence extends Collection implements ArrayAccess
     }
 
     /**
-     * Return a new sequence with the items sorted in descending order.
+     * Return a new Sequence with the items sorted in descending order.
      *
-     * This method is analogous to rsort(), except that it's non-mutating.
+     * This method is analogous to rsort(), except it's non-mutating.
      * @see https://www.php.net/manual/en/function.rsort.php
      *
      * @param int $flags The sorting flags.
-     * @return self The sorted sequence.
+     * @return self The sorted Sequence.
      */
     public function sortReverse(int $flags = SORT_REGULAR): self
     {
@@ -594,13 +603,13 @@ final class Sequence extends Collection implements ArrayAccess
     }
 
     /**
-     * Return a new sequence with the items sorted using a custom comparison function.
+     * Return a new Sequence with the items sorted using a custom comparison function.
      *
-     * This method is analogous to usort(), except that it's non-mutating.
+     * This method is analogous to usort(), except it's non-mutating.
      * @see https://www.php.net/manual/en/function.usort.php
      *
      * @param callable $fn The comparison function.
-     * @return self The sorted sequence.
+     * @return self The sorted Sequence.
      */
     public function sortBy(callable $fn): self
     {
@@ -617,14 +626,14 @@ final class Sequence extends Collection implements ArrayAccess
     // region Miscellaneous methods
 
     /**
-     * Split the sequence into chunks of a given size.
+     * Split the Sequence into chunks of a given size.
      * The last chunk may be smaller than the specified size.
      *
      * This method is analogous to array_chunk().
      * @see https://www.php.net/manual/en/function.array-chunk.php
      *
      * @param int $size The size of each chunk.
-     * @return self[] An array of sequences representing the chunks.
+     * @return self[] An array of Sequences representing the chunks.
      */
     public function chunk(int $size): array
     {
@@ -641,17 +650,17 @@ final class Sequence extends Collection implements ArrayAccess
     }
 
     /**
-     * Counts the occurrences of each distinct value in a sequence.
+     * Counts the occurrences of each distinct value in a Sequence.
      *
      * This method is analogous to array_count_values().
      * @see https://www.php.net/manual/en/function.array-count-values.php
      *
-     * @return Dictionary A dictionary mapping values to the number of occurrences.
+     * @return Dictionary A Dictionary mapping values to the number of occurrences.
      */
     public function countValues(): Dictionary
     {
         // Construct the dictionary.
-        $value_count = new Dictionary($this->valueTypes, 'int');
+        $value_count = new Dictionary($this->valueTypes, 'uint');
 
         // Count the occurrences of each distinct value.
         foreach ($this->items as $item) {
@@ -667,7 +676,7 @@ final class Sequence extends Collection implements ArrayAccess
     }
 
     /**
-     * Fill the sequence with a given value.
+     * Fill the Sequence with a given value.
      *
      * This method is analogous to array_fill().
      * @see https://www.php.net/manual/en/function.array-fill.php
@@ -684,7 +693,7 @@ final class Sequence extends Collection implements ArrayAccess
         // might actually want to fill with nulls.
         $use_default_value = func_num_args() === 2;
 
-        // Set the specified sequence items.
+        // Set the specified Sequence items.
         for ($i = 0; $i < $count; $i++) {
             $this[$start_index + $i] = $use_default_value ? $this->getDefaultValue() : $value;
         }
@@ -693,13 +702,13 @@ final class Sequence extends Collection implements ArrayAccess
     }
 
     /**
-     * Return a sequence with all items matching a certain filter.
+     * Return a Sequence with all items matching a certain filter.
      *
      * This method is analogous to array_filter().
      * @see https://www.php.net/manual/en/function.array-filter.php
      *
      * @param callable $fn The filter function that returns true for items to keep.
-     * @return self A new sequence containing only the matching items.
+     * @return self A new Sequence containing only the matching items.
      */
     public function filter(callable $fn): self
     {
@@ -711,10 +720,10 @@ final class Sequence extends Collection implements ArrayAccess
     }
 
     /**
-     * Applies the callback to the items in the sequence.
+     * Applies the callback to the items in the Sequence.
      *
      * @param callable $fn The callback function to apply to each item.
-     * @return self A new sequence containing the results of the callback function.
+     * @return self A new Sequence containing the results of the callback function.
      */
     public function map(callable $fn): self
     {
@@ -729,8 +738,8 @@ final class Sequence extends Collection implements ArrayAccess
     /**
      * Merge two sequences.
      *
-     * @param Sequence $other The sequence to merge with.
-     * @return self A new sequence containing the merged items.
+     * @param Sequence $other The Sequence to merge with.
+     * @return self A new Sequence containing the merged items.
      */
     public function merge(self $other): self
     {
@@ -742,9 +751,9 @@ final class Sequence extends Collection implements ArrayAccess
     }
 
     /**
-     * Return a new sequence with the same items as the $this sequence but in reverse order.
+     * Return a new Sequence with the same items as the $this Sequence but in reverse order.
      *
-     * @return self A new sequence with the same items as the $this sequence but in reverse order.
+     * @return self A new Sequence with the same items as the $this Sequence but in reverse order.
      */
     public function reverse(): self
     {
@@ -756,12 +765,12 @@ final class Sequence extends Collection implements ArrayAccess
     }
 
     /**
-     * Get the unique values from the sequence.
+     * Get the unique values from the Sequence.
      *
      * This method is analogous to array_unique().
      * @see https://www.php.net/manual/en/function.array-unique.php
      *
-     * @return self A new sequence containing the unique values.
+     * @return self A new Sequence containing the unique values.
      */
     public function unique(): self {
         // Get the unique values.
@@ -776,7 +785,7 @@ final class Sequence extends Collection implements ArrayAccess
     // region Aggregation methods
 
     /**
-     * Reduce the sequence to a single value using a callback function.
+     * Reduce the Sequence to a single value using a callback function.
      *
      * @param callable $fn Callback function (accumulator, item) => new_accumulator.
      * @param mixed $init Initial value for the aggregation.
@@ -788,9 +797,9 @@ final class Sequence extends Collection implements ArrayAccess
     }
 
     /**
-     * Find the product of the values in the sequence.
+     * Find the product of the values in the Sequence.
      *
-     * @return float|int The product of the values in the sequence.
+     * @return float|int The product of the values in the Sequence.
      */
     public function product(): float|int
     {
@@ -798,9 +807,9 @@ final class Sequence extends Collection implements ArrayAccess
     }
 
     /**
-     * Find the sum of the values in the sequence.
+     * Find the sum of the values in the Sequence.
      *
-     * @return float|int The sum of the values in the sequence.
+     * @return float|int The sum of the values in the Sequence.
      */
     public function sum(): float|int
     {
@@ -808,17 +817,16 @@ final class Sequence extends Collection implements ArrayAccess
     }
 
     /**
-     * Find the concatenation of the values in the sequence, optionally separated by a given string (the "glue").
+     * Find the concatenation of the values in the Sequence, optionally separated by a given string (the "glue").
      *
      * NB: This method is analogous to implode().
      * @see https://www.php.net/manual/en/function.implode.php
      *
-     * It may generate an error or throw an exception if the sequence contains an object that doesn't implement
+     * It may generate an error or throw an exception if the Sequence contains an object that doesn't implement
      * __toString(). TODO - test.
      *
-     *
      * @param string $glue The string to separate the values with.
-     * @return string The concatenation of the values in the sequence.
+     * @return string The concatenation of the values in the Sequence.
      */
     public function join(string $glue = ''): string
     {
@@ -830,76 +838,105 @@ final class Sequence extends Collection implements ArrayAccess
     // region Random methods
 
     /**
-     * Randomly choose one or more items from the sequence.
-     * Both keys and values are returned, as an array.
+     * Randomly choose one or more indexes from the Sequence.
      *
-     * NB: This method is non-mutating.
+     * NB: This is a private helper method called from chooseRand() and removeRand(), and not part of the public API.
      *
-     * @param int $count The number of items to choose (default: 1).
-     * @return array An array containing the chosen items (keys and values) in random order.
-     * @throws UnderflowException If the sequence is empty.
-     * @throws OutOfRangeException If the count is out of range.
-     * @throws OutOfRangeException If the sequence doesn't have enough items to choose the specified count.'
+     * @param int $count The number of indexes to choose (default: 1).
+     * @return int[] An array containing the chosen indexes.
+     * @throws UnderflowException If the Sequence is sempty.
+     * @throws OutOfRangeException If the count is out of range or the Sequence doesn't have enough items to choose the
+     * specified count.
      */
-    public function chooseRand(int $count = 1): array
-    {
+    private function chooseRandIndexes(int $count = 1): array {
         // Guards.
-        if ($this->count() === 0) {
-            throw new UnderflowException("No items in the sequence to choose from.");
+        if ($this->empty()) {
+            throw new UnderflowException("Cannot choose items from an empty Sequence.");
         }
         if ($count <= 0) {
             throw new OutOfRangeException("Count must be greater than 0.");
         }
         if ($count > $this->count()) {
-            throw new OutOfRangeException("Not enough items in the sequence to choose $count items.");
+            throw new OutOfRangeException("Cannot choose $count items from a Sequence with {$this->count()} items.");
         }
 
-        // Get the keys of the randomly chosen items.
-        $keys = array_rand($this->items, $count);
+        // Randomly choose one or more indexes.
+        $indexes = array_rand($this->items, $count);
 
-        // Make sure it's an array, as array_rand() will return a single key value when count is 1.
-        if (!is_array($keys)) {
-            $keys = [$keys];
+        // Convert result to an array if necessary.
+        // The call to array_rand() will return a single key value when $count is 1.
+        if (!is_array($indexes)) {
+            $indexes = [$indexes];
         }
 
-        // Convert the keys into key-value pairs.
+        return $indexes;
+    }
+
+    /**
+     * Randomly choose one or more items from the Sequence.
+     *
+     * Both indexes and values are returned, as an array.
+     *
+     * NB: This method is non-mutating.
+     *
+     * @example
+     * $seq = Sequence::range(1, 10);
+     * $items = $seq->chooseRand(3);
+     * // Returns: [2 => 3, 7 => 8, 5 => 6] (indexes and values in random order)
+     *
+     * @param int $count The number of items to choose (default: 1).
+     * @return array<int, mixed> An array containing the chosen items (indexes and values) in random order.
+     * @throws UnderflowException If the Sequence is empty.
+     * @throws OutOfRangeException If the count is out of range or the Sequence doesn't have enough items to choose the
+     * specified count.
+     */
+    public function chooseRand(int $count = 1): array
+    {
+        // Randomly choose one or more indexes.
+        $indexes = $this->chooseRandIndexes($count);
+
+        // Convert the indexes into index-value pairs.
         $result = [];
-        foreach ($keys as $key) {
-            $result[$key] = $this->items[$key];
+        foreach ($indexes as $i) {
+            $result[$i] = $this->items[$i];
         }
         return $result;
     }
 
     /**
-     * Randomly remove one or more items from the sequence.
+     * Randomly remove one or more items from the Sequence.
      *
      * NB: This method is mutating.
      *
      * @param int $count The number of items to remove (default: 1).
-     * @return array An array containing the removed values in random order.
-     * @throws UnderflowException If the sequence is empty.
-     * @throws OutOfRangeException If the count is out of range.
-     * @throws OutOfRangeException If the sequence doesn't have enough items to choose the specified count.'
+     * @return list<mixed> An array containing the removed values in random order.
+     * @throws UnderflowException If the Sequence is empty.
+     * @throws OutOfRangeException If the count is out of range or the Sequence doesn't have enough items to remove
+     * the specified count.
      */
     public function removeRand(int $count = 1): array
     {
-        // Randomly choose one or more items.
-        $items = $this->chooseRand($count);
+        // Randomly choose one or more indexes.
+        $indexes = $this->chooseRandIndexes($count);
 
-        // Sort the items by key in descending order.
-        // We want to remove the items with the highest keys first,
-        // because each call to remove() will re-index the sequence.
-        // Clone the array of selected items to preserve randomness.
-        $sorted_items = $items;
-        krsort($sorted_items);
+        // Work with a copy to preserve indexes during removal.
+        $items = $this->items;
 
-        // Remove the items from the sequence.
-        foreach ($sorted_items as $key => $value) {
-            $this->remove($key);
+        // Remove the items from the Sequence.
+        $removed = [];
+        foreach ($indexes as $i) {
+            // Remember the value.
+            $removed[] = $items[$i];
+
+            // Unset the value at this index.
+            unset($items[$i]);
         }
 
-        // Return the chosen values.
-        return array_values($items);
+        // Update the internal array of items.
+        $this->items = array_values($items);
+
+        // Return the values that were removed.
+        return $removed;
     }
 
     // endregion
@@ -907,35 +944,35 @@ final class Sequence extends Collection implements ArrayAccess
     // region ArrayAccess implementation
 
     /**
-     * Append or set a sequence item.
+     * Append or set a Sequence item.
      *
-     * If the index is out of range, the sequence will be increased in size to accommodate it.
+     * If the index is out of range, the Sequence will be increased in size to accommodate it.
      * Any intermediate positions will be filled with the default value.
      * NB: If the default is an object, all items set to the default will clone the object.
-     * If you don't want this behaviour, don't rely on it; set each sequence item individually.
+     * If you don't want this behaviour, don't rely on it; set each Sequence item individually.
      *
      * @param mixed $offset The zero-based index position to set, or null to append.
      * @param mixed $value The value to set.
      * @throws TypeError If the index is neither null nor an integer.
-     * @throws OutOfRangeException If the index is out of range.
+     * @throws OutOfRangeException If the index is negative.
      */
     #[Override]
     public function offsetSet(mixed $offset, mixed $value): void
     {
         // Check the item has a valid type.
-        $this->valueTypes->checkType($value);
+        $this->valueTypes->check($value);
 
         if ($offset === null) {
-            // Append a new item to the sequence.
-            // $sequence[] = $value
+            // Called from $sequence[] = $value
+
+            // Append a new item to the Sequence.
             $this->append($value);
         }
         else {
-            // Update an item.
-            // $sequence[$key] = $value
+            // Called from $sequence[$key] = $value
 
             // Check the index is valid.
-            $this->checkIndex($offset, check_upper_bound: false);
+            $this->checkIndex($offset, false);
 
             // Fill in any missing items with defaults.
             $start = count($this->items);
@@ -949,12 +986,12 @@ final class Sequence extends Collection implements ArrayAccess
     }
 
     /**
-     * Get a value from the sequence.
+     * Get a value from the Sequence.
      *
      * @param mixed $offset The zero-based index position to get.
      * @return mixed The value at the specified index.
      * @throws TypeError If the index is not an integer.
-     * @throws OutOfRangeException If the index is outside the valid range for the sequence.
+     * @throws OutOfRangeException If the index is outside the valid range for the Sequence.
      */
     #[Override]
     public function offsetGet(mixed $offset): mixed
@@ -969,8 +1006,8 @@ final class Sequence extends Collection implements ArrayAccess
     /**
      * Check if a given index is valid.
      *
-     * @param mixed $offset The sequence index position.
-     * @return bool If the given index is an integer and within the current valid range for the sequence.
+     * @param mixed $offset The Sequence index position.
+     * @return bool If the given index is an integer and within the current valid range for the Sequence.
      * @throws TypeError If the index is not an integer.
      */
     #[Override]
@@ -985,18 +1022,19 @@ final class Sequence extends Collection implements ArrayAccess
     }
 
     /**
-     * Set a sequence item to null.
+     * Set a Sequence item to null.
      *
      * This method isn't usually called as a method, but rather indirectly by calling unset($sequence[$offset]).
      *
-     * Doing this doesn't remove an item from the sequence, as it does with ordinary PHP arrays. This is because this
-     * data structure maintains zero-indexed sequential keys. Therefore, removing an item from the sequence would
+     * Doing this doesn't remove an item from the Sequence, as it does with ordinary PHP arrays. This is because this
+     * data structure maintains zero-indexed sequential keys. Therefore, removing an item from the Sequence would
      * require re-indexing later items. This could be unexpected behavior.
      *
-     * To remove an item from the sequence, use one of the remove*() methods.
+     * To remove an item from the Sequence, use one of the remove*() methods.
      *
      * @param mixed $offset The zero-based index position to unset.
-     * @throws OutOfRangeException If the index is outside the valid range for the sequence.
+     * @throws TypeError If the index is not an integer.
+     * @throws OutOfRangeException If the index is outside the valid range for the Sequence.
      */
     #[Override]
     public function offsetUnset(mixed $offset): void

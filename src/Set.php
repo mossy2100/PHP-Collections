@@ -55,7 +55,7 @@ final class Set extends Collection
         // Add each item.
         foreach ($items as $item) {
             // Check if the item is allowed in the set.
-            $this->valueTypes->checkType($item);
+            $this->valueTypes->check($item);
 
             // Add the item if new.
             $key = Type::getStringKey($item);
@@ -276,19 +276,20 @@ final class Set extends Collection
     /**
      * Convert the Set to a Dictionary.
      *
-     * The Set's internal array indexes, unimportant within the context of a Set, will become keys in the new
-     * Dictionary. The values aren't sorted.
+     * The keys will be sequential integers starting from 0.
      *
      * @return Dictionary The new Dictionary.
      */
     public function toDictionary(): Dictionary
     {
-        // Construct the new Dictionary.
-        $dict = new Dictionary('int', $this->valueTypes);
+        // Construct the new Dictionary, using the same value types as the Set.
+        $dict = new Dictionary('uint', $this->valueTypes);
 
         // Copy the items into the new Dictionary.
-        foreach ($this->items as $key => $value) {
-            $dict[$key] = $value;
+        $key = 0;
+        foreach ($this->items as $value) {
+            $dict->add($key, $value);
+            $key++;
         }
 
         // Return the new Dictionary.
@@ -302,7 +303,16 @@ final class Set extends Collection
      */
     public function toSequence(): Sequence
     {
-        return Sequence::fromIterable($this);
+        // Construct the new Sequence, using the same value types as the Set.
+        $seq = new Sequence($this->valueTypes);
+
+        // Copy the items into the new Sequence.
+        foreach ($this->items as $value) {
+            $seq->append($value);
+        }
+
+        // Return the new Sequence.
+        return $seq;
     }
 
     // endregion

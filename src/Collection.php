@@ -70,17 +70,7 @@ abstract class Collection implements Countable, IteratorAggregate, Stringable
 
     // endregion
 
-    // region Instance methods
-
-    /**
-     * Checks if the Collection is empty.
-     *
-     * @return bool
-     */
-    public function isEmpty(): bool
-    {
-        return $this->count() === 0;
-    }
+    // region Modification methods
 
     /**
      * Remove all items from the Collection.
@@ -98,7 +88,17 @@ abstract class Collection implements Countable, IteratorAggregate, Stringable
 
     // endregion
 
-    // region Membership query methods
+    // region Inspection methods
+
+    /**
+     * Checks if the Collection is empty.
+     *
+     * @return bool
+     */
+    public function empty(): bool
+    {
+        return empty($this->items);
+    }
 
     /**
      * Check if the Collection contains a value.
@@ -111,29 +111,35 @@ abstract class Collection implements Countable, IteratorAggregate, Stringable
     abstract public function contains(mixed $value): bool;
 
     /**
-     * Check if the Collection contains one or more values.
+     * Check if all items in the Collection pass a test.
      *
-     * Strict equality is used to compare values, i.e. the item must match on both value and type.
+     * NB: If calling this method on a Dictionary, the callback function must be able to accept a KeyValuePair.
      *
-     * @param mixed ...$values The values to check for.
-     * @return bool True if the Collection contains all the values, false otherwise.
+     * This method is analogous to array_all().
+     * @see https://www.php.net/manual/en/function.array-all.php
+     *
+     * @param callable $fn The test function.
+     * @return bool True if all items pass the test, false otherwise.
      */
-    public function containsAll(mixed ...$values): bool
+    public function all(callable $fn): bool
     {
-        return array_all($values, fn($value) => $this->contains($value));
+        return array_all($this->items, $fn);
     }
 
     /**
-     * Check if the Collection contains any of the given values.
+     * Check if any items in the Collection pass a test.
      *
-     * Strict equality is used to compare values, i.e. the item must match on both value and type.
+     * NB: If calling this method on a Dictionary, the callback function must be able to accept a KeyValuePair.
      *
-     * @param mixed ...$values The values to check for.
-     * @return bool True if the Collection contains any of the values, false otherwise.
+     * This method is analogous to array_any().
+     * @see https://www.php.net/manual/en/function.array-any.php
+     *
+     * @param callable $fn The test function.
+     * @return bool True if any items pass the test, false otherwise.
      */
-    public function containsAny(mixed ...$values): bool
+    public function any(callable $fn): bool
     {
-        return array_any($values, fn($value) => $this->contains($value));
+        return array_any($this->items, $fn);
     }
 
     // endregion

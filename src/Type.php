@@ -4,18 +4,25 @@ declare(strict_types = 1);
 
 namespace Galaxon\Collections;
 
-use Galaxon\Math\Double;
-use Galaxon\Math\Stringify;
+// Throwables
 use TypeError;
 
+// Galaxon
+use Galaxon\Math\Double;
+use Galaxon\Math\Stringify;
+
+/**
+ * Some convenience methods for working with types.
+ * May move to Core later.
+ */
 class Type
 {
     // region Miscellaneous
 
     /**
-     * Get the simple type of a value.
+     * Get the basic type of a value.
      *
-     * Result will be one of:
+     * Result will be a string, one of:
      * - null
      * - bool
      * - int
@@ -27,9 +34,9 @@ class Type
      * - unknown
      *
      * @param mixed $value The value to get the type of.
-     * @return string The simple type of the value.
+     * @return string The basic type of the value.
      */
-    public static function getSimpleType(mixed $value): string
+    public static function getBasicType(mixed $value): string
     {
         // Try get_debug_type() first as this returns the new, canonical type names.
         $type = get_debug_type($value);
@@ -37,21 +44,21 @@ class Type
             return $type;
         }
 
-        // Call the old function, gettype(), and return the first word ("object", "resource", or "unknown").
-        // (NB: The documentation for get_debug_type() has no equivalent for "unknown type".)
+        // Call gettype() and return the first word, which should be "object", "resource", or "unknown".
+        // NB: The documentation for get_debug_type() has no equivalent for "unknown type", so this may never occur.
         $type = gettype($value);
         return explode(' ', $type)[0];
     }
 
     /**
-     * Convert any PHP value into a unique string, for use as a key in a collection.
+     * Convert any PHP value into a unique string, for use as a key in a collection like Set or Dictionary.
      *
      * @param mixed $value The value to convert.
      * @return string The unique string key.
      */
     public static function getStringKey(mixed $value): string
     {
-        $type = get_debug_type($value);
+        $type = self::getBasicType($value);
 
         // Core types.
         switch ($type) {
@@ -81,22 +88,19 @@ class Type
                 $result = 'a:' . count($value) . ':' . Stringify::stringifyArray($value);
                 break;
 
-            default:
-                // Objects.
-                if (is_object($value)) {
-                    $result = 'o:' . spl_object_id($value);
-                }
-                // Resources.
-                elseif (str_starts_with($type, 'resource')) {
-                    $result = 'r:' . get_resource_id($value);
-                }
-                // Unknown.
-                else {
-                    // Not sure if this can ever actually happen. gettype() can return 'unknown type' but
-                    // get_debug_type() has no equivalent. Defensive programming.
-                    throw new TypeError("Value has unknown type.");
-                }
+            case 'object':
+                $result = 'o:' . spl_object_id($value);
                 break;
+
+            case 'resource':
+                $result = 'r:' . get_resource_id($value);
+                break;
+
+            default:
+                // Unknown.
+                // Not sure if this can ever actually happen. gettype() can return 'unknown type' but
+                // get_debug_type() has no equivalent. Defensive programming.
+                throw new TypeError("Value has unknown type.");
         }
 
         return $result;
