@@ -5,19 +5,20 @@ declare(strict_types = 1);
 namespace Galaxon\Collections;
 
 // Interfaces
-use ArrayAccess;
-use Traversable;
-
-// Attributes
-use Override;
-
-// Throwables
 use ArgumentCountError;
+use ArrayAccess;
+use Galaxon\Core\Stringify;
+use Galaxon\Core\Type;
 use OutOfBoundsException;
+use Override;
+use Traversable;
 use TypeError;
 
+// Attributes
+
+// Throwables
+
 // Galaxon
-use Galaxon\Core\Stringify;
 
 /**
  * Dictionary class that permits keys and values of any type, including scalar, complex, nullable,

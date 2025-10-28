@@ -6,15 +6,16 @@ namespace Galaxon\Collections;
 
 // Interfaces
 use ArrayAccess;
+use Galaxon\Core\Type;
+use OutOfRangeException;
+use Override;
+use TypeError;
+use UnderflowException;
+use ValueError;
 
 // Throwables
-use ValueError;
-use TypeError;
-use OutOfRangeException;
-use UnderflowException;
 
 // Attributes
-use Override;
 
 /**
  * A type-specific list implementation.
@@ -1029,7 +1030,7 @@ final class Sequence extends Collection implements ArrayAccess
     }
 
     /**
-     * Set a Sequence item to null.
+     * Reset a Sequence item to the default value (e.g. null, false, 0, 0.0, '', or []).
      *
      * This method isn't usually called as a method, but rather indirectly by calling unset($sequence[$offset]).
      *
@@ -1049,13 +1050,8 @@ final class Sequence extends Collection implements ArrayAccess
         // Check the index is valid.
         $this->checkIndex($offset);
 
-        // Make sure nulls are allowed.
-        if (!$this->valueTypes->nullOk()) {
-            throw new TypeError("Cannot unset an item if null is not an allowed type.");
-        }
-
-        // Set the item to null.
-        $this->items[$offset] = null;
+        // Set the item to the default value.
+        $this->items[$offset] = $this->getDefaultValue();
     }
 
     // endregion

@@ -82,7 +82,7 @@ class SequenceArrayAccessTest extends TestCase
         $this->expectException(TypeError::class);
 
         $seq = new Sequence('int');
-        $seq[0] = 'string';
+        $seq[0] = 'Some string';
     }
 
     /**
@@ -178,17 +178,18 @@ class SequenceArrayAccessTest extends TestCase
     }
 
     /**
-     * Test offsetUnset throws TypeError when null not allowed.
+     * Test offsetUnset sets item to default value.
      */
-    public function testOffsetUnsetThrowsTypeErrorWhenNullNotAllowed(): void
+    public function testOffsetUnsetSetsItemToDefaultValue(): void
     {
-        // Test: Attempt to unset in non-nullable Sequence
-        $this->expectException(TypeError::class);
-        $this->expectExceptionMessage("Cannot unset an item if null is not an allowed type");
-
+        // Test: Unset item in non-nullable Sequence
         $seq = new Sequence('int');
         $seq->append(1, 2, 3);
         unset($seq[1]);
+
+        // Test: Verify item is now the default value (0) and count unchanged.
+        $this->assertCount(3, $seq);
+        $this->assertSame(0, $seq[1]);
     }
 
     /**
@@ -262,6 +263,19 @@ class SequenceArrayAccessTest extends TestCase
         foreach ($chosen as $value) {
             $this->assertTrue($seq->contains($value));
         }
+    }
+
+    /**
+     * Test chooseRand throws UnderflowException on empty Sequence.
+     */
+    public function testChooseRandThrowsOutOfRangeWhenCountNegative(): void
+    {
+        // Test: Attempt to choose from empty Sequence
+        $this->expectException(OutOfRangeException::class);
+
+        $seq = new Sequence('int');
+        $seq->append(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+        $seq->chooseRand(-1);
     }
 
     /**

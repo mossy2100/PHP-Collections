@@ -5,6 +5,7 @@ declare(strict_types = 1);
 namespace Galaxon\Collections;
 
 // Attributes
+use Galaxon\Core\Type;
 use Override;
 
 /**
