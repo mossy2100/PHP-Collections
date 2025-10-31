@@ -6,7 +6,7 @@ namespace Galaxon\Collections;
 
 // Interfaces
 use ArrayAccess;
-use Galaxon\Core\Type;
+use Galaxon\Core\Types;
 use OutOfRangeException;
 use Override;
 use TypeError;
@@ -35,7 +35,6 @@ use ValueError;
  *
  * 4. Array-like access using square brackets [] and iteration using foreach is supported via the ArrayAccess and
  * Iterator interfaces.
-
  * ## Automatic Defaults
  * For value types, the following defaults are used:
  * - null or mixed → null
@@ -108,7 +107,8 @@ final class Sequence extends Collection implements ArrayAccess
             if (!$this->valueTypes->tryGetDefaultValue($default_value)) {
                 throw new ValueError("A default value could not be determined. Either provide a default value or include 'null' in the allowed types.");
             }
-        } elseif (!$this->valueTypes->match($default_value)) {
+        }
+        elseif (!$this->valueTypes->match($default_value)) {
             // The default value is invalid for the specified TypeSet.
             throw new TypeError("The default value has an invalid type. Either provide a default value of an allowed type, or set it to null and include 'null' in the allowed types for this Sequence.");
         }
@@ -123,7 +123,8 @@ final class Sequence extends Collection implements ArrayAccess
      * @param iterable $src The iterable to copy from.
      * @return static The new Sequence instance.
      */
-    public static function fromIterable(iterable $src): static {
+    public static function fromIterable(iterable $src): static
+    {
         $seq = new self();
 
         // Add types from the source iterable.
@@ -145,7 +146,8 @@ final class Sequence extends Collection implements ArrayAccess
      * @param iterable $items The iterable to copy items from.
      * @return self The new Sequence.
      */
-    public function fromSubset(iterable $items = []): self {
+    public function fromSubset(iterable $items = []): self
+    {
         // Construct the new Sequence.
         $seq = new self($this->valueTypes, $this->defaultValue);
 
@@ -207,7 +209,8 @@ final class Sequence extends Collection implements ArrayAccess
             for ($i = $start; $i <= $end; $i += $step) {
                 $seq->append($i);
             }
-        } else {
+        }
+        else {
             // Descending.
             for ($i = $start; $i >= $end; $i += $step) {
                 $seq->append($i);
@@ -234,7 +237,7 @@ final class Sequence extends Collection implements ArrayAccess
     {
         // Check the index is an integer.
         if (!is_int($index)) {
-            throw Type::createError('index', 'int', $index);
+            throw Types::createError('index', 'int', $index);
         }
 
         // Check the index isn't negative.
@@ -256,7 +259,8 @@ final class Sequence extends Collection implements ArrayAccess
      *
      * @return mixed The new default value.
      */
-    private function getDefaultValue(): mixed {
+    private function getDefaultValue(): mixed
+    {
         return is_object($this->defaultValue) ? clone $this->defaultValue : $this->defaultValue;
     }
 
@@ -328,7 +332,8 @@ final class Sequence extends Collection implements ArrayAccess
      * @return $this The Sequence instance.
      * @throws OutOfRangeException If the index is less than 0.
      */
-    public function insert(int $index, mixed $item): self {
+    public function insert(int $index, mixed $item): self
+    {
         // Check the item type.
         $this->valueTypes->check($item);
 
@@ -449,7 +454,7 @@ final class Sequence extends Collection implements ArrayAccess
 
     // endregion
 
-    // region Contains method implementation
+    // region Inspection methods
 
     /**
      * Check if the Sequence contains a value.
@@ -463,6 +468,26 @@ final class Sequence extends Collection implements ArrayAccess
     public function contains(mixed $value): bool
     {
         return in_array($value, $this->items, true);
+    }
+
+    /**
+     * Check if the Sequence is equal to another Collection.
+     *
+     * Type constraints are ignored.
+     *
+     * @param Collection $other The other Sequence.
+     * @return bool True if the Sequences are equal, false otherwise.
+     */
+    #[Override]
+    public function equals(Collection $other): bool
+    {
+        // Check type and item count are equal.
+        if (!$this->equalsTypeAndCount($other)) {
+            return false;
+        }
+
+        // Check values are equal.
+        return array_all($this->items, fn($value, $key) => $this->items[$key] === $other->items[$key]);
     }
 
     /**
@@ -780,7 +805,8 @@ final class Sequence extends Collection implements ArrayAccess
      *
      * @return self A new Sequence containing the unique values.
      */
-    public function unique(): self {
+    public function unique(): self
+    {
         // Get the unique values.
         $items = array_unique($this->items);
 
@@ -856,7 +882,8 @@ final class Sequence extends Collection implements ArrayAccess
      * @throws OutOfRangeException If the count is out of range or the Sequence doesn't have enough items to choose the
      * specified count.
      */
-    private function chooseRandIndexes(int $count = 1): array {
+    private function chooseRandIndexes(int $count = 1): array
+    {
         // Guards.
         if ($this->empty()) {
             throw new UnderflowException("Cannot choose items from an empty Sequence.");
@@ -887,16 +914,16 @@ final class Sequence extends Collection implements ArrayAccess
      *
      * NB: This method is non-mutating.
      *
-     * @example
-     * $seq = Sequence::range(1, 10);
-     * $items = $seq->chooseRand(3);
-     * // Returns: [2 => 3, 7 => 8, 5 => 6] (indexes and values in random order)
-     *
      * @param int $count The number of items to choose (default: 1).
      * @return array<int, mixed> An array containing the chosen items (indexes and values) in random order.
      * @throws UnderflowException If the Sequence is empty.
      * @throws OutOfRangeException If the count is out of range or the Sequence doesn't have enough items to choose the
      * specified count.
+     * @example
+     * $seq = Sequence::range(1, 10);
+     * $items = $seq->chooseRand(3);
+     * // Returns: [2 => 3, 7 => 8, 5 => 6] (indexes and values in random order)
+     *
      */
     public function chooseRand(int $count = 1): array
     {
@@ -1023,7 +1050,7 @@ final class Sequence extends Collection implements ArrayAccess
     {
         // Check the index is an integer.
         if (!is_int($offset)) {
-            throw Type::createError('offset', 'int', $offset);
+            throw Types::createError('offset', 'int', $offset);
         }
 
         return array_key_exists($offset, $this->items);
@@ -1063,7 +1090,8 @@ final class Sequence extends Collection implements ArrayAccess
      *
      * @return Dictionary The new Dictionary.
      */
-    public function toDictionary(): Dictionary {
+    public function toDictionary(): Dictionary
+    {
         // Construct the new Dictionary.
         $dict = new Dictionary('int', $this->valueTypes);
 
@@ -1081,7 +1109,8 @@ final class Sequence extends Collection implements ArrayAccess
      *
      * @return Set The new Set.
      */
-    public function toSet(): Set {
+    public function toSet(): Set
+    {
         // Create the new Set.
         $set = new Set($this->valueTypes);
 

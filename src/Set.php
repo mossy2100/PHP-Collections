@@ -5,7 +5,7 @@ declare(strict_types = 1);
 namespace Galaxon\Collections;
 
 // Attributes
-use Galaxon\Core\Type;
+use Galaxon\Core\Types;
 use Override;
 
 /**
@@ -59,7 +59,7 @@ final class Set extends Collection
             $this->valueTypes->check($item);
 
             // Add the item if new.
-            $key = Type::getStringKey($item);
+            $key = Types::getStringKey($item);
             if (!array_key_exists($key, $this->items)) {
                 $this->items[$key] = $item;
             }
@@ -82,7 +82,7 @@ final class Set extends Collection
         // Remove each item.
         foreach ($items as $item) {
             // No type check needed. If it's in the set, remove it.
-            $key = Type::getStringKey($item);
+            $key = Types::getStringKey($item);
             if (array_key_exists($key, $this->items)) {
                 unset($this->items[$key]);
             }
@@ -107,7 +107,7 @@ final class Set extends Collection
     #[Override]
     public function contains(mixed $value): bool
     {
-        return array_key_exists(Type::getStringKey($value), $this->items);
+        return array_key_exists(Types::getStringKey($value), $this->items);
     }
 
     // endregion
@@ -188,17 +188,23 @@ final class Set extends Collection
     // region Comparison methods
 
     /**
-     * Checks if two sets are equal, i.e. containing the same elements.
+     * Check if the Set is equal to another Collection.
      *
-     * The order of the elements in each Set is irrelevant.
-     * The type constraints for each Set are also not considered.
+     * Type constraints are ignored.
      *
-     * @param self $other
-     * @return bool
+     * @param Collection $other The other Set.
+     * @return bool True if the Sets are equal, false otherwise.
      */
-    public function equals(self $other): bool
+    #[Override]
+    public function equals(Collection $other): bool
     {
-        return ($this->count() === $other->count()) && $this->subset($other);
+        // Check type and item count are equal.
+        if (!$this->equalsTypeAndCount($other)) {
+            return false;
+        }
+
+        // Check values are equal. Order doesn't matter, so we can call subset().
+        return $this->subset($other);
     }
 
     /**

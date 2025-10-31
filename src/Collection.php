@@ -139,6 +139,26 @@ abstract class Collection implements Countable, IteratorAggregate, Stringable
         return array_any($this->items, $fn);
     }
 
+    /**
+     * Check if two Collections have the same type and number of items.
+     *
+     * Protected helper method for use by equals() implementations.
+     *
+     * @param Collection $other The other Collection.
+     * @return bool True if the Collections have the same type and number of items, false otherwise.
+     */
+    protected function equalsTypeAndCount(Collection $other): bool {
+        return $this::class === $other::class && count($this->items) === count($other->items);
+    }
+
+    /**
+     * Check if the Collection is equal to another Collection.
+     *
+     * @param Collection $other The other Collection.
+     * @return bool True if the Collections are equal, false otherwise.
+     */
+    abstract public function equals(Collection $other): bool;
+
     // endregion
 
     // region IteratorAggregate implementation

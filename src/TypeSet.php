@@ -7,8 +7,8 @@ namespace Galaxon\Collections;
 // Interfaces
 use ArrayIterator;
 use Countable;
-use Galaxon\Core\Number;
-use Galaxon\Core\Type;
+use Galaxon\Core\Numbers;
+use Galaxon\Core\Types;
 use IteratorAggregate;
 use RuntimeException;
 use Traversable;
@@ -134,12 +134,12 @@ class TypeSet implements Countable, IteratorAggregate
         }
 
         // Check number.
-        if ($this->contains('number') && Type::isNumber($value)) {
+        if ($this->contains('number') && Types::isNumber($value)) {
             return true;
         }
 
         // Check uint.
-        if ($this->contains('uint') && Type::isUint($value)) {
+        if ($this->contains('uint') && Types::isUint($value)) {
             return true;
         }
 
@@ -175,7 +175,7 @@ class TypeSet implements Countable, IteratorAggregate
                 }
 
                 // Check for a matching trait.
-                if (trait_exists($type) && Type::usesTrait($value, $type)) {
+                if (trait_exists($type) && Types::usesTrait($value, $type)) {
                     return true;
                 }
             }

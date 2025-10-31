@@ -8,7 +8,7 @@ namespace Galaxon\Collections;
 use ArgumentCountError;
 use ArrayAccess;
 use Galaxon\Core\Stringify;
-use Galaxon\Core\Type;
+use Galaxon\Core\Types;
 use OutOfBoundsException;
 use Override;
 use Traversable;
@@ -88,7 +88,7 @@ final class Dictionary extends Collection implements ArrayAccess
 
     // endregion
 
-    // region Inspection methods
+    // region Extraction methods
 
     /**
      * Get all the keys as an array.
@@ -130,7 +130,8 @@ final class Dictionary extends Collection implements ArrayAccess
      * @throws TypeError If the key or value has a disallowed type.
      * @throws ArgumentCountError If the wrong number of parameters is supplied.
      */
-    public function add(mixed $key_or_pair, mixed $value = null): self {
+    public function add(mixed $key_or_pair, mixed $value = null): self
+    {
         // Support calling the method with one parameter only, which can be a KeyValuePair, or an array with two items.
         $n_args = func_num_args();
         if ($n_args === 1) {
@@ -169,7 +170,8 @@ final class Dictionary extends Collection implements ArrayAccess
      * @param mixed $key The key to remove.
      * @return self The modified Dictionary.
      */
-    public function removeByKey(mixed $key): self {
+    public function removeByKey(mixed $key): self
+    {
         if ($this->offsetExists($key)) {
             $this->offsetUnset($key);
         }
@@ -182,7 +184,8 @@ final class Dictionary extends Collection implements ArrayAccess
      * @param mixed $value The value to remove.
      * @return self The modified Dictionary.
      */
-    public function removeByValue(mixed $value): self {
+    public function removeByValue(mixed $value): self
+    {
         foreach ($this->items as $string_key => $pair) {
             if ($pair->value === $value) {
                 $this->offsetUnset($string_key);
@@ -193,7 +196,7 @@ final class Dictionary extends Collection implements ArrayAccess
 
     // endregion
 
-    // region Contains method implementation
+    // region Inspection methods
 
     /**
      * Check if the Dictionary contains a value.
@@ -207,6 +210,35 @@ final class Dictionary extends Collection implements ArrayAccess
     public function contains(mixed $value): bool
     {
         return array_any($this->items, static fn($item) => $item->value === $value);
+    }
+
+    /**
+     * Check if the Dictionary is equal to another Collection.
+     *
+     * Type constraints are ignored.
+     *
+     * @param Collection $other The other Dictionary.
+     * @return bool True if the Dictionaries are equal, false otherwise.
+     */
+    #[Override]
+    public function equals(Collection $other): bool
+    {
+        // Check type and item count are equal.
+        if (!$this->equalsTypeAndCount($other)) {
+            return false;
+        }
+
+        // Check keys and item order are equal.
+        // This actually compares the internal string keys (indexes), but that's sufficient for comparing the keys in
+        // the KeyValuePairs.
+        $this_keys = array_keys($this->items);
+        $other_keys = array_keys($other->items);
+        if ($this_keys !== $other_keys) {
+            return false;
+        }
+
+        // Check values are equal.
+        return array_all($this->items, fn($value, $key) => $this->items[$key]->value === $other->items[$key]->value);
     }
 
     /**
@@ -234,7 +266,8 @@ final class Dictionary extends Collection implements ArrayAccess
      * return an integer equal to -1 (less than), 0 (equal), or 1 (greater than).
      * @return $this The sorted Dictionary.
      */
-    public function sort(callable $fn): self {
+    public function sort(callable $fn): self
+    {
         uasort($this->items, $fn);
         return $this;
     }
@@ -246,7 +279,8 @@ final class Dictionary extends Collection implements ArrayAccess
      *
      * @return $this The sorted Dictionary.
      */
-    public function sortByKey(): self {
+    public function sortByKey(): self
+    {
         $fn = fn($a, $b) => $a->key <=> $b->key;
         return $this->sort($fn);
     }
@@ -258,7 +292,8 @@ final class Dictionary extends Collection implements ArrayAccess
      *
      * @return $this The sorted Dictionary.
      */
-    public function sortByValue(): self {
+    public function sortByValue(): self
+    {
         $fn = fn($a, $b) => $a->value <=> $b->value;
         return $this->sort($fn);
     }
@@ -276,7 +311,8 @@ final class Dictionary extends Collection implements ArrayAccess
      *
      * @return self
      */
-    public function flip(): self {
+    public function flip(): self
+    {
         // Create a new dictionary to hold the result.
         $result = new self($this->valueTypes, $this->keyTypes);
 
@@ -299,7 +335,8 @@ final class Dictionary extends Collection implements ArrayAccess
      * @param self $other The Dictionary to merge with this Dictionary.
      * @return self The new Dictionary containing pairs from both source Dictionaries.
      */
-    public function merge(self $other): self {
+    public function merge(self $other): self
+    {
         // Create a new dictionary with the combined type constraints.
         $key_types = new TypeSet($this->keyTypes)->add($other->keyTypes);
         $value_types = new TypeSet($this->valueTypes)->add($other->valueTypes);
@@ -390,7 +427,7 @@ final class Dictionary extends Collection implements ArrayAccess
         $this->valueTypes->check($value, 'value');
 
         // Get the string version of this key.
-        $string_key = Type::getStringKey($offset);
+        $string_key = Types::getStringKey($offset);
 
         // Store the key-value pair in the items array.
         $this->items[$string_key] = new KeyValuePair($offset, $value);
@@ -406,7 +443,7 @@ final class Dictionary extends Collection implements ArrayAccess
     public function offsetGet(mixed $offset): mixed
     {
         // Get the string version of this key.
-        $string_key = Type::getStringKey($offset);
+        $string_key = Types::getStringKey($offset);
 
         // Check key exists.
         if (!array_key_exists($string_key, $this->items)) {
@@ -426,7 +463,7 @@ final class Dictionary extends Collection implements ArrayAccess
     #[Override]
     public function offsetExists(mixed $offset): bool
     {
-        return array_key_exists(Type::getStringKey($offset), $this->items);
+        return array_key_exists(Types::getStringKey($offset), $this->items);
     }
 
     /**
@@ -439,7 +476,7 @@ final class Dictionary extends Collection implements ArrayAccess
     public function offsetUnset(mixed $offset): void
     {
         // Get the string version of this key.
-        $string_key = Type::getStringKey($offset);
+        $string_key = Types::getStringKey($offset);
 
         // Check key exists.
         if (!array_key_exists($string_key, $this->items)) {
@@ -477,7 +514,8 @@ final class Dictionary extends Collection implements ArrayAccess
      *
      * @return Sequence The new Sequence.
      */
-    public function toSequence(): Sequence {
+    public function toSequence(): Sequence
+    {
         return Sequence::fromIterable($this->items);
     }
 
@@ -487,7 +525,8 @@ final class Dictionary extends Collection implements ArrayAccess
      *
      * @return Set The new Set.
      */
-    public function toSet(): Set {
+    public function toSet(): Set
+    {
         return Set::fromIterable($this->items);
     }
 
