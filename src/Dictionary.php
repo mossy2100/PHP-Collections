@@ -181,7 +181,7 @@ final class Dictionary extends Collection implements ArrayAccess
     {
         foreach ($this->items as $string_key => $pair) {
             if ($pair->value === $value) {
-                $this->offsetUnset($string_key);
+                unset($this->items[$string_key]);
             }
         }
         return $this;
