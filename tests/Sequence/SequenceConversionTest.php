@@ -4,8 +4,8 @@ declare(strict_types = 1);
 
 namespace Galaxon\Collections\Tests\Sequence;
 
-use Galaxon\Collections\Sequence;
 use Galaxon\Collections\Dictionary;
+use Galaxon\Collections\Sequence;
 use Galaxon\Collections\Set;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -25,7 +25,7 @@ class SequenceConversionTest extends TestCase
         $seq = new Sequence('int');
         $seq->append(1, 2, 3);
         $str = (string)$seq;
-        
+
         // Test: Verify string representation exists
         $this->assertIsString($str);
         $this->assertNotEmpty($str);
@@ -40,7 +40,7 @@ class SequenceConversionTest extends TestCase
         $seq = new Sequence('string');
         $seq->append('apple', 'banana', 'cherry');
         $dict = $seq->toDictionary();
-        
+
         // Test: Verify Dictionary created with correct mappings
         $this->assertInstanceOf(Dictionary::class, $dict);
         $this->assertCount(3, $dict);
@@ -58,7 +58,7 @@ class SequenceConversionTest extends TestCase
         $seq = new Sequence('int');
         $seq->append(10, 20, 30, 40, 50);
         $dict = $seq->toDictionary();
-        
+
         // Test: Check specific key-value pairs
         $this->assertTrue($dict->offsetExists(0));
         $this->assertTrue($dict->offsetExists(4));
@@ -75,7 +75,7 @@ class SequenceConversionTest extends TestCase
         $seq = new Sequence('int');
         $seq->append(1, 2, 3, 4, 5);
         $set = $seq->toSet();
-        
+
         // Test: Verify Set created with correct values
         $this->assertInstanceOf(Set::class, $set);
         $this->assertCount(5, $set);
@@ -92,7 +92,7 @@ class SequenceConversionTest extends TestCase
         $seq = new Sequence('string');
         $seq->append('a', 'b', 'a', 'c', 'b', 'd');
         $set = $seq->toSet();
-        
+
         // Test: Verify Set contains only unique values
         $this->assertCount(4, $set);
         $this->assertTrue($set->contains('a'));
@@ -110,7 +110,7 @@ class SequenceConversionTest extends TestCase
         $seq = new Sequence('int');
         $seq->append(5, 10, 15, 20);
         $array = $seq->toArray();
-        
+
         // Test: Verify it's a regular array with correct values
         $this->assertIsArray($array);
         $this->assertSame([5, 10, 15, 20], $array);
@@ -125,7 +125,7 @@ class SequenceConversionTest extends TestCase
         $seq = new Sequence('string');
         $seq->append('x', 'y', 'z');
         $array = $seq->toArray();
-        
+
         // Test: Check array structure
         $this->assertArrayHasKey(0, $array);
         $this->assertArrayHasKey(1, $array);
@@ -143,7 +143,7 @@ class SequenceConversionTest extends TestCase
         $seq = new Sequence('string');
         $seq->append('a', 'b', 'a', 'c', 'b', 'a');
         $counts = $seq->countValues();
-        
+
         // Test: Verify counts are correct
         $this->assertInstanceOf(Dictionary::class, $counts);
         $this->assertSame(3, $counts['a']);
@@ -160,7 +160,7 @@ class SequenceConversionTest extends TestCase
         $seq = new Sequence('int');
         $seq->append(1, 2, 3, 4, 5);
         $counts = $seq->countValues();
-        
+
         // Test: Verify all counts are 1
         $this->assertCount(5, $counts);
         $this->assertSame(1, $counts[1]);

@@ -4,22 +4,14 @@ declare(strict_types = 1);
 
 namespace Galaxon\Collections;
 
-// Interfaces
 use ArrayIterator;
 use Countable;
-use Galaxon\Core\Numbers;
 use Galaxon\Core\Types;
 use IteratorAggregate;
 use RuntimeException;
 use Traversable;
 use TypeError;
 use ValueError;
-
-// Throwables
-
-// Other
-
-// Galaxon
 
 /**
  * Encapsulates a set of types, represented as strings.
@@ -245,7 +237,8 @@ class TypeSet implements Countable, IteratorAggregate
      * @param string $type The type name to normalize.
      * @return string The normalized type name.
      */
-    private static function normalizeTypeName(string $type): string {
+    private static function normalizeTypeName(string $type): string
+    {
         return ltrim(trim($type), '\\');
     }
 
@@ -255,7 +248,8 @@ class TypeSet implements Countable, IteratorAggregate
      * @param string $type The type to check.
      * @return bool True if the type is a basic type, false otherwise.
      */
-    private static function isBasicType(string $type): bool {
+    private static function isBasicType(string $type): bool
+    {
         $types = ['null', 'int', 'float', 'string', 'bool', 'array', 'object', 'resource'];
         return in_array($type, $types, true);
     }
@@ -266,7 +260,8 @@ class TypeSet implements Countable, IteratorAggregate
      * @param string $type The type to check.
      * @return bool True if the type is a pseudotype, false otherwise.
      */
-    private static function isPseudoType(string $type): bool {
+    private static function isPseudoType(string $type): bool
+    {
         $types = ['callable', 'iterable', 'mixed', 'scalar', 'number', 'uint'];
         return in_array($type, $types, true);
     }
@@ -281,7 +276,8 @@ class TypeSet implements Countable, IteratorAggregate
      * @param string $type The type to check.
      * @return bool True if the type is a resource type, false otherwise.
      */
-    private static function isResourceType(string $type): bool {
+    private static function isResourceType(string $type): bool
+    {
         $ok = preg_match("/^resource \([\w. ]+\)$/", $type);
 
         if ($ok === false) {
@@ -303,7 +299,8 @@ class TypeSet implements Countable, IteratorAggregate
      * @param string $type The type to check.
      * @return bool True if the type is a class name, false otherwise.
      */
-    private static function isClassType(string $type): bool {
+    private static function isClassType(string $type): bool
+    {
         $class_name_part = "[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*";
         $ok = preg_match("/^\\\\?($class_name_part)(?:\\\\$class_name_part)*$/", $type);
 
@@ -470,7 +467,8 @@ class TypeSet implements Countable, IteratorAggregate
      *
      * @return bool True if the TypeSet allows values of any types, false otherwise.
      */
-    public function anyOk(): bool {
+    public function anyOk(): bool
+    {
         return $this->empty() || $this->contains('mixed');
     }
 
@@ -479,7 +477,8 @@ class TypeSet implements Countable, IteratorAggregate
      *
      * @return bool True if the TypeSet allows nulls, false otherwise.
      */
-    public function nullOk(): bool {
+    public function nullOk(): bool
+    {
         return $this->contains('null') || $this->anyOk();
     }
 

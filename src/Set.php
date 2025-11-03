@@ -4,7 +4,6 @@ declare(strict_types = 1);
 
 namespace Galaxon\Collections;
 
-// Attributes
 use Galaxon\Core\Types;
 use Override;
 
@@ -196,10 +195,10 @@ final class Set extends Collection
      * @return bool True if the Sets are equal, false otherwise.
      */
     #[Override]
-    public function equals(Collection $other): bool
+    public function eq(Collection $other): bool
     {
         // Check type and item count are equal.
-        if (!$this->equalsTypeAndCount($other)) {
+        if (!$this->eqTypeAndCount($other)) {
             return false;
         }
 

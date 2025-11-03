@@ -5,9 +5,9 @@ declare(strict_types = 1);
 namespace Galaxon\Collections\Tests\Sequence;
 
 use Galaxon\Collections\Sequence;
+use OutOfRangeException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use OutOfRangeException;
 
 /**
  * Tests for Sequence inspection and getter methods.
@@ -22,7 +22,7 @@ class SequenceInspectionTest extends TestCase
     {
         // Test: Check empty Sequence
         $seq = new Sequence('int');
-        
+
         // Test: Verify empty() returns true
         $this->assertTrue($seq->empty());
     }
@@ -35,7 +35,7 @@ class SequenceInspectionTest extends TestCase
         // Test: Check Sequence with items
         $seq = new Sequence('int');
         $seq->append(1, 2, 3);
-        
+
         // Test: Verify empty() returns false
         $this->assertFalse($seq->empty());
     }
@@ -48,7 +48,7 @@ class SequenceInspectionTest extends TestCase
         // Test: Check for value that exists
         $seq = new Sequence('string');
         $seq->append('apple', 'banana', 'cherry');
-        
+
         // Test: Verify contains() returns true
         $this->assertTrue($seq->contains('banana'));
     }
@@ -61,7 +61,7 @@ class SequenceInspectionTest extends TestCase
         // Test: Check for value that doesn't exist
         $seq = new Sequence('string');
         $seq->append('apple', 'banana');
-        
+
         // Test: Verify contains() returns false
         $this->assertFalse($seq->contains('cherry'));
     }
@@ -74,7 +74,7 @@ class SequenceInspectionTest extends TestCase
         // Test: Verify strict type checking
         $seq = new Sequence();
         $seq->append(1, '1', 2);
-        
+
         // Test: Integer 1 is found
         $this->assertTrue($seq->contains(1));
         // Test: String '2' is not found (only integer 2 exists)
@@ -89,7 +89,7 @@ class SequenceInspectionTest extends TestCase
         // Test: Check if index exists
         $seq = new Sequence('int');
         $seq->append(10, 20, 30);
-        
+
         // Test: Valid indexes exist
         $this->assertTrue($seq->indexExists(0));
         $this->assertTrue($seq->indexExists(2));
@@ -105,7 +105,7 @@ class SequenceInspectionTest extends TestCase
         // Test: Get first item
         $seq = new Sequence('string');
         $seq->append('a', 'b', 'c');
-        
+
         // Test: Verify first() returns correct item
         $this->assertSame('a', $seq->first());
     }
@@ -117,7 +117,7 @@ class SequenceInspectionTest extends TestCase
     {
         // Test: Attempt to get first from empty Sequence
         $this->expectException(OutOfRangeException::class);
-        
+
         $seq = new Sequence('int');
         $seq->first();
     }
@@ -130,7 +130,7 @@ class SequenceInspectionTest extends TestCase
         // Test: Get last item
         $seq = new Sequence('string');
         $seq->append('a', 'b', 'c');
-        
+
         // Test: Verify last() returns correct item
         $this->assertSame('c', $seq->last());
     }
@@ -142,7 +142,7 @@ class SequenceInspectionTest extends TestCase
     {
         // Test: Attempt to get last from empty Sequence
         $this->expectException(OutOfRangeException::class);
-        
+
         $seq = new Sequence('int');
         $seq->last();
     }
@@ -156,7 +156,7 @@ class SequenceInspectionTest extends TestCase
         $seq = new Sequence('int');
         $seq->append(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
         $slice = $seq->slice(3, 4);
-        
+
         // Test: Verify slice contains correct items
         $this->assertCount(4, $slice);
         $this->assertSame(4, $slice[0]);
@@ -172,7 +172,7 @@ class SequenceInspectionTest extends TestCase
         $seq = new Sequence('int');
         $seq->append(1, 2, 3, 4, 5);
         $slice = $seq->slice(-3);
-        
+
         // Test: Verify slice contains last 3 items
         $this->assertCount(3, $slice);
         $this->assertSame(3, $slice[0]);
@@ -188,7 +188,7 @@ class SequenceInspectionTest extends TestCase
         $seq = new Sequence('int');
         $seq->append(1, 2, 3, 4, 5, 6, 7, 8);
         $slice = $seq->slice(2, -2);
-        
+
         // Test: Verify slice stops 2 elements from end
         $this->assertCount(4, $slice);
         $this->assertSame(3, $slice[0]);
@@ -204,7 +204,7 @@ class SequenceInspectionTest extends TestCase
         $seq = new Sequence('string');
         $seq->append('apple', 'banana', 'cherry', 'date');
         $index = $seq->search('cherry');
-        
+
         // Test: Verify correct index returned
         $this->assertSame(2, $index);
     }
@@ -218,7 +218,7 @@ class SequenceInspectionTest extends TestCase
         $seq = new Sequence('string');
         $seq->append('apple', 'banana');
         $index = $seq->search('grape');
-        
+
         // Test: Verify null returned
         $this->assertNull($index);
     }
@@ -231,7 +231,7 @@ class SequenceInspectionTest extends TestCase
         // Test: Verify strict type checking in search
         $seq = new Sequence();
         $seq->append(1, 2, '3', 4);
-        
+
         // Test: String '3' is at index 2
         $this->assertSame(2, $seq->search('3'));
         // Test: Integer 3 is not found
@@ -247,7 +247,7 @@ class SequenceInspectionTest extends TestCase
         $seq = new Sequence('int');
         $seq->append(1, 3, 4, 6, 8);
         $result = $seq->find(fn($x) => $x % 2 === 0);
-        
+
         // Test: Verify first even number returned
         $this->assertSame(4, $result);
     }
@@ -261,7 +261,7 @@ class SequenceInspectionTest extends TestCase
         $seq = new Sequence('int');
         $seq->append(1, 3, 5, 7);
         $result = $seq->find(fn($x) => $x > 10);
-        
+
         // Test: Verify null returned
         $this->assertNull($result);
     }
@@ -274,7 +274,7 @@ class SequenceInspectionTest extends TestCase
         // Test: Check if all items are positive
         $seq = new Sequence('int');
         $seq->append(1, 2, 3, 4, 5);
-        
+
         // Test: Verify all() returns true
         $this->assertTrue($seq->all(fn($x) => $x > 0));
     }
@@ -287,7 +287,7 @@ class SequenceInspectionTest extends TestCase
         // Test: Check if all items are even
         $seq = new Sequence('int');
         $seq->append(2, 4, 5, 6);
-        
+
         // Test: Verify all() returns false (5 is odd)
         $this->assertFalse($seq->all(fn($x) => $x % 2 === 0));
     }
@@ -300,7 +300,7 @@ class SequenceInspectionTest extends TestCase
         // Test: Check if any item is even
         $seq = new Sequence('int');
         $seq->append(1, 3, 4, 7);
-        
+
         // Test: Verify any() returns true
         $this->assertTrue($seq->any(fn($x) => $x % 2 === 0));
     }
@@ -313,7 +313,7 @@ class SequenceInspectionTest extends TestCase
         // Test: Check if any item is greater than 10
         $seq = new Sequence('int');
         $seq->append(1, 2, 3, 4, 5);
-        
+
         // Test: Verify any() returns false
         $this->assertFalse($seq->any(fn($x) => $x > 10));
     }
@@ -326,7 +326,7 @@ class SequenceInspectionTest extends TestCase
         // Test: Count items in Sequence
         $seq = new Sequence('int');
         $seq->append(1, 2, 3, 4, 5);
-        
+
         // Test: Verify count is correct
         $this->assertCount(5, $seq);
         $this->assertSame(5, $seq->count());

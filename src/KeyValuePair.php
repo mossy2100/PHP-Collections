@@ -10,5 +10,7 @@ namespace Galaxon\Collections;
  */
 readonly class KeyValuePair
 {
-    public function __construct(public mixed $key, public mixed $value) {}
+    public function __construct(public mixed $key, public mixed $value)
+    {
+    }
 }

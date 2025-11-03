@@ -4,20 +4,13 @@ declare(strict_types = 1);
 
 namespace Galaxon\Collections\Tests\Sequence;
 
-// Galaxon
+use DateTime;
 use Galaxon\Collections\Sequence;
-
-// PHPUnit
+use OutOfRangeException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-
-// Throwables
-use OutOfRangeException;
-use UnderflowException;
 use TypeError;
-
-// Other
-use DateTime;
+use UnderflowException;
 
 /**
  * Tests for Sequence ArrayAccess implementation and random methods.

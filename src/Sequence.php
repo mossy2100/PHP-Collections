@@ -4,7 +4,6 @@ declare(strict_types = 1);
 
 namespace Galaxon\Collections;
 
-// Interfaces
 use ArrayAccess;
 use Galaxon\Core\Types;
 use OutOfRangeException;
@@ -12,10 +11,6 @@ use Override;
 use TypeError;
 use UnderflowException;
 use ValueError;
-
-// Throwables
-
-// Attributes
 
 /**
  * A type-specific list implementation.
@@ -479,10 +474,10 @@ final class Sequence extends Collection implements ArrayAccess
      * @return bool True if the Sequences are equal, false otherwise.
      */
     #[Override]
-    public function equals(Collection $other): bool
+    public function eq(Collection $other): bool
     {
         // Check type and item count are equal.
-        if (!$this->equalsTypeAndCount($other)) {
+        if (!$this->eqTypeAndCount($other)) {
             return false;
         }
 

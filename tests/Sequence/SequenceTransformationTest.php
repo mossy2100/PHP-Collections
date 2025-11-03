@@ -23,7 +23,7 @@ class SequenceTransformationTest extends TestCase
         $seq = new Sequence('int');
         $seq->append(5, 2, 8, 1, 9, 3);
         $sorted = $seq->sort();
-        
+
         // Test: Verify items are sorted
         $this->assertSame(1, $sorted[0]);
         $this->assertSame(9, $sorted[5]);
@@ -40,7 +40,7 @@ class SequenceTransformationTest extends TestCase
         $seq = new Sequence('string');
         $seq->append('zebra', 'apple', 'mango', 'banana');
         $sorted = $seq->sort();
-        
+
         // Test: Verify alphabetical order
         $this->assertSame('apple', $sorted[0]);
         $this->assertSame('zebra', $sorted[3]);
@@ -55,7 +55,7 @@ class SequenceTransformationTest extends TestCase
         $seq = new Sequence('int');
         $seq->append(5, 2, 8, 1, 9, 3);
         $sorted = $seq->sortReverse();
-        
+
         // Test: Verify descending order
         $this->assertSame(9, $sorted[0]);
         $this->assertSame(1, $sorted[5]);
@@ -70,7 +70,7 @@ class SequenceTransformationTest extends TestCase
         $seq = new Sequence('int');
         $seq->append(-5, 3, -1, 4, -2);
         $sorted = $seq->sortBy(fn($a, $b) => abs($a) <=> abs($b));
-        
+
         // Test: Verify sorted by absolute value
         $this->assertSame(-1, $sorted[0]);
         $this->assertSame(-5, $sorted[4]);
@@ -85,7 +85,7 @@ class SequenceTransformationTest extends TestCase
         $seq = new Sequence('int');
         $seq->append(1, 2, 3, 4, 5, 6, 7, 8);
         $filtered = $seq->filter(fn($x) => $x % 2 === 0);
-        
+
         // Test: Verify only even numbers remain
         $this->assertCount(4, $filtered);
         $this->assertSame(2, $filtered[0]);
@@ -101,7 +101,7 @@ class SequenceTransformationTest extends TestCase
         $seq = new Sequence('int');
         $seq->append(1, 2, 3, 4, 5);
         $filtered = $seq->filter(fn($x) => $x > 10);
-        
+
         // Test: Verify empty Sequence returned
         $this->assertCount(0, $filtered);
     }
@@ -115,7 +115,7 @@ class SequenceTransformationTest extends TestCase
         $seq = new Sequence('int');
         $seq->append(1, 2, 3, 4, 5);
         $mapped = $seq->map(fn($x) => $x * 2);
-        
+
         // Test: Verify transformation applied
         $this->assertCount(5, $mapped);
         $this->assertSame(2, $mapped[0]);
@@ -131,7 +131,7 @@ class SequenceTransformationTest extends TestCase
         $seq = new Sequence('int');
         $seq->append(1, 2, 3);
         $mapped = $seq->map(fn($x) => "Number $x");
-        
+
         // Test: Verify type changed
         $this->assertSame('Number 1', $mapped[0]);
         $this->assertSame('Number 3', $mapped[2]);
@@ -148,7 +148,7 @@ class SequenceTransformationTest extends TestCase
         $seq2 = new Sequence('int');
         $seq2->append(4, 5, 6);
         $merged = $seq1->merge($seq2);
-        
+
         // Test: Verify items from both sequences present
         $this->assertCount(6, $merged);
         $this->assertSame(1, $merged[0]);
@@ -164,7 +164,7 @@ class SequenceTransformationTest extends TestCase
         $seq = new Sequence('int');
         $seq->append(1, 2, 3, 4, 5);
         $reversed = $seq->reverse();
-        
+
         // Test: Verify order is reversed
         $this->assertSame(5, $reversed[0]);
         $this->assertSame(1, $reversed[4]);
@@ -181,7 +181,7 @@ class SequenceTransformationTest extends TestCase
         $seq = new Sequence('int');
         $seq->append(1, 2, 2, 3, 3, 3, 4, 5, 5);
         $unique = $seq->unique();
-        
+
         // Test: Verify duplicates removed
         $this->assertCount(5, $unique);
         $this->assertTrue($unique->contains(1));
@@ -197,7 +197,7 @@ class SequenceTransformationTest extends TestCase
         $seq = new Sequence('int');
         $seq->append(1, 2, 3, 4, 5, 6, 7, 8, 9);
         $chunks = $seq->chunk(3);
-        
+
         // Test: Verify 3 chunks created
         $this->assertCount(3, $chunks);
         $this->assertCount(3, $chunks[0]);
@@ -214,7 +214,7 @@ class SequenceTransformationTest extends TestCase
         $seq = new Sequence('int');
         $seq->append(1, 2, 3, 4, 5, 6, 7, 8);
         $chunks = $seq->chunk(3);
-        
+
         // Test: Verify last chunk is smaller
         $this->assertCount(3, $chunks);
         $this->assertCount(3, $chunks[0]);
@@ -230,7 +230,7 @@ class SequenceTransformationTest extends TestCase
         $seq = new Sequence('int');
         $seq->append(1, 2, 3, 4, 5);
         $seq->fill(1, 3, 99);
-        
+
         // Test: Verify filled correctly
         $this->assertSame(1, $seq[0]);
         $this->assertSame(99, $seq[1]);
@@ -247,7 +247,7 @@ class SequenceTransformationTest extends TestCase
         // Test: Fill with default value
         $seq = new Sequence('int', 0);
         $seq->fill(0, 5);
-        
+
         // Test: Verify filled with defaults
         $this->assertCount(5, $seq);
         $this->assertSame(0, $seq[0]);
@@ -263,7 +263,7 @@ class SequenceTransformationTest extends TestCase
         $seq = new Sequence('int');
         $seq->append(1, 2, 3, 4, 5);
         $sum = $seq->reduce(fn($acc, $x) => $acc + $x, 0);
-        
+
         // Test: Verify correct sum
         $this->assertSame(15, $sum);
     }
@@ -277,7 +277,7 @@ class SequenceTransformationTest extends TestCase
         $seq = new Sequence('string');
         $seq->append('a', 'b', 'c');
         $result = $seq->reduce(fn($acc, $x) => $acc . $x, '');
-        
+
         // Test: Verify concatenation
         $this->assertSame('abc', $result);
     }
@@ -290,7 +290,7 @@ class SequenceTransformationTest extends TestCase
         // Test: Calculate product
         $seq = new Sequence('int');
         $seq->append(2, 3, 4);
-        
+
         // Test: Verify product calculation
         $this->assertSame(24, $seq->product());
     }
@@ -303,7 +303,7 @@ class SequenceTransformationTest extends TestCase
         // Test: Calculate sum
         $seq = new Sequence('int');
         $seq->append(1, 2, 3, 4, 5);
-        
+
         // Test: Verify sum calculation
         $this->assertSame(15, $seq->sum());
     }
@@ -316,7 +316,7 @@ class SequenceTransformationTest extends TestCase
         // Test: Join strings without separator
         $seq = new Sequence('string');
         $seq->append('a', 'b', 'c');
-        
+
         // Test: Verify joined string
         $this->assertSame('abc', $seq->join());
     }
@@ -329,7 +329,7 @@ class SequenceTransformationTest extends TestCase
         // Test: Join with separator
         $seq = new Sequence('string');
         $seq->append('apple', 'banana', 'cherry');
-        
+
         // Test: Verify joined with separator
         $this->assertSame('apple, banana, cherry', $seq->join(', '));
     }

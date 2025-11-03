@@ -4,20 +4,13 @@ declare(strict_types = 1);
 
 namespace Galaxon\Collections;
 
-// Interfaces
+use ArrayIterator;
 use Countable;
+use Galaxon\Core\Stringify;
 use IteratorAggregate;
+use Override;
 use Stringable;
 use Traversable;
-
-// Attributes
-use Override;
-
-// Other
-use ArrayIterator;
-
-// Galaxon
-use Galaxon\Core\Stringify;
 
 /**
  * Base class for all collections in this package.
@@ -147,7 +140,8 @@ abstract class Collection implements Countable, IteratorAggregate, Stringable
      * @param Collection $other The other Collection.
      * @return bool True if the Collections have the same type and number of items, false otherwise.
      */
-    protected function equalsTypeAndCount(Collection $other): bool {
+    protected function eqTypeAndCount(Collection $other): bool
+    {
         return $this::class === $other::class && count($this->items) === count($other->items);
     }
 
@@ -157,7 +151,7 @@ abstract class Collection implements Countable, IteratorAggregate, Stringable
      * @param Collection $other The other Collection.
      * @return bool True if the Collections are equal, false otherwise.
      */
-    abstract public function equals(Collection $other): bool;
+    abstract public function eq(Collection $other): bool;
 
     // endregion
 
@@ -199,7 +193,8 @@ abstract class Collection implements Countable, IteratorAggregate, Stringable
      * @return string The string.
      */
     #[Override]
-    public function __toString(): string {
+    public function __toString(): string
+    {
         return Stringify::stringifyObject($this);
     }
 
@@ -208,7 +203,8 @@ abstract class Collection implements Countable, IteratorAggregate, Stringable
      *
      * @return array The array.
      */
-    public function toArray(): array {
+    public function toArray(): array
+    {
         return $this->items;
     }
 

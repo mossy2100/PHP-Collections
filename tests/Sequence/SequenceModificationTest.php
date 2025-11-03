@@ -5,11 +5,11 @@ declare(strict_types = 1);
 namespace Galaxon\Collections\Tests\Sequence;
 
 use Galaxon\Collections\Sequence;
+use OutOfRangeException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use OutOfRangeException;
-use UnderflowException;
 use TypeError;
+use UnderflowException;
 
 /**
  * Tests for Sequence modification methods (add and remove items).
@@ -25,7 +25,7 @@ class SequenceModificationTest extends TestCase
         // Test: Create a Sequence and append one item
         $seq = new Sequence('int');
         $result = $seq->append(10);
-        
+
         // Test: Verify item was appended
         $this->assertSame($seq, $result); // Returns $this for chaining
         $this->assertCount(1, $seq);
@@ -40,7 +40,7 @@ class SequenceModificationTest extends TestCase
         // Test: Append multiple items at once
         $seq = new Sequence('string');
         $seq->append('a', 'b', 'c');
-        
+
         // Test: Verify all items were appended
         $this->assertCount(3, $seq);
         $this->assertSame('a', $seq[0]);
@@ -57,7 +57,7 @@ class SequenceModificationTest extends TestCase
         $seq = new Sequence('int');
         $items = [1, 2, 3, 4, 5];
         $seq->append(...$items);
-        
+
         // Test: Verify all items were appended
         $this->assertCount(5, $seq);
         $this->assertSame(5, $seq[4]);
@@ -70,7 +70,7 @@ class SequenceModificationTest extends TestCase
     {
         // Test: Attempt to append wrong type
         $this->expectException(TypeError::class);
-        
+
         $seq = new Sequence('int');
         $seq->append('string');
     }
@@ -84,7 +84,7 @@ class SequenceModificationTest extends TestCase
         $seq = new Sequence('int');
         $seq->append(2, 3);
         $result = $seq->prepend(1);
-        
+
         // Test: Verify item was prepended
         $this->assertSame($seq, $result); // Returns $this for chaining
         $this->assertCount(3, $seq);
@@ -101,7 +101,7 @@ class SequenceModificationTest extends TestCase
         $seq = new Sequence('string');
         $seq->append('d');
         $seq->prepend('a', 'b', 'c');
-        
+
         // Test: Verify items were prepended in order
         $this->assertCount(4, $seq);
         $this->assertSame('c', $seq[0]); // Last prepended is first
@@ -119,7 +119,7 @@ class SequenceModificationTest extends TestCase
         $seq = new Sequence('int');
         $seq->append(2, 3, 4);
         $seq->insert(0, 1);
-        
+
         // Test: Verify item was inserted at beginning
         $this->assertCount(4, $seq);
         $this->assertSame(1, $seq[0]);
@@ -135,7 +135,7 @@ class SequenceModificationTest extends TestCase
         $seq = new Sequence('int');
         $seq->append(1, 2, 4, 5);
         $seq->insert(2, 3);
-        
+
         // Test: Verify item was inserted correctly
         $this->assertCount(5, $seq);
         $this->assertSame(3, $seq[2]);
@@ -151,7 +151,7 @@ class SequenceModificationTest extends TestCase
         $seq = new Sequence('int');
         $seq->append(1, 2);
         $seq->insert(5, 10);
-        
+
         // Test: Verify gaps were filled with default value (0)
         $this->assertCount(6, $seq);
         $this->assertSame(0, $seq[2]);
@@ -167,7 +167,7 @@ class SequenceModificationTest extends TestCase
     {
         // Test: Attempt to insert at negative index
         $this->expectException(OutOfRangeException::class);
-        
+
         $seq = new Sequence('int');
         $seq->insert(-1, 10);
     }
@@ -181,7 +181,7 @@ class SequenceModificationTest extends TestCase
         $seq = new Sequence('int');
         $seq->append(1, 2, 3, 4, 5);
         $result = $seq->clear();
-        
+
         // Test: Verify Sequence is empty
         $this->assertSame($seq, $result); // Returns $this for chaining
         $this->assertCount(0, $seq);
@@ -197,7 +197,7 @@ class SequenceModificationTest extends TestCase
         $seq = new Sequence('int');
         $seq->append(10, 20, 30, 40, 50);
         $removed = $seq->removeByIndex(2);
-        
+
         // Test: Verify item was removed and returned
         $this->assertSame(30, $removed);
         $this->assertCount(4, $seq);
@@ -211,7 +211,7 @@ class SequenceModificationTest extends TestCase
     {
         // Test: Attempt to remove at invalid index
         $this->expectException(OutOfRangeException::class);
-        
+
         $seq = new Sequence('int');
         $seq->append(1, 2, 3);
         $seq->removeByIndex(5);
@@ -226,7 +226,7 @@ class SequenceModificationTest extends TestCase
         $seq = new Sequence('int');
         $seq->append(1, 2, 3, 2, 4, 2, 5);
         $count = $seq->removeByValue(2);
-        
+
         // Test: Verify all matching values were removed
         $this->assertSame(3, $count);
         $this->assertCount(4, $seq);
@@ -242,7 +242,7 @@ class SequenceModificationTest extends TestCase
         $seq = new Sequence('int');
         $seq->append(1, 2, 3);
         $count = $seq->removeByValue(10);
-        
+
         // Test: Verify nothing was removed
         $this->assertSame(0, $count);
         $this->assertCount(3, $seq);
@@ -257,7 +257,7 @@ class SequenceModificationTest extends TestCase
         $seq = new Sequence('string');
         $seq->append('a', 'b', 'c');
         $removed = $seq->removeFirst();
-        
+
         // Test: Verify first item was removed
         $this->assertSame('a', $removed);
         $this->assertCount(2, $seq);
@@ -272,7 +272,7 @@ class SequenceModificationTest extends TestCase
         // Test: Attempt to remove first from empty Sequence
         $this->expectException(UnderflowException::class);
         $this->expectExceptionMessage("No items in the Sequence");
-        
+
         $seq = new Sequence('int');
         $seq->removeFirst();
     }
@@ -286,7 +286,7 @@ class SequenceModificationTest extends TestCase
         $seq = new Sequence('string');
         $seq->append('a', 'b', 'c');
         $removed = $seq->removeLast();
-        
+
         // Test: Verify last item was removed
         $this->assertSame('c', $removed);
         $this->assertCount(2, $seq);
@@ -301,7 +301,7 @@ class SequenceModificationTest extends TestCase
         // Test: Attempt to remove last from empty Sequence
         $this->expectException(UnderflowException::class);
         $this->expectExceptionMessage("No items in the Sequence");
-        
+
         $seq = new Sequence('int');
         $seq->removeLast();
     }

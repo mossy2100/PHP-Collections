@@ -4,7 +4,6 @@ declare(strict_types = 1);
 
 namespace Galaxon\Collections;
 
-// Interfaces
 use ArgumentCountError;
 use ArrayAccess;
 use Galaxon\Core\Stringify;
@@ -13,12 +12,6 @@ use OutOfBoundsException;
 use Override;
 use Traversable;
 use TypeError;
-
-// Attributes
-
-// Throwables
-
-// Galaxon
 
 /**
  * Dictionary class that permits keys and values of any type, including scalar, complex, nullable,
@@ -221,10 +214,10 @@ final class Dictionary extends Collection implements ArrayAccess
      * @return bool True if the Dictionaries are equal, false otherwise.
      */
     #[Override]
-    public function equals(Collection $other): bool
+    public function eq(Collection $other): bool
     {
         // Check type and item count are equal.
-        if (!$this->equalsTypeAndCount($other)) {
+        if (!$this->eqTypeAndCount($other)) {
             return false;
         }
 
