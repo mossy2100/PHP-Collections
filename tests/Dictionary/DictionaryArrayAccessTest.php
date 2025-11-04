@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace Galaxon\Collections\Tests\Dictionary;
 
@@ -22,10 +22,10 @@ class DictionaryArrayAccessTest extends TestCase
     public function testOffsetSetValidKeyValue(): void
     {
         $dict = new Dictionary('string', 'int');
-        
+
         // Test setting a value using array syntax.
         $dict['key1'] = 123;
-        
+
         // Test the value was set.
         $this->assertCount(1, $dict);
         $this->assertEquals(123, $dict['key1']);
@@ -38,10 +38,10 @@ class DictionaryArrayAccessTest extends TestCase
     {
         $dict = new Dictionary('string', 'int');
         $dict['key'] = 123;
-        
+
         // Test replacing the value.
         $dict['key'] = 456;
-        
+
         // Test only one item exists with the new value.
         $this->assertCount(1, $dict);
         $this->assertEquals(456, $dict['key']);
@@ -53,10 +53,10 @@ class DictionaryArrayAccessTest extends TestCase
     public function testOffsetSetWithNullKeyAllowed(): void
     {
         $dict = new Dictionary('?string', 'int');
-        
+
         // Test setting value with null key using array append syntax.
         $dict[] = 123;
-        
+
         // Test the value was set with null key.
         $this->assertCount(1, $dict);
         $this->assertEquals(123, $dict[null]);
@@ -68,7 +68,7 @@ class DictionaryArrayAccessTest extends TestCase
     public function testOffsetSetWithNullKeyNotAllowed(): void
     {
         $dict = new Dictionary('string', 'int');
-        
+
         // Test setting with null key throws TypeError.
         $this->expectException(TypeError::class);
         $dict[] = 123;
@@ -80,7 +80,7 @@ class DictionaryArrayAccessTest extends TestCase
     public function testOffsetSetInvalidKeyType(): void
     {
         $dict = new Dictionary('string', 'int');
-        
+
         // Test setting with invalid key type throws TypeError.
         $this->expectException(TypeError::class);
         $dict[123] = 456;
@@ -92,7 +92,7 @@ class DictionaryArrayAccessTest extends TestCase
     public function testOffsetSetInvalidValueType(): void
     {
         $dict = new Dictionary('string', 'int');
-        
+
         // Test setting with invalid value type throws TypeError.
         $this->expectException(TypeError::class);
         $dict['key'] = 'not an int';
@@ -105,10 +105,10 @@ class DictionaryArrayAccessTest extends TestCase
     {
         $dict = new Dictionary('string', 'int');
         $dict['key'] = 123;
-        
+
         // Test getting the value.
         $value = $dict['key'];
-        
+
         // Test the correct value was retrieved.
         $this->assertEquals(123, $value);
     }
@@ -119,7 +119,7 @@ class DictionaryArrayAccessTest extends TestCase
     public function testOffsetGetNonExistentKey(): void
     {
         $dict = new Dictionary('string', 'int');
-        
+
         // Test getting non-existent key throws OutOfBoundsException.
         $this->expectException(OutOfBoundsException::class);
         $value = $dict['nonexistent'];
@@ -132,10 +132,10 @@ class DictionaryArrayAccessTest extends TestCase
     {
         $dict = new Dictionary('string', 'int');
         $dict['key'] = 123;
-        
+
         // Test checking for existing key.
         $exists = isset($dict['key']);
-        
+
         // Test it returns true.
         $this->assertTrue($exists);
     }
@@ -146,10 +146,10 @@ class DictionaryArrayAccessTest extends TestCase
     public function testOffsetExistsWithNonExistentKey(): void
     {
         $dict = new Dictionary('string', 'int');
-        
+
         // Test checking for non-existent key.
         $exists = isset($dict['nonexistent']);
-        
+
         // Test it returns false.
         $this->assertFalse($exists);
     }
@@ -161,10 +161,10 @@ class DictionaryArrayAccessTest extends TestCase
     {
         $dict = new Dictionary('?string', 'int');
         $dict[null] = 123;
-        
+
         // Test checking for null key.
         $exists = isset($dict[null]);
-        
+
         // Test it returns true.
         $this->assertTrue($exists);
     }
@@ -177,10 +177,10 @@ class DictionaryArrayAccessTest extends TestCase
         $dict = new Dictionary('string', 'int');
         $dict['a'] = 1;
         $dict['b'] = 2;
-        
+
         // Test unsetting an item.
         unset($dict['a']);
-        
+
         // Test the item was removed.
         $this->assertCount(1, $dict);
         $this->assertFalse(isset($dict['a']));
@@ -193,7 +193,7 @@ class DictionaryArrayAccessTest extends TestCase
     public function testOffsetUnsetNonExistentKey(): void
     {
         $dict = new Dictionary('string', 'int');
-        
+
         // Test unsetting non-existent key throws OutOfBoundsException.
         $this->expectException(OutOfBoundsException::class);
         unset($dict['nonexistent']);
@@ -205,23 +205,23 @@ class DictionaryArrayAccessTest extends TestCase
     public function testArrayAccessWithVariousKeyTypes(): void
     {
         $dict = new Dictionary();
-        
+
         // Test with int key.
         $dict[1] = 'int key';
         $this->assertEquals('int key', $dict[1]);
-        
+
         // Test with string key.
         $dict['string'] = 'string key';
         $this->assertEquals('string key', $dict['string']);
-        
+
         // Test with float key.
         $dict[3.14] = 'float key';
         $this->assertEquals('float key', $dict[3.14]);
-        
+
         // Test with bool key.
         $dict[true] = 'bool key';
         $this->assertEquals('bool key', $dict[true]);
-        
+
         // Test all items exist.
         $this->assertCount(4, $dict);
     }
@@ -232,12 +232,12 @@ class DictionaryArrayAccessTest extends TestCase
     public function testMultipleNullKeyAssignments(): void
     {
         $dict = new Dictionary('?string', 'int');
-        
+
         // Test multiple assignments with null key.
         $dict[] = 1;
         $dict[] = 2;
         $dict[] = 3;
-        
+
         // Test only one item exists with the last value.
         $this->assertCount(1, $dict);
         $this->assertEquals(3, $dict[null]);

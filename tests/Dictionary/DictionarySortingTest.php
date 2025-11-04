@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace Galaxon\Collections\Tests\Dictionary;
 
@@ -23,13 +23,13 @@ class DictionarySortingTest extends TestCase
         $dict->add('c', 3);
         $dict->add('a', 1);
         $dict->add('b', 2);
-        
+
         // Test sorting by key.
         $result = $dict->sortByKey();
-        
+
         // Test fluent interface.
         $this->assertSame($dict, $result);
-        
+
         // Test keys are in sorted order.
         $keys = $dict->keys();
         $this->assertEquals(['a', 'b', 'c'], $keys);
@@ -44,10 +44,10 @@ class DictionarySortingTest extends TestCase
         $dict->add(3, 'three');
         $dict->add(1, 'one');
         $dict->add(2, 'two');
-        
+
         // Test sorting by integer key.
         $dict->sortByKey();
-        
+
         // Test keys are in sorted order.
         $keys = $dict->keys();
         $this->assertEquals([1, 2, 3], $keys);
@@ -59,10 +59,10 @@ class DictionarySortingTest extends TestCase
     public function testSortByKeyOnEmptyDictionary(): void
     {
         $dict = new Dictionary();
-        
+
         // Test sorting empty dictionary doesn't throw.
         $dict->sortByKey();
-        
+
         // Test dictionary is still empty.
         $this->assertCount(0, $dict);
     }
@@ -76,10 +76,10 @@ class DictionarySortingTest extends TestCase
         $dict->add('z', 100);
         $dict->add('a', 200);
         $dict->add('m', 300);
-        
+
         // Test sorting by key.
         $dict->sortByKey();
-        
+
         // Test values are preserved with correct keys.
         $this->assertEquals(200, $dict['a']);
         $this->assertEquals(300, $dict['m']);
@@ -95,13 +95,13 @@ class DictionarySortingTest extends TestCase
         $dict->add('a', 3);
         $dict->add('b', 1);
         $dict->add('c', 2);
-        
+
         // Test sorting by value.
         $result = $dict->sortByValue();
-        
+
         // Test fluent interface.
         $this->assertSame($dict, $result);
-        
+
         // Test values are in sorted order.
         $values = $dict->values();
         $this->assertEquals([1, 2, 3], $values);
@@ -116,10 +116,10 @@ class DictionarySortingTest extends TestCase
         $dict->add(1, 'zebra');
         $dict->add(2, 'apple');
         $dict->add(3, 'mango');
-        
+
         // Test sorting by string value.
         $dict->sortByValue();
-        
+
         // Test values are in sorted order.
         $values = $dict->values();
         $this->assertEquals(['apple', 'mango', 'zebra'], $values);
@@ -131,10 +131,10 @@ class DictionarySortingTest extends TestCase
     public function testSortByValueOnEmptyDictionary(): void
     {
         $dict = new Dictionary();
-        
+
         // Test sorting empty dictionary doesn't throw.
         $dict->sortByValue();
-        
+
         // Test dictionary is still empty.
         $this->assertCount(0, $dict);
     }
@@ -148,10 +148,10 @@ class DictionarySortingTest extends TestCase
         $dict->add('first', 300);
         $dict->add('second', 100);
         $dict->add('third', 200);
-        
+
         // Test sorting by value.
         $dict->sortByValue();
-        
+
         // Test keys are preserved with correct values.
         $keys = $dict->keys();
         $this->assertEquals(['second', 'third', 'first'], $keys);
@@ -170,10 +170,10 @@ class DictionarySortingTest extends TestCase
         $dict->add('b', 1);
         $dict->add('c', 2);
         $dict->add('d', 1);
-        
+
         // Test sorting by value with duplicates.
         $dict->sortByValue();
-        
+
         // Test values are sorted.
         $values = $dict->values();
         $this->assertEquals([1, 1, 2, 2], $values);
@@ -188,10 +188,10 @@ class DictionarySortingTest extends TestCase
         $dict->add('z', 1);
         $dict->add('a', 3);
         $dict->add('m', 2);
-        
+
         // Test chaining sorts.
         $dict->sortByValue()->sortByKey();
-        
+
         // Test final sort (by key) is applied.
         $keys = $dict->keys();
         $this->assertEquals(['a', 'm', 'z'], $keys);
@@ -206,10 +206,10 @@ class DictionarySortingTest extends TestCase
         $dict->add('c', 3);
         $dict->add('a', 1);
         $dict->add('b', 2);
-        
+
         // Test sorting returns same instance.
         $result = $dict->sortByKey();
-        
+
         $this->assertSame($dict, $result);
     }
 
@@ -223,10 +223,10 @@ class DictionarySortingTest extends TestCase
         $dict->add('a', 10);
         $dict->add(1, 20);
         $dict->add('z', 40);
-        
+
         // Test sorting by key with mixed types.
         $dict->sortByKey();
-        
+
         // Test keys are sorted (exact order depends on spaceship operator behavior).
         $keys = $dict->keys();
         $this->assertCount(4, $keys);
@@ -241,10 +241,10 @@ class DictionarySortingTest extends TestCase
         $dict->add('a', 1);
         $dict->add('b', 3);
         $dict->add('c', 2);
-        
+
         // Test sorting with custom descending comparison.
         $dict->sort(fn($a, $b) => $b->value <=> $a->value);
-        
+
         // Test values are in descending order.
         $values = $dict->values();
         $this->assertEquals([3, 2, 1], $values);

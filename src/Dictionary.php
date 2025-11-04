@@ -12,6 +12,7 @@ use OutOfBoundsException;
 use Override;
 use Traversable;
 use TypeError;
+use ValueError;
 
 /**
  * Dictionary class that permits keys and values of any type, including scalar, complex, nullable,
@@ -88,7 +89,7 @@ final class Dictionary extends Collection implements ArrayAccess
      */
     public function keys(): array
     {
-        return array_map(static fn($item) => $item->key, $this->items);
+        return array_values(array_map(static fn($item) => $item->key, $this->items));
     }
 
     /**
@@ -96,7 +97,7 @@ final class Dictionary extends Collection implements ArrayAccess
      */
     public function values(): array
     {
-        return array_map(static fn($item) => $item->value, $this->items);
+        return array_values(array_map(static fn($item) => $item->value, $this->items));
     }
 
     /**
@@ -112,28 +113,39 @@ final class Dictionary extends Collection implements ArrayAccess
     // region Methods for adding and removing items
 
     /**
+     * Remove an item by key.
+     *
+     * @param mixed $key The key to remove.
+     * @return self The modified Dictionary.
+     */
+    public function removeByKey(mixed $key): self
+    {
+        if ($this->offsetExists($key)) {
+            $this->offsetUnset($key);
+        }
+        return $this;
+    }
+
+    /**
      * Add a key-value pair to the dictionary.
      *
-     * This method can be called with one parameter only, which can be a KeyValuePair or an array with two items,
-     * or it can be called with two parameters, the key and the value.
+     * This method can be called with two parameters, the key and the value, or one parameter only, a KeyValuePair.
      *
-     * @param mixed $key_or_pair The key to add, or a KeyValuePair, or an array with two items.
-     * @param mixed $value The value to add, or null if the one-parameter form is used.
+     * @param mixed $key_or_pair The key (two-param form), or a KeyValuePair (one-param form).
+     * @param mixed $value The value (two-param form), or null (one-param form).
      * @return $this The modified Dictionary.
      * @throws TypeError If the key or value has a disallowed type.
      * @throws ArgumentCountError If the wrong number of parameters is supplied.
+     * @throws TypeError If the one-param form is used and the argument is not a valid KeyValuePair.
      */
     public function add(mixed $key_or_pair, mixed $value = null): self
     {
-        // Support calling the method with one parameter only, which can be a KeyValuePair, or an array with two items.
+        // Support calling the method with one parameter only (a KeyValuePair).
         $n_args = func_num_args();
         if ($n_args === 1) {
             if ($key_or_pair instanceof KeyValuePair) {
                 $key = $key_or_pair->key;
                 $value = $key_or_pair->value;
-            }
-            elseif (is_array($key_or_pair) && count($key_or_pair) === 2) {
-                [$key, $value] = $key_or_pair;
             }
             else {
                 throw new TypeError("Invalid key-value pair: " . Stringify::abbrev($key_or_pair));
@@ -154,20 +166,6 @@ final class Dictionary extends Collection implements ArrayAccess
         $this[$key] = $value;
 
         // Return this for chaining.
-        return $this;
-    }
-
-    /**
-     * Remove an item by key.
-     *
-     * @param mixed $key The key to remove.
-     * @return self The modified Dictionary.
-     */
-    public function removeByKey(mixed $key): self
-    {
-        if ($this->offsetExists($key)) {
-            $this->offsetUnset($key);
-        }
         return $this;
     }
 
@@ -501,6 +499,17 @@ final class Dictionary extends Collection implements ArrayAccess
     // endregion
 
     // region Conversion methods
+
+    /**
+     * Convert the Collection to an array of KeyValuePair objects.
+     *
+     * @return array The array.
+     */
+    #[Override]
+    public function toArray(): array
+    {
+        return array_values($this->items);
+    }
 
     /**
      * Convert the Dictionary to a Sequence of KeyValuePairs.

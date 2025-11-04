@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace Galaxon\Collections\Tests\Dictionary;
 
@@ -23,13 +23,13 @@ class DictionaryAddRemoveTest extends TestCase
     public function testAddWithTwoParameters(): void
     {
         $dict = new Dictionary('string', 'int');
-        
+
         // Test adding a pair.
         $result = $dict->add('key1', 123);
-        
+
         // Test fluent interface.
         $this->assertSame($dict, $result);
-        
+
         // Test the item was added.
         $this->assertCount(1, $dict);
         $this->assertEquals(123, $dict['key1']);
@@ -42,25 +42,10 @@ class DictionaryAddRemoveTest extends TestCase
     {
         $dict = new Dictionary('string', 'int');
         $pair = new KeyValuePair('key1', 123);
-        
+
         // Test adding the pair.
         $dict->add($pair);
-        
-        // Test the item was added.
-        $this->assertCount(1, $dict);
-        $this->assertEquals(123, $dict['key1']);
-    }
 
-    /**
-     * Test adding with one parameter (array).
-     */
-    public function testAddWithArray(): void
-    {
-        $dict = new Dictionary('string', 'int');
-        
-        // Test adding an array with two items.
-        $dict->add(['key1', 123]);
-        
         // Test the item was added.
         $this->assertCount(1, $dict);
         $this->assertEquals(123, $dict['key1']);
@@ -72,22 +57,10 @@ class DictionaryAddRemoveTest extends TestCase
     public function testAddWithInvalidSingleParameter(): void
     {
         $dict = new Dictionary();
-        
+
         // Test adding with an invalid single parameter throws TypeError.
         $this->expectException(TypeError::class);
         $dict->add('invalid');
-    }
-
-    /**
-     * Test adding with invalid array (not 2 elements) throws TypeError.
-     */
-    public function testAddWithInvalidArray(): void
-    {
-        $dict = new Dictionary();
-        
-        // Test adding with array with 1 element throws TypeError.
-        $this->expectException(TypeError::class);
-        $dict->add(['one']);
     }
 
     /**
@@ -96,7 +69,7 @@ class DictionaryAddRemoveTest extends TestCase
     public function testAddWithThreeParameters(): void
     {
         $dict = new Dictionary();
-        
+
         // Test adding with three parameters throws ArgumentCountError.
         $this->expectException(ArgumentCountError::class);
         $dict->add('key', 'value', 'extra');
@@ -108,7 +81,7 @@ class DictionaryAddRemoveTest extends TestCase
     public function testAddWithInvalidKeyType(): void
     {
         $dict = new Dictionary('string', 'int');
-        
+
         // Test adding with invalid key type throws TypeError.
         $this->expectException(TypeError::class);
         $dict->add(123, 456);
@@ -120,7 +93,7 @@ class DictionaryAddRemoveTest extends TestCase
     public function testAddWithInvalidValueType(): void
     {
         $dict = new Dictionary('string', 'int');
-        
+
         // Test adding with invalid value type throws TypeError.
         $this->expectException(TypeError::class);
         $dict->add('key', 'not an int');
@@ -132,12 +105,12 @@ class DictionaryAddRemoveTest extends TestCase
     public function testAddChaining(): void
     {
         $dict = new Dictionary('string', 'int');
-        
+
         // Test chaining add calls.
         $dict->add('a', 1)
             ->add('b', 2)
             ->add('c', 3);
-        
+
         // Test all items were added.
         $this->assertCount(3, $dict);
         $this->assertEquals(1, $dict['a']);
@@ -152,10 +125,10 @@ class DictionaryAddRemoveTest extends TestCase
     {
         $dict = new Dictionary('string', 'int');
         $dict->add('key', 123);
-        
+
         // Test replacing the value.
         $dict->add('key', 456);
-        
+
         // Test only one item exists with the new value.
         $this->assertCount(1, $dict);
         $this->assertEquals(456, $dict['key']);
@@ -169,13 +142,13 @@ class DictionaryAddRemoveTest extends TestCase
         $dict = new Dictionary('string', 'int');
         $dict->add('a', 1);
         $dict->add('b', 2);
-        
+
         // Test removing an item.
         $result = $dict->removeByKey('a');
-        
+
         // Test fluent interface.
         $this->assertSame($dict, $result);
-        
+
         // Test the item was removed.
         $this->assertCount(1, $dict);
         $this->assertFalse($dict->keyExists('a'));
@@ -189,10 +162,10 @@ class DictionaryAddRemoveTest extends TestCase
     {
         $dict = new Dictionary('string', 'int');
         $dict->add('a', 1);
-        
+
         // Test removing a non-existent key doesn't throw.
         $dict->removeByKey('nonexistent');
-        
+
         // Test the dictionary is unchanged.
         $this->assertCount(1, $dict);
         $this->assertEquals(1, $dict['a']);
@@ -207,13 +180,13 @@ class DictionaryAddRemoveTest extends TestCase
         $dict->add('a', 1);
         $dict->add('b', 2);
         $dict->add('c', 1);
-        
+
         // Test removing by value.
         $result = $dict->removeByValue(1);
-        
+
         // Test fluent interface.
         $this->assertSame($dict, $result);
-        
+
         // Test both items with value 1 were removed.
         $this->assertCount(1, $dict);
         $this->assertFalse($dict->keyExists('a'));
@@ -229,10 +202,10 @@ class DictionaryAddRemoveTest extends TestCase
         $dict = new Dictionary('string', 'int');
         $dict->add('a', 1);
         $dict->add('b', 2);
-        
+
         // Test removing a non-existent value doesn't throw.
         $dict->removeByValue(999);
-        
+
         // Test the dictionary is unchanged.
         $this->assertCount(2, $dict);
     }
@@ -246,13 +219,13 @@ class DictionaryAddRemoveTest extends TestCase
         $dict->add('a', 1);
         $dict->add('b', 2);
         $dict->add('c', 3);
-        
+
         // Test clearing the dictionary.
         $result = $dict->clear();
-        
+
         // Test fluent interface.
         $this->assertSame($dict, $result);
-        
+
         // Test all items were removed.
         $this->assertCount(0, $dict);
         $this->assertTrue($dict->empty());
@@ -264,10 +237,10 @@ class DictionaryAddRemoveTest extends TestCase
     public function testClearOnEmptyDictionary(): void
     {
         $dict = new Dictionary();
-        
+
         // Test clearing an empty dictionary doesn't throw.
         $dict->clear();
-        
+
         // Test the dictionary is still empty.
         $this->assertCount(0, $dict);
         $this->assertTrue($dict->empty());

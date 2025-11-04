@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace Galaxon\Collections\Tests\Dictionary;
 
@@ -20,7 +20,7 @@ class DictionaryInspectionTest extends TestCase
     public function testEmptyReturnsTrueForEmptyDictionary(): void
     {
         $dict = new Dictionary();
-        
+
         // Test empty dictionary.
         $this->assertTrue($dict->empty());
     }
@@ -32,7 +32,7 @@ class DictionaryInspectionTest extends TestCase
     {
         $dict = new Dictionary('string', 'int');
         $dict->add('key', 123);
-        
+
         // Test non-empty dictionary.
         $this->assertFalse($dict->empty());
     }
@@ -45,7 +45,7 @@ class DictionaryInspectionTest extends TestCase
         $dict = new Dictionary('string', 'int');
         $dict->add('a', 1);
         $dict->add('b', 2);
-        
+
         // Test checking for existing value.
         $this->assertTrue($dict->contains(1));
         $this->assertTrue($dict->contains(2));
@@ -58,7 +58,7 @@ class DictionaryInspectionTest extends TestCase
     {
         $dict = new Dictionary('string', 'int');
         $dict->add('a', 1);
-        
+
         // Test checking for non-existent value.
         $this->assertFalse($dict->contains(999));
     }
@@ -72,7 +72,7 @@ class DictionaryInspectionTest extends TestCase
         $dict->add('a', 1);
         $dict->add('b', 1);
         $dict->add('c', 2);
-        
+
         // Test contains finds value even when duplicated.
         $this->assertTrue($dict->contains(1));
     }
@@ -85,7 +85,7 @@ class DictionaryInspectionTest extends TestCase
         $dict = new Dictionary('string', 'mixed');
         $dict->add('a', 1);
         $dict->add('b', '1');
-        
+
         // Test strict equality - int 1 should not match string '1'.
         $this->assertTrue($dict->contains(1));
         $this->assertTrue($dict->contains('1'));
@@ -99,7 +99,7 @@ class DictionaryInspectionTest extends TestCase
     {
         $dict = new Dictionary('string', 'int');
         $dict->add('key', 123);
-        
+
         // Test checking for existing key.
         $this->assertTrue($dict->keyExists('key'));
     }
@@ -110,7 +110,7 @@ class DictionaryInspectionTest extends TestCase
     public function testKeyExistsReturnsFalseForNonExistentKey(): void
     {
         $dict = new Dictionary('string', 'int');
-        
+
         // Test checking for non-existent key.
         $this->assertFalse($dict->keyExists('nonexistent'));
     }
@@ -122,7 +122,7 @@ class DictionaryInspectionTest extends TestCase
     {
         $dict = new Dictionary('?string', 'int');
         $dict->add(null, 123);
-        
+
         // Test checking for null key.
         $this->assertTrue($dict->keyExists(null));
     }
@@ -136,7 +136,7 @@ class DictionaryInspectionTest extends TestCase
         $dict->add(1, 'int key');
         $dict->add('string', 'string key');
         $dict->add(true, 'bool key');
-        
+
         // Test checking for keys of various types.
         $this->assertTrue($dict->keyExists(1));
         $this->assertTrue($dict->keyExists('string'));
@@ -153,10 +153,10 @@ class DictionaryInspectionTest extends TestCase
         $dict->add('a', 2);
         $dict->add('b', 4);
         $dict->add('c', 6);
-        
+
         // Test all items are even.
         $result = $dict->all(fn($pair) => $pair->value % 2 === 0);
-        
+
         $this->assertTrue($result);
     }
 
@@ -169,10 +169,10 @@ class DictionaryInspectionTest extends TestCase
         $dict->add('a', 2);
         $dict->add('b', 3);
         $dict->add('c', 4);
-        
+
         // Test not all items are even.
         $result = $dict->all(fn($pair) => $pair->value % 2 === 0);
-        
+
         $this->assertFalse($result);
     }
 
@@ -182,10 +182,10 @@ class DictionaryInspectionTest extends TestCase
     public function testAllOnEmptyDictionaryReturnsTrue(): void
     {
         $dict = new Dictionary();
-        
+
         // Test all on empty dictionary.
         $result = $dict->all(fn($pair) => false);
-        
+
         $this->assertTrue($result);
     }
 
@@ -198,10 +198,10 @@ class DictionaryInspectionTest extends TestCase
         $dict->add('a', 1);
         $dict->add('b', 2);
         $dict->add('c', 3);
-        
+
         // Test at least one item is even.
         $result = $dict->any(fn($pair) => $pair->value % 2 === 0);
-        
+
         $this->assertTrue($result);
     }
 
@@ -214,10 +214,10 @@ class DictionaryInspectionTest extends TestCase
         $dict->add('a', 1);
         $dict->add('b', 3);
         $dict->add('c', 5);
-        
+
         // Test no items are even.
         $result = $dict->any(fn($pair) => $pair->value % 2 === 0);
-        
+
         $this->assertFalse($result);
     }
 
@@ -227,10 +227,10 @@ class DictionaryInspectionTest extends TestCase
     public function testAnyOnEmptyDictionaryReturnsFalse(): void
     {
         $dict = new Dictionary();
-        
+
         // Test any on empty dictionary.
         $result = $dict->any(fn($pair) => true);
-        
+
         $this->assertFalse($result);
     }
 
@@ -242,11 +242,11 @@ class DictionaryInspectionTest extends TestCase
         $dict1 = new Dictionary('string', 'int');
         $dict1->add('a', 1);
         $dict1->add('b', 2);
-        
+
         $dict2 = new Dictionary('string', 'int');
         $dict2->add('a', 1);
         $dict2->add('b', 2);
-        
+
         // Test dictionaries are equal.
         $this->assertTrue($dict1->eq($dict2));
         $this->assertTrue($dict2->eq($dict1));
@@ -259,10 +259,10 @@ class DictionaryInspectionTest extends TestCase
     {
         $dict1 = new Dictionary('string', 'int');
         $dict1->add('a', 1);
-        
+
         $dict2 = new Dictionary('string', 'int');
         $dict2->add('a', 2);
-        
+
         // Test dictionaries are not equal.
         $this->assertFalse($dict1->eq($dict2));
     }
@@ -274,10 +274,10 @@ class DictionaryInspectionTest extends TestCase
     {
         $dict1 = new Dictionary('string', 'int');
         $dict1->add('a', 1);
-        
+
         $dict2 = new Dictionary('string', 'int');
         $dict2->add('b', 1);
-        
+
         // Test dictionaries are not equal.
         $this->assertFalse($dict1->eq($dict2));
     }
@@ -289,11 +289,11 @@ class DictionaryInspectionTest extends TestCase
     {
         $dict1 = new Dictionary('string', 'int');
         $dict1->add('a', 1);
-        
+
         $dict2 = new Dictionary('string', 'int');
         $dict2->add('a', 1);
         $dict2->add('b', 2);
-        
+
         // Test dictionaries are not equal.
         $this->assertFalse($dict1->eq($dict2));
     }
@@ -306,11 +306,11 @@ class DictionaryInspectionTest extends TestCase
         $dict1 = new Dictionary('string', 'int');
         $dict1->add('a', 1);
         $dict1->add('b', 2);
-        
+
         $dict2 = new Dictionary('string', 'int');
         $dict2->add('b', 2);
         $dict2->add('a', 1);
-        
+
         // Test dictionaries are not equal due to order.
         $this->assertFalse($dict1->eq($dict2));
     }
@@ -322,7 +322,7 @@ class DictionaryInspectionTest extends TestCase
     {
         $dict1 = new Dictionary();
         $dict2 = new Dictionary();
-        
+
         // Test empty dictionaries are equal.
         $this->assertTrue($dict1->eq($dict2));
     }
@@ -333,17 +333,17 @@ class DictionaryInspectionTest extends TestCase
     public function testCountReturnsCorrectNumber(): void
     {
         $dict = new Dictionary('string', 'int');
-        
+
         // Test count on empty dictionary.
         $this->assertCount(0, $dict);
-        
+
         // Test count after adding items.
         $dict->add('a', 1);
         $this->assertCount(1, $dict);
-        
+
         $dict->add('b', 2);
         $this->assertCount(2, $dict);
-        
+
         $dict->add('c', 3);
         $this->assertCount(3, $dict);
     }

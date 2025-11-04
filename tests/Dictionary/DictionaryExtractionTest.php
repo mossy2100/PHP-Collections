@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace Galaxon\Collections\Tests\Dictionary;
 
@@ -24,10 +24,10 @@ class DictionaryExtractionTest extends TestCase
         $dict->add('a', 1);
         $dict->add('b', 2);
         $dict->add('c', 3);
-        
+
         // Test getting keys.
         $keys = $dict->keys();
-        
+
         // Test correct keys were returned.
         $this->assertIsArray($keys);
         $this->assertCount(3, $keys);
@@ -40,10 +40,10 @@ class DictionaryExtractionTest extends TestCase
     public function testKeysOnEmptyDictionary(): void
     {
         $dict = new Dictionary();
-        
+
         // Test getting keys from empty dictionary.
         $keys = $dict->keys();
-        
+
         // Test empty array is returned.
         $this->assertIsArray($keys);
         $this->assertCount(0, $keys);
@@ -59,10 +59,10 @@ class DictionaryExtractionTest extends TestCase
         $dict->add(1, 'one');
         $dict->add('two', 2);
         $dict->add(3.5, 'three-point-five');
-        
+
         // Test getting keys of various types.
         $keys = $dict->keys();
-        
+
         // Test correct keys were returned.
         $this->assertCount(3, $keys);
         $this->assertContains(1, $keys);
@@ -79,10 +79,10 @@ class DictionaryExtractionTest extends TestCase
         $dict->add('first', 1);
         $dict->add('second', 2);
         $dict->add('third', 3);
-        
+
         // Test keys are in insertion order.
         $keys = $dict->keys();
-        
+
         $this->assertEquals(['first', 'second', 'third'], $keys);
     }
 
@@ -95,10 +95,10 @@ class DictionaryExtractionTest extends TestCase
         $dict->add('a', 1);
         $dict->add('b', 2);
         $dict->add('c', 3);
-        
+
         // Test getting values.
         $values = $dict->values();
-        
+
         // Test correct values were returned.
         $this->assertIsArray($values);
         $this->assertCount(3, $values);
@@ -111,10 +111,10 @@ class DictionaryExtractionTest extends TestCase
     public function testValuesOnEmptyDictionary(): void
     {
         $dict = new Dictionary();
-        
+
         // Test getting values from empty dictionary.
         $values = $dict->values();
-        
+
         // Test empty array is returned.
         $this->assertIsArray($values);
         $this->assertCount(0, $values);
@@ -130,10 +130,10 @@ class DictionaryExtractionTest extends TestCase
         $dict->add('a', 1);
         $dict->add('b', 2);
         $dict->add('c', 1);
-        
+
         // Test getting values includes duplicates.
         $values = $dict->values();
-        
+
         // Test duplicate values are preserved.
         $this->assertCount(3, $values);
         $this->assertEquals([1, 2, 1], $values);
@@ -148,10 +148,10 @@ class DictionaryExtractionTest extends TestCase
         $dict->add('a', 10);
         $dict->add('b', 20);
         $dict->add('c', 30);
-        
+
         // Test values are in insertion order.
         $values = $dict->values();
-        
+
         $this->assertEquals([10, 20, 30], $values);
     }
 
@@ -163,18 +163,18 @@ class DictionaryExtractionTest extends TestCase
         $dict = new Dictionary('string', 'int');
         $dict->add('a', 1);
         $dict->add('b', 2);
-        
+
         // Test getting entries.
         $entries = $dict->entries();
-        
+
         // Test correct entries were returned.
         $this->assertIsArray($entries);
         $this->assertCount(2, $entries);
-        
+
         // Test each entry is a KeyValuePair.
         $this->assertInstanceOf(KeyValuePair::class, $entries[0]);
         $this->assertInstanceOf(KeyValuePair::class, $entries[1]);
-        
+
         // Test correct keys and values.
         $this->assertEquals('a', $entries[0]->key);
         $this->assertEquals(1, $entries[0]->value);
@@ -188,10 +188,10 @@ class DictionaryExtractionTest extends TestCase
     public function testEntriesOnEmptyDictionary(): void
     {
         $dict = new Dictionary();
-        
+
         // Test getting entries from empty dictionary.
         $entries = $dict->entries();
-        
+
         // Test empty array is returned.
         $this->assertIsArray($entries);
         $this->assertCount(0, $entries);
@@ -207,10 +207,10 @@ class DictionaryExtractionTest extends TestCase
         $dict->add('first', 1);
         $dict->add('second', 2);
         $dict->add('third', 3);
-        
+
         // Test entries are in insertion order.
         $entries = $dict->entries();
-        
+
         $this->assertEquals('first', $entries[0]->key);
         $this->assertEquals('second', $entries[1]->key);
         $this->assertEquals('third', $entries[2]->key);
@@ -224,10 +224,10 @@ class DictionaryExtractionTest extends TestCase
         $dict = new Dictionary('string', 'int');
         $dict->add('a', 1);
         $dict->add('b', 2);
-        
+
         // Test entries uses numeric indexes.
         $entries = $dict->entries();
-        
+
         // Test array has sequential numeric keys.
         $this->assertArrayHasKey(0, $entries);
         $this->assertArrayHasKey(1, $entries);
@@ -243,19 +243,19 @@ class DictionaryExtractionTest extends TestCase
         $dict = new Dictionary('string', 'int');
         $dict->add('a', 1);
         $dict->add('b', 2);
-        
+
         // Test modifying keys array doesn't affect dictionary.
         $keys = $dict->keys();
         $keys[] = 'c';
         $this->assertCount(2, $dict);
         $this->assertFalse($dict->keyExists('c'));
-        
+
         // Test modifying values array doesn't affect dictionary.
         $values = $dict->values();
         $values[] = 3;
         $this->assertCount(2, $dict);
         $this->assertFalse($dict->contains(3));
-        
+
         // Test modifying entries array doesn't affect dictionary.
         $entries = $dict->entries();
         array_pop($entries);

@@ -199,7 +199,7 @@ abstract class Collection implements Countable, IteratorAggregate, Stringable
     }
 
     /**
-     * Convert the Collection to a normal PHP array.
+     * Convert the Collection to an array of KeyValuePair objects.
      *
      * @return array The array.
      */

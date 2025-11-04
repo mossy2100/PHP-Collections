@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace Galaxon\Collections\Tests\Dictionary;
 
@@ -23,7 +23,7 @@ class DictionaryIterationTest extends TestCase
         $dict->add('a', 1);
         $dict->add('b', 2);
         $dict->add('c', 3);
-        
+
         // Test iterating over dictionary.
         $keys = [];
         $values = [];
@@ -31,7 +31,7 @@ class DictionaryIterationTest extends TestCase
             $keys[] = $key;
             $values[] = $value;
         }
-        
+
         // Test correct keys and values were iterated.
         $this->assertEquals(['a', 'b', 'c'], $keys);
         $this->assertEquals([1, 2, 3], $values);
@@ -43,13 +43,13 @@ class DictionaryIterationTest extends TestCase
     public function testForeachIterationOnEmptyDictionary(): void
     {
         $dict = new Dictionary();
-        
+
         // Test iterating over empty dictionary.
         $count = 0;
         foreach ($dict as $key => $value) {
             $count++;
         }
-        
+
         // Test no iterations occurred.
         $this->assertEquals(0, $count);
     }
@@ -63,13 +63,13 @@ class DictionaryIterationTest extends TestCase
         $dict->add('first', 1);
         $dict->add('second', 2);
         $dict->add('third', 3);
-        
+
         // Test iteration order.
         $keys = [];
         foreach ($dict as $key => $value) {
             $keys[] = $key;
         }
-        
+
         // Test keys are in insertion order.
         $this->assertEquals(['first', 'second', 'third'], $keys);
     }
@@ -83,7 +83,7 @@ class DictionaryIterationTest extends TestCase
         $dict->add(1, 'int key');
         $dict->add('string', 'string key');
         $dict->add(true, 'bool key');
-        
+
         // Test iterating with various key types.
         $keys = [];
         $values = [];
@@ -91,12 +91,12 @@ class DictionaryIterationTest extends TestCase
             $keys[] = $key;
             $values[] = $value;
         }
-        
+
         // Test correct types were preserved.
         $this->assertIsInt($keys[0]);
         $this->assertIsString($keys[1]);
         $this->assertIsBool($keys[2]);
-        
+
         // Test correct values.
         $this->assertEquals('int key', $values[0]);
         $this->assertEquals('string key', $values[1]);
@@ -112,7 +112,7 @@ class DictionaryIterationTest extends TestCase
         $dict->add('a', 1);
         $dict->add('b', 2);
         $dict->add('c', 3);
-        
+
         // Test modifying values during iteration doesn't affect the iteration.
         $keys = [];
         foreach ($dict as $key => $value) {
@@ -122,10 +122,10 @@ class DictionaryIterationTest extends TestCase
                 $dict['b'] = 20;
             }
         }
-        
+
         // Test iteration completed for all original items.
         $this->assertEquals(['a', 'b', 'c'], $keys);
-        
+
         // Test the modification was applied.
         $this->assertEquals(20, $dict['b']);
     }
@@ -139,7 +139,7 @@ class DictionaryIterationTest extends TestCase
         $dict->add('a', 1);
         $dict->add('b', 2);
         $dict->add('c', 3);
-        
+
         // Test breaking iteration early.
         $keys = [];
         foreach ($dict as $key => $value) {
@@ -148,7 +148,7 @@ class DictionaryIterationTest extends TestCase
                 break;
             }
         }
-        
+
         // Test iteration stopped at 'b'.
         $this->assertEquals(['a', 'b'], $keys);
     }
@@ -162,7 +162,7 @@ class DictionaryIterationTest extends TestCase
         $dict->add('a', 1);
         $dict->add('b', 2);
         $dict->add('c', 3);
-        
+
         // Test skipping items with continue.
         $sum = 0;
         foreach ($dict as $key => $value) {
@@ -171,7 +171,7 @@ class DictionaryIterationTest extends TestCase
             }
             $sum += $value;
         }
-        
+
         // Test 'b' was skipped.
         $this->assertEquals(4, $sum); // 1 + 3, skipping 2
     }
@@ -184,11 +184,11 @@ class DictionaryIterationTest extends TestCase
         $dict1 = new Dictionary('string', 'int');
         $dict1->add('a', 1);
         $dict1->add('b', 2);
-        
+
         $dict2 = new Dictionary('string', 'int');
         $dict2->add('x', 10);
         $dict2->add('y', 20);
-        
+
         // Test nested iteration.
         $results = [];
         foreach ($dict1 as $key1 => $value1) {
@@ -196,7 +196,7 @@ class DictionaryIterationTest extends TestCase
                 $results[] = "$key1-$key2";
             }
         }
-        
+
         // Test all combinations were iterated.
         $this->assertEquals(['a-x', 'a-y', 'b-x', 'b-y'], $results);
     }
@@ -208,10 +208,10 @@ class DictionaryIterationTest extends TestCase
     {
         $dict = new Dictionary('string', 'int');
         $dict->add('a', 1);
-        
+
         // Test getting iterator.
         $iterator = $dict->getIterator();
-        
+
         // Test iterator is traversable.
         $this->assertInstanceOf(\Traversable::class, $iterator);
     }
@@ -225,10 +225,10 @@ class DictionaryIterationTest extends TestCase
         $dict->add('a', 1);
         $dict->add('b', 2);
         $dict->add('c', 3);
-        
+
         // Test converting iterator to array.
         $array = iterator_to_array($dict);
-        
+
         // Test correct array was created.
         $this->assertIsArray($array);
         $this->assertEquals(['a' => 1, 'b' => 2, 'c' => 3], $array);
@@ -242,19 +242,19 @@ class DictionaryIterationTest extends TestCase
         $dict = new Dictionary('string', 'int');
         $dict->add('a', 1);
         $dict->add('b', 2);
-        
+
         // Test first iteration.
         $keys1 = [];
         foreach ($dict as $key => $value) {
             $keys1[] = $key;
         }
-        
+
         // Test second iteration.
         $keys2 = [];
         foreach ($dict as $key => $value) {
             $keys2[] = $key;
         }
-        
+
         // Test both iterations produced same results.
         $this->assertEquals($keys1, $keys2);
         $this->assertEquals(['a', 'b'], $keys1);

@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace Galaxon\Collections\Tests\Dictionary;
 
@@ -18,7 +18,7 @@ use PHPUnit\Framework\TestCase;
 class DictionaryConversionTest extends TestCase
 {
     /**
-     * Test toArray converts dictionary to array.
+     * Test toArray converts Dictionary to array of KeyValuePair objects.
      */
     public function testToArrayConvertsToArray(): void
     {
@@ -26,13 +26,16 @@ class DictionaryConversionTest extends TestCase
         $dict->add('a', 1);
         $dict->add('b', 2);
         $dict->add('c', 3);
-        
+
         // Test converting to array.
         $array = $dict->toArray();
-        
+
         // Test array structure (contains KeyValuePair objects as internal representation).
         $this->assertIsArray($array);
         $this->assertCount(3, $array);
+        $this->assertInstanceOf(KeyValuePair::class, $array[0]);
+        $this->assertInstanceOf(KeyValuePair::class, $array[1]);
+        $this->assertInstanceOf(KeyValuePair::class, $array[2]);
     }
 
     /**
@@ -41,10 +44,10 @@ class DictionaryConversionTest extends TestCase
     public function testToArrayOnEmptyDictionary(): void
     {
         $dict = new Dictionary();
-        
+
         // Test converting empty dictionary to array.
         $array = $dict->toArray();
-        
+
         // Test empty array is returned.
         $this->assertIsArray($array);
         $this->assertCount(0, $array);
@@ -58,11 +61,11 @@ class DictionaryConversionTest extends TestCase
     {
         $dict = new Dictionary('string', 'int');
         $dict->add('a', 1);
-        
+
         // Test modifying array doesn't affect dictionary.
         $array = $dict->toArray();
         $array = [];
-        
+
         // Test dictionary is unchanged.
         $this->assertCount(1, $dict);
         $this->assertEquals(1, $dict['a']);
@@ -77,10 +80,10 @@ class DictionaryConversionTest extends TestCase
         $dict->add('a', 1);
         $dict->add('b', 2);
         $dict->add('c', 3);
-        
+
         // Test converting to Sequence.
         $sequence = $dict->toSequence();
-        
+
         // Test Sequence contains KeyValuePairs.
         $this->assertInstanceOf(Sequence::class, $sequence);
         $this->assertCount(3, $sequence);
@@ -98,10 +101,10 @@ class DictionaryConversionTest extends TestCase
         $dict->add('first', 1);
         $dict->add('second', 2);
         $dict->add('third', 3);
-        
+
         // Test converting to Sequence.
         $sequence = $dict->toSequence();
-        
+
         // Test order is preserved.
         $this->assertEquals('first', $sequence[0]->key);
         $this->assertEquals('second', $sequence[1]->key);
@@ -114,10 +117,10 @@ class DictionaryConversionTest extends TestCase
     public function testToSequenceOnEmptyDictionary(): void
     {
         $dict = new Dictionary();
-        
+
         // Test converting empty dictionary to Sequence.
         $sequence = $dict->toSequence();
-        
+
         // Test empty Sequence is returned.
         $this->assertInstanceOf(Sequence::class, $sequence);
         $this->assertCount(0, $sequence);
@@ -130,11 +133,11 @@ class DictionaryConversionTest extends TestCase
     {
         $dict = new Dictionary('string', 'int');
         $dict->add('a', 1);
-        
+
         // Test Sequence and Dictionary are independent.
         $sequence = $dict->toSequence();
         $dict->add('b', 2);
-        
+
         // Test Sequence hasn't changed.
         $this->assertCount(1, $sequence);
         $this->assertCount(2, $dict);
@@ -149,10 +152,10 @@ class DictionaryConversionTest extends TestCase
         $dict->add('a', 1);
         $dict->add('b', 2);
         $dict->add('c', 3);
-        
+
         // Test converting to Set.
         $set = $dict->toSet();
-        
+
         // Test Set contains KeyValuePairs.
         $this->assertInstanceOf(Set::class, $set);
         $this->assertCount(3, $set);
@@ -166,10 +169,10 @@ class DictionaryConversionTest extends TestCase
         $dict1 = new Dictionary('string', 'int');
         $dict1->add('a', 1);
         $dict1->add('b', 1);
-        
+
         // Test converting to Set.
         $set = $dict1->toSet();
-        
+
         // Test Set may have fewer items if KeyValuePairs are considered equal.
         $this->assertInstanceOf(Set::class, $set);
         $this->assertGreaterThan(0, $set->count());
@@ -181,10 +184,10 @@ class DictionaryConversionTest extends TestCase
     public function testToSetOnEmptyDictionary(): void
     {
         $dict = new Dictionary();
-        
+
         // Test converting empty dictionary to Set.
         $set = $dict->toSet();
-        
+
         // Test empty Set is returned.
         $this->assertInstanceOf(Set::class, $set);
         $this->assertCount(0, $set);
@@ -197,11 +200,11 @@ class DictionaryConversionTest extends TestCase
     {
         $dict = new Dictionary('string', 'int');
         $dict->add('a', 1);
-        
+
         // Test Set and Dictionary are independent.
         $set = $dict->toSet();
         $dict->add('b', 2);
-        
+
         // Test Set hasn't changed.
         $this->assertCount(1, $set);
         $this->assertCount(2, $dict);
@@ -215,10 +218,10 @@ class DictionaryConversionTest extends TestCase
         $dict = new Dictionary('string', 'int');
         $dict->add('a', 1);
         $dict->add('b', 2);
-        
+
         // Test converting to string.
         $string = (string)$dict;
-        
+
         // Test a string is returned.
         $this->assertIsString($string);
         $this->assertNotEmpty($string);
@@ -230,10 +233,10 @@ class DictionaryConversionTest extends TestCase
     public function testToStringOnEmptyDictionary(): void
     {
         $dict = new Dictionary();
-        
+
         // Test converting empty dictionary to string.
         $string = (string)$dict;
-        
+
         // Test a string is returned.
         $this->assertIsString($string);
     }
@@ -245,10 +248,10 @@ class DictionaryConversionTest extends TestCase
     {
         $dict = new Dictionary('string', 'int');
         $dict->add('key', 123);
-        
+
         // Test implicit string conversion.
         $output = "Dictionary: $dict";
-        
+
         // Test string contains expected prefix.
         $this->assertStringContainsString('Dictionary:', $output);
     }
@@ -262,10 +265,10 @@ class DictionaryConversionTest extends TestCase
         $dict->add('a', 1);
         $dict->add('b', 2);
         $dict->add('c', 3);
-        
+
         // Test converting iterator to array.
         $array = iterator_to_array($dict);
-        
+
         // Test associative array is created.
         $this->assertIsArray($array);
         $this->assertEquals(['a' => 1, 'b' => 2, 'c' => 3], $array);
@@ -277,17 +280,17 @@ class DictionaryConversionTest extends TestCase
     public function testCountInterface(): void
     {
         $dict = new Dictionary('string', 'int');
-        
+
         // Test count on empty dictionary.
         $this->assertCount(0, $dict);
-        
+
         // Test count after adding items.
         $dict->add('a', 1);
         $this->assertCount(1, $dict);
-        
+
         $dict->add('b', 2);
         $this->assertCount(2, $dict);
-        
+
         // Test count after removing items.
         $dict->removeByKey('a');
         $this->assertCount(1, $dict);

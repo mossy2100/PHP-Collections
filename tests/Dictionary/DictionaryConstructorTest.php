@@ -1,11 +1,10 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace Galaxon\Collections\Tests\Dictionary;
 
 use Galaxon\Collections\Dictionary;
-use Galaxon\Collections\KeyValuePair;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
@@ -21,16 +20,16 @@ class DictionaryConstructorTest extends TestCase
     public function testConstructorWithNoTypes(): void
     {
         $dict = new Dictionary();
-        
+
         // Test the dictionary is empty.
         $this->assertCount(0, $dict);
         $this->assertTrue($dict->empty());
-        
+
         // Test any type can be added.
         $dict->add('key1', 123);
         $dict->add(456, 'value');
         $dict->add(true, false);
-        
+
         $this->assertCount(3, $dict);
     }
 
@@ -40,11 +39,11 @@ class DictionaryConstructorTest extends TestCase
     public function testConstructorWithKeyTypeOnly(): void
     {
         $dict = new Dictionary('string');
-        
+
         // Test string keys work.
         $dict->add('key1', 123);
         $dict->add('key2', 'value');
-        
+
         $this->assertCount(2, $dict);
     }
 
@@ -54,11 +53,11 @@ class DictionaryConstructorTest extends TestCase
     public function testConstructorWithBothTypes(): void
     {
         $dict = new Dictionary('string', 'int');
-        
+
         // Test adding valid types.
         $dict->add('key1', 123);
         $dict->add('key2', 456);
-        
+
         $this->assertCount(2, $dict);
         $this->assertEquals(123, $dict['key1']);
         $this->assertEquals(456, $dict['key2']);
@@ -70,11 +69,16 @@ class DictionaryConstructorTest extends TestCase
     public function testConstructorWithUnionKeyTypes(): void
     {
         $dict = new Dictionary('int|string', 'mixed');
-        
+
+        // Check the key typeset includes both types.
+        $this->assertEquals(2, $dict->keyTypes->count());
+        $this->assertTrue($dict->keyTypes->contains('int'));
+        $this->assertTrue($dict->keyTypes->contains('string'));
+
         // Test both int and string keys work.
         $dict->add(1, 'value1');
         $dict->add('key2', 'value2');
-        
+
         $this->assertCount(2, $dict);
     }
 
@@ -84,12 +88,18 @@ class DictionaryConstructorTest extends TestCase
     public function testConstructorWithUnionValueTypes(): void
     {
         $dict = new Dictionary('string', 'int|float|string');
-        
+
+        // Check the value typeset includes all types.
+        $this->assertEquals(3, $dict->valueTypes->count());
+        $this->assertTrue($dict->valueTypes->contains('int'));
+        $this->assertTrue($dict->valueTypes->contains('float'));
+        $this->assertTrue($dict->valueTypes->contains('string'));
+
         // Test all value types work.
         $dict->add('key1', 123);
         $dict->add('key2', 45.67);
         $dict->add('key3', 'text');
-        
+
         $this->assertCount(3, $dict);
     }
 
@@ -99,11 +109,16 @@ class DictionaryConstructorTest extends TestCase
     public function testConstructorWithNullableKeyType(): void
     {
         $dict = new Dictionary('?string', 'int');
-        
+
+        // Check the key typeset includes both types.
+        $this->assertEquals(2, $dict->keyTypes->count());
+        $this->assertTrue($dict->keyTypes->contains('null'));
+        $this->assertTrue($dict->keyTypes->contains('string'));
+
         // Test null key works.
         $dict->add(null, 123);
         $dict->add('key', 456);
-        
+
         $this->assertCount(2, $dict);
         $this->assertEquals(123, $dict[null]);
     }
@@ -114,11 +129,16 @@ class DictionaryConstructorTest extends TestCase
     public function testConstructorWithNullableValueType(): void
     {
         $dict = new Dictionary('string', '?int');
-        
+
+        // Check the value typeset includes both types.
+        $this->assertEquals(2, $dict->valueTypes->count());
+        $this->assertTrue($dict->valueTypes->contains('null'));
+        $this->assertTrue($dict->valueTypes->contains('int'));
+
         // Test null value works.
         $dict->add('key1', null);
         $dict->add('key2', 456);
-        
+
         $this->assertCount(2, $dict);
         $this->assertNull($dict['key1']);
     }
@@ -130,7 +150,7 @@ class DictionaryConstructorTest extends TestCase
     {
         $arr = ['a' => 1, 'b' => 2, 'c' => 3];
         $dict = Dictionary::fromIterable($arr);
-        
+
         // Test all items were copied.
         $this->assertCount(3, $dict);
         $this->assertEquals(1, $dict['a']);
@@ -145,7 +165,7 @@ class DictionaryConstructorTest extends TestCase
     {
         $arr = [];
         $dict = Dictionary::fromIterable($arr);
-        
+
         // Test the dictionary is empty.
         $this->assertCount(0, $dict);
         $this->assertTrue($dict->empty());
@@ -154,15 +174,26 @@ class DictionaryConstructorTest extends TestCase
     /**
      * Test fromIterable with mixed key types.
      */
-    public function testFromIterableWithMixedKeys(): void
+    public function testFromIterableWithMixedKeyAndValueTypes(): void
     {
         $arr = [
-            1 => 'one',
+            1     => 'one',
             'two' => 2,
-            3.5 => 'three-point-five'
+            3     => true
         ];
         $dict = Dictionary::fromIterable($arr);
-        
+
+        // Check the key typeset includes both types.
+        $this->assertEquals(2, $dict->keyTypes->count());
+        $this->assertTrue($dict->keyTypes->contains('string'));
+        $this->assertTrue($dict->keyTypes->contains('int'));
+
+        // Check the value typeset includes both types.
+        $this->assertEquals(3, $dict->valueTypes->count());
+        $this->assertTrue($dict->valueTypes->contains('string'));
+        $this->assertTrue($dict->valueTypes->contains('int'));
+        $this->assertTrue($dict->valueTypes->contains('bool'));
+
         // Test all items were copied.
         $this->assertCount(3, $dict);
         $this->assertEquals('one', $dict[1]);
@@ -177,14 +208,14 @@ class DictionaryConstructorTest extends TestCase
         $original = new Dictionary('string', 'int');
         $original->add('a', 1);
         $original->add('b', 2);
-        
+
         $copy = Dictionary::fromIterable($original);
-        
+
         // Test all items were copied.
         $this->assertCount(2, $copy);
         $this->assertEquals(1, $copy['a']);
         $this->assertEquals(2, $copy['b']);
-        
+
         // Test they are separate instances.
         $original->add('c', 3);
         $this->assertCount(3, $original);
@@ -198,10 +229,10 @@ class DictionaryConstructorTest extends TestCase
     {
         $arr = ['key1' => 10, 'key2' => 20];
         $dict = Dictionary::fromIterable($arr);
-        
+
         // Test the dictionary works with the inferred types.
         $this->assertCount(2, $dict);
-        
+
         // Add another item with the same types should work.
         $dict->add('key3', 30);
         $this->assertCount(3, $dict);
