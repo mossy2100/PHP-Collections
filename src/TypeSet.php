@@ -9,6 +9,7 @@ use Countable;
 use Galaxon\Core\Types;
 use IteratorAggregate;
 use RuntimeException;
+use Stringable;
 use Traversable;
 use TypeError;
 use ValueError;
@@ -61,7 +62,7 @@ use ValueError;
  *
  * ### Unsupported pseudo-types: void, never, false, true, self, static.
  */
-class TypeSet implements Countable, IteratorAggregate
+class TypeSet implements Countable, Stringable, IteratorAggregate
 {
     // region Properties
 
@@ -80,7 +81,7 @@ class TypeSet implements Countable, IteratorAggregate
      * Constructor.
      *
      * @param string|iterable|null $types The types to add to the TypeSet.
-     * @throws TypeError If type are not provided as strings.
+     * @throws TypeError If a type is not specified as a string.
      * @throws ValueError If a type name is invalid.
      */
     public function __construct(string|iterable|null $types = null)
@@ -494,6 +495,20 @@ class TypeSet implements Countable, IteratorAggregate
     public function count(): int
     {
         return count($this->types);
+    }
+
+    // endregion
+
+    // region Stringable implementation
+
+    /**
+     * Get a string representation of the TypeSet. Uses set notation.
+     *
+     * @return string The string representation of the TypeSet.
+     */
+    public function __toString(): string
+    {
+        return '{' . implode(', ', $this->types) . '}';
     }
 
     // endregion

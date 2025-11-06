@@ -55,25 +55,44 @@ final class Dictionary extends Collection implements ArrayAccess
     }
 
     /**
-     * Construct a new Dictionary from an existing collection.
-     * The key and value types will be inferred from the collection's items.
+     * Construct a new Dictionary by copying keys and values from a source iterable.
+     *
+     * The allowed types in the result Dictionary can be specified, or inferred automatically from the source
+     * iterable by omitting the parameter or setting it to 'auto'.
      *
      * @param iterable $src The source collection.
-     * @return self The new dictionary.
+     * @param string|iterable|null|true $key_types Allowed key types in the result (default true, for auto-detect).
+     * @param string|iterable|null|true $value_types Allowed value types in the result (default true, for auto-detect).
+     * @return self The new Dictionary.
+     * @throws ValueError If any specified types are invalid.
+     * @throws TypeError If any of the keys or values have a disallowed type.
      */
     #[Override]
-    public static function fromIterable(iterable $src): static
+    public static function fromIterable(
+        iterable $src,
+        string|iterable|null|true $key_types = true,
+        string|iterable|null|true $value_types = true
+    ): static
     {
-        // Instantiate the Dictionary.
-        $dict = new self();
+        $infer_keys = $key_types === true;
+        $infer_values = $value_types === true;
 
-        // Copy the values into the new dictionary.
+        // Instantiate the Dictionary with or without types as requested.
+        $dict = new self(
+            $infer_keys ? null : $key_types,
+            $infer_values ? null : $value_types
+        );
+
         foreach ($src as $key => $value) {
-            // Collect the key and value types from the source collection.
-            $dict->keyTypes->addValueType($key);
-            $dict->valueTypes->addValueType($value);
+            // Collect types from the source iterable if requested.
+            if ($infer_keys) {
+                $dict->keyTypes->addValueType($key);
+            }
+            if ($infer_values) {
+                $dict->valueTypes->addValueType($value);
+            }
 
-            // Leverage offsetSet() to generate the lookup key and the key-value pair.
+            // Add item to the new Dictionary.
             $dict[$key] = $value;
         }
 
@@ -111,20 +130,6 @@ final class Dictionary extends Collection implements ArrayAccess
     // endregion
 
     // region Methods for adding and removing items
-
-    /**
-     * Remove an item by key.
-     *
-     * @param mixed $key The key to remove.
-     * @return self The modified Dictionary.
-     */
-    public function removeByKey(mixed $key): self
-    {
-        if ($this->offsetExists($key)) {
-            $this->offsetUnset($key);
-        }
-        return $this;
-    }
 
     /**
      * Add a key-value pair to the dictionary.
@@ -166,6 +171,39 @@ final class Dictionary extends Collection implements ArrayAccess
         $this[$key] = $value;
 
         // Return this for chaining.
+        return $this;
+    }
+
+    /**
+     * Import key-value pairs from an iterable into the Dictionary.
+     *
+     * @param iterable $src The source iterable.
+     * @return $this The calling object.
+     * @throws TypeError If any of the keys or values have a disallowed type.
+     */
+    #[Override]
+    public function import(iterable $src): static
+    {
+        // Copy the source keys and values into the new dictionary.
+        foreach ($src as $key => $value) {
+            // Leverage offsetSet() to generate the lookup key and the key-value pair.
+            $this[$key] = $value;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Remove an item by key.
+     *
+     * @param mixed $key The key to remove.
+     * @return self The modified Dictionary.
+     */
+    public function removeByKey(mixed $key): self
+    {
+        if ($this->offsetExists($key)) {
+            $this->offsetUnset($key);
+        }
         return $this;
     }
 
@@ -304,7 +342,7 @@ final class Dictionary extends Collection implements ArrayAccess
      */
     public function flip(): self
     {
-        // Create a new dictionary to hold the result.
+        // Create a new dictionary to hold the result. Swap the typesets.
         $result = new self($this->valueTypes, $this->keyTypes);
 
         // Iterate over the items in the current dictionary.
@@ -347,11 +385,10 @@ final class Dictionary extends Collection implements ArrayAccess
     }
 
     /**
-     * TODO See about moving this to Collection. Should work for all collection types and there shouldn't be much
-     * difference.
+     * Filter a Dictionary using a callback function.
      *
-     * Filter a dictionary using a callback function. The resulting dictionary will have the same type constraints,
-     * and will only contain the key-value pairs that the filter callback returns true for.
+     * The resulting Dictionary will have the same type constraints, and will only contain the key-value pairs that
+     * the filter callback returns true for.
      *
      * The callback must accept two parameters, for the key and the value, and return a bool.
      * It can accept more than two parameters, but any additional parameters must be optional.
@@ -360,11 +397,11 @@ final class Dictionary extends Collection implements ArrayAccess
      * @param callable $callback A callback function that accepts a key and a value, and returns a bool.
      * @return self A new dictionary with the kept key-value pairs.
      * @throws TypeError If the callback's parameter types don't match the dictionary's key and value types.
-     * @throws ArgumentCountError If the callback accepts more than two non-optional parameters.
-     * Note also that the callback could throw other kinds of exceptions, or they could throw a TypeError or
-     * ArgumentCountError for some other reason.
+     * Note also that the callback could throw other kinds of exceptions, or they could throw a TypeError for some
+     * other reason.
      */
-    public function filter(callable $callback): self
+    #[Override]
+    public function filter(callable $callback): static
     {
         // Create a new dictionary with the same type constraints.
         $result = new self($this->keyTypes, $this->valueTypes);
@@ -376,7 +413,7 @@ final class Dictionary extends Collection implements ArrayAccess
 
             // Validate the result of the callback.
             if (!is_bool($keep)) {
-                throw new TypeError("The filter callback must return a bool, got " . get_debug_type($keep) . ".");
+                throw new TypeError("The filter callback must return a bool, got " . Types::getBasicType($keep) . ".");
             }
 
             // Add pair to keep to the result dictionary.

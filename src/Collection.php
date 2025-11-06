@@ -11,6 +11,8 @@ use IteratorAggregate;
 use Override;
 use Stringable;
 use Traversable;
+use TypeError;
+use ValueError;
 
 /**
  * Base class for all collections in this package.
@@ -42,6 +44,8 @@ abstract class Collection implements Countable, IteratorAggregate, Stringable
      * Constructor.
      *
      * @param string|iterable|null $types Optional value type constraint for collection items.
+     * @throws TypeError If a type is not specified as a string.
+     * @throws ValueError If a type name is invalid.
      */
     public function __construct(string|iterable|null $types = null)
     {
@@ -51,7 +55,9 @@ abstract class Collection implements Countable, IteratorAggregate, Stringable
 
     /**
      * Construct a new Collection from an iterable.
-     * The value types will be inferred from the iterable's items.
+     *
+     * The intention is that, by default, key and value types will be automatically inferred from the iterable's items.
+     * However, implementing methods may include the option to specify type constraints.
      *
      * @param iterable $src The source collection.
      * @return static The new Collection.
@@ -61,6 +67,15 @@ abstract class Collection implements Countable, IteratorAggregate, Stringable
     // endregion
 
     // region Modification methods
+
+    /**
+     * Import values from a source iterable into the Collection.
+     *
+     * @param iterable $src A source iterable.
+     * @return $this The calling object.
+     * @throws TypeError If any of the values have a disallowed type.
+     */
+    abstract public function import(iterable $src): static;
 
     /**
      * Remove all items from the Collection.
@@ -152,6 +167,26 @@ abstract class Collection implements Countable, IteratorAggregate, Stringable
      * @return bool True if the Collections are equal, false otherwise.
      */
     abstract public function eq(Collection $other): bool;
+
+    // endregion
+
+    // region Transformation methods
+
+    /**
+     * Filter a Collection using a callback function.
+     *
+     * The result will have the same type constraints, and will only contain the values (or key-value pairs) that the
+     * filter callback returns true for.
+     *
+     * The callback should only accept one parameter, the item, and return a bool.
+     * It can accept more than one parameter, but any additional parameters must be optional.
+     * The callback's parameter types should match or be wider than the Collection's type constraints.
+     *
+     * @param callable $callback A callback function that accepts an item and returns a bool.
+     * @return self A new Collection with the kept items.
+     * @throws TypeError If the callback's parameter types don't match the Collection's key and/or value types.
+     */
+    abstract public function filter(callable $callback): static;
 
     // endregion
 

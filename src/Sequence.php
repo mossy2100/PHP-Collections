@@ -78,58 +78,71 @@ final class Sequence extends Collection implements ArrayAccess
     /**
      * Create a new Sequence, with optional type restriction and default value.
      *
+     * The allowed types for values in the Sequence can be specified in several ways:
+     * - null = Values of any type are allowed.
+     * - string = A type name, or multiple types using union type or nullable type syntax, e.g. 'string', 'int|null', '?int'
+     * - iterable = Array or other collection of type names, e.g. ['string', 'int']
+     *
      * A default value may be specified, which is used to fill gaps when increasing the Sequence length as a side
      * effect of calling insert(), fill(), or offsetSet() (either directly or via square bracket syntax).
-     * If a default value is not provided, it will be determined automatically if the TypeSet includes at least one
-     * scalar type or array.
+     * If a default value is not provided, it will be determined automatically.
      * If the default value is an object, it will be cloned as needed.
-     * It doesn't really make sense to have a resource as a default value, but for now, it's allowed.
+     * It doesn't really make sense to have a resource as a default value, but it's allowed.
      *
-     * @param string|iterable|null $types Type specification (e.g., 'string', 'int|null', ['string', 'int'], '?int').
-     * The default is null, which means values of any type are allowed.
+     * @param string|iterable|null $types Allowed types for values in the Sequence.
      * @param mixed $default_value Default value for new items (default null).
-     * @throws ValueError If no default value is provided and none can be determined automatically.
-     * @throws TypeError If a default value is provided, but it's invalid for the specified type set.
+     * @throws ValueError If any type names are invalid.
+     * @throws TypeError If the default value has a disallowed type.
      */
     public function __construct(string|iterable|null $types = null, mixed $default_value = null)
     {
         // Construct the base Collection.
         parent::__construct($types);
 
-        // Check if a default value was specified.
-        if (func_num_args() === 1) {
-            // Try to determine a sane default for common types.
-            if (!$this->valueTypes->tryGetDefaultValue($default_value)) {
-                throw new ValueError("A default value could not be determined. Either provide a default value or include 'null' in the allowed types.");
-            }
-        }
-        elseif (!$this->valueTypes->match($default_value)) {
-            // The default value is invalid for the specified TypeSet.
-            throw new TypeError("The default value has an invalid type. Either provide a default value of an allowed type, or set it to null and include 'null' in the allowed types for this Sequence.");
-        }
-
         // Set the default value.
-        $this->defaultValue = $default_value;
+        $this->setDefaultValue($default_value, func_num_args() < 2);
     }
 
     /**
-     * Construct a new Sequence by copying values and their types from a source iterable.
+     * Construct a new Sequence by copying values from a source iterable.
+     *
+     * The allowed types in the result Sequence can be specified via the $types parameter as a string, iterable, or
+     * null, as in the constructor.
+     * Alternatively, they can be inferred automatically from the source iterable's values by omitting the $types
+     * parameter, or setting it to true.
      *
      * @param iterable $src The iterable to copy from.
+     * @param string|iterable|null|true $types The allowed value types in the result (default true).
+     * @param mixed $default_value Default value for new items (default null).
      * @return static The new Sequence instance.
+     * @throws ValueError If any specified types are invalid.
+     * @throws TypeError If any of the values have a disallowed type.
      */
-    public static function fromIterable(iterable $src): static
+    public static function fromIterable(
+        iterable $src,
+        string|iterable|null|true $types = true,
+        mixed $default_value = null
+    ): static
     {
-        $seq = new self();
+        $infer = $types === true;
 
-        // Add types from the source iterable.
+        // Instantiate the Sequence with or without types as requested.
+        $seq = new self($infer ? null : $types);
+
         foreach ($src as $item) {
-            // Add the item type to the Sequence types, if requested.
-            $seq->valueTypes->addValueType($item);
+            // Collect types from the source iterable if requested.
+            if ($infer) {
+                $seq->valueTypes->addValueType($item);
+            }
 
-            // Add the item to the Sequence.
+            // Add item to the new Sequence.
             $seq->append($item);
         }
+
+        // Set the default value.
+        // We do this after the value types are known, in case the default value wasn't supplied and needs to be
+        // inferred from the value typeset.
+        $seq->setDefaultValue($default_value, func_num_args() < 3);
 
         return $seq;
     }
@@ -147,7 +160,7 @@ final class Sequence extends Collection implements ArrayAccess
         $seq = new self($this->valueTypes, $this->defaultValue);
 
         // Copy items.
-        $seq->append(...$items);
+        $seq->import($items);
 
         return $seq;
     }
@@ -247,10 +260,46 @@ final class Sequence extends Collection implements ArrayAccess
     }
 
     /**
+     * Set the default value.
+     *
+     * The second parameter enables us to distinguish between the case where the default value is explicitly set to
+     * null, and the case where the default value is not specified and should be inferred from the value typeset.
+     *
+     * @param mixed $default_value The default value.
+     * @param bool $infer If the default value wasn't supplied and should be inferred from the value typeset.
+     * @return void
+     * @throws TypeError If the default value is provided but has a disallowed type.
+     */
+    private function setDefaultValue(mixed $default_value, bool $infer = false): void
+    {
+        // Check if we should infer the default value from the typeset.
+        if ($infer) {
+            // Try to determine a sane default for common types.
+            if (!$this->valueTypes->tryGetDefaultValue($default_value)) {
+                // If no default value could be determined, allow nulls in the Sequence.
+                $this->valueTypes->add('null');
+                // The default value should already be null, but set it explicitly just in case.
+                $default_value = null;
+            }
+        }
+        elseif (!$this->valueTypes->match($default_value)) {
+            // The default value has a disallowed type.
+            throw new TypeError(
+                'The default value has an invalid type. ' .
+                'Expected one of: ' . $this->valueTypes . ', ' .
+                'but got: ' . Types::getBasicType($default_value) . '.'
+            );
+        }
+
+        // Set the default value.
+        $this->defaultValue = $default_value;
+    }
+
+    /**
      * Get a new default value.
      *
      * If the default value is an object, clone it.
-     * This is probably more useful than filling a Sequence with references to the same object.
+     * This behavior will probably be more useful than filling a Sequence with references to the same object.
      *
      * @return mixed The new default value.
      */
@@ -270,6 +319,7 @@ final class Sequence extends Collection implements ArrayAccess
      *
      * @param mixed ...$items The items to add to the Sequence.
      * @return $this The Sequence instance.
+     * @throws TypeError If any of the provided items have an invalid type.
      *
      * @example
      * $sequence->append($item);
@@ -350,6 +400,23 @@ final class Sequence extends Collection implements ArrayAccess
 
         // Set the new value of the item at $index.
         $this->items[$index] = $item;
+
+        // Return this for chaining.
+        return $this;
+    }
+
+    /**
+     * Import values from an iterable into the Sequence.
+     *
+     * @param iterable $src The source iterable.
+     * @return $this The calling object.
+     * @throws TypeError If any of the values have a disallowed type.
+     */
+    #[Override]
+    public function import(iterable $src): static
+    {
+        // Copy items from the source iterable into the Sequence.
+        $this->append(...$src);
 
         // Return this for chaining.
         return $this;
@@ -735,13 +802,14 @@ final class Sequence extends Collection implements ArrayAccess
      * This method is analogous to array_filter().
      * @see https://www.php.net/manual/en/function.array-filter.php
      *
-     * @param callable $fn The filter function that returns true for items to keep.
+     * @param callable $callback The filter function that returns true for items to keep.
      * @return self A new Sequence containing only the matching items.
      */
-    public function filter(callable $fn): self
+    #[Override]
+    public function filter(callable $callback): static
     {
         // Get the matching values.
-        $items = array_filter($this->items, static fn($item) => $fn($item));
+        $items = array_filter($this->items, $callback);
 
         // Construct the result.
         return $this->fromSubset($items);
@@ -894,7 +962,7 @@ final class Sequence extends Collection implements ArrayAccess
         $indexes = array_rand($this->items, $count);
 
         // Convert result to an array if necessary.
-        // The call to array_rand() will return a single key value when $count is 1.
+        // This is necessary because array_rand() will return a single value when $count is 1.
         if (!is_array($indexes)) {
             $indexes = [$indexes];
         }

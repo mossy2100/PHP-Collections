@@ -6,6 +6,8 @@ namespace Galaxon\Collections;
 
 use Galaxon\Core\Types;
 use Override;
+use TypeError;
+use ValueError;
 
 /**
  * Implements a set of values with optional type constraints.
@@ -16,22 +18,31 @@ final class Set extends Collection
     // region Constructor and factory methods
 
     /**
-     * Construct a new Set by copying values and their types from a source iterable.
+     * Construct a new Set by copying values from a source iterable.
+     *
+     * The allowed types in the result Set can be specified, or inferred automatically from the source iterable by
+     * omitting the parameter or setting it to 'auto'.
      *
      * @param iterable $src The iterable to copy from.
+     * @param string|iterable|null|true $types The allowed value types in the result (default true, for auto-detect).
      * @return static The new Set.
+     * @throws ValueError If any specified types are invalid.
+     * @throws TypeError If any of the values have a disallowed type.
      */
-    public static function fromIterable(iterable $src): static
+    public static function fromIterable(iterable $src, string|iterable|null|true $types = true): static
     {
-        // Construct the new Set.
-        $set = new self();
+        $infer = $types === true;
 
-        // Add types from the source iterable.
+        // Instantiate the Set with or without types as requested.
+        $set = new self($infer ? null : $types);
+
         foreach ($src as $item) {
-            // Add the item type to the allowed types.
-            $set->valueTypes->addValueType($item);
+            // Collect types from the source iterable if requested.
+            if ($infer) {
+                $set->valueTypes->addValueType($item);
+            }
 
-            // Add the item to the Set.
+            // Add item to the new Set.
             $set->add($item);
         }
 
@@ -49,6 +60,7 @@ final class Set extends Collection
      *
      * @param mixed ...$items The items to add to the Set.
      * @return $this The modified Set.
+     * @throws TypeError If any of the items have an invalid type.
      */
     public function add(mixed ...$items): self
     {
@@ -65,6 +77,23 @@ final class Set extends Collection
         }
 
         // Return $this for chaining.
+        return $this;
+    }
+
+    /**
+     * Import values from an iterable into the Set.
+     *
+     * @param iterable $src The source iterable.
+     * @return $this The calling object.
+     * @throws TypeError If any of the values have a disallowed type.
+     */
+    #[Override]
+    public function import(iterable $src): static
+    {
+        // Copy items from the source iterable into the Sequence.
+        $this->add(...$src);
+
+        // Return this for chaining.
         return $this;
     }
 
@@ -111,7 +140,7 @@ final class Set extends Collection
 
     // endregion
 
-    // region Set operations
+    // region Classic set operations
     // These are non-mutating and return new sets.
 
     /**
@@ -259,6 +288,51 @@ final class Set extends Collection
     public function disjoint(self $other): bool
     {
         return array_all($this->items, static fn($item) => !$other->contains($item));
+    }
+
+    // endregion
+
+    // region Collection methods
+
+    /**
+     * Filter a Set using a callback function.
+     *
+     * The result will have the same type constraints, and will only contain the values that the filter callback returns
+     * true for.
+     *
+     * The callback must accept one parameter, for the value, and return a bool.
+     * The parameter type should match or be wider than the Set's allowed value types.
+     * It can accept more than one parameter, but any additional parameters must be optional.
+     *
+     * @param callable $callback A callback function that accepts a value and returns a bool.
+     * @return self A new Set with the kept values.
+     * @throws TypeError If the callback's parameter types don't match the dictionary's key and value types.
+     * Note also that the callback could throw other kinds of exceptions, or they could throw a TypeError for some
+     * other reason.
+     */
+    #[Override]
+    public function filter(callable $callback): static
+    {
+        // Create a new Set with the same type constraints.
+        $result = new self($this->valueTypes);
+
+        // Apply the filter with validation.
+        foreach ($this->items as $item) {
+            // See if we want to keep this item.
+            $keep = $callback($item);
+
+            // Validate the result of the callback.
+            if (!is_bool($keep)) {
+                throw new TypeError("The filter callback must return a bool, got " . Types::getBasicType($keep) . ".");
+            }
+
+            // Add item to the result Set.
+            if ($keep) {
+                $result->add($item);
+            }
+        }
+
+        return $result;
     }
 
     // endregion

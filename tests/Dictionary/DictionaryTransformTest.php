@@ -28,6 +28,14 @@ class DictionaryTransformTest extends TestCase
         // Test flipping the dictionary.
         $flipped = $dict->flip();
 
+        // Check key typeset is as expected.
+        $this->assertEquals(1, $flipped->keyTypes->count());
+        $this->assertTrue($flipped->keyTypes->contains('int'));
+
+        // Check value typeset is as expected.
+        $this->assertEquals(1, $flipped->valueTypes->count());
+        $this->assertTrue($flipped->valueTypes->contains('string'));
+
         // Test keys and values are swapped.
         $this->assertCount(3, $flipped);
         $this->assertEquals('a', $flipped[1]);
@@ -37,22 +45,6 @@ class DictionaryTransformTest extends TestCase
         // Test original dictionary is unchanged.
         $this->assertCount(3, $dict);
         $this->assertEquals(1, $dict['a']);
-    }
-
-    /**
-     * Test flip creates new dictionary with swapped type constraints.
-     */
-    public function testFlipSwapsTypeConstraints(): void
-    {
-        $dict = new Dictionary('string', 'int');
-        $dict->add('a', 1);
-
-        // Test flipping swaps types.
-        $flipped = $dict->flip();
-
-        // Test flipped dictionary has swapped types.
-        // We can verify by checking values work as expected.
-        $this->assertEquals('a', $flipped[1]);
     }
 
     /**
@@ -171,6 +163,10 @@ class DictionaryTransformTest extends TestCase
 
         // Test merging dictionaries with different value types.
         $merged = $dict1->merge($dict2);
+
+        // Confirm value typeset in merged dictionary contains two types.
+        $this->assertCount(2, $merged->valueTypes);
+        $this->assertTrue($merged->valueTypes->containsAll('int', 'float'));
 
         // Test both value types are allowed in merged dictionary.
         $this->assertCount(2, $merged);

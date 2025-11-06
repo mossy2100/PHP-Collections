@@ -141,15 +141,17 @@ class SequenceConstructorTest extends TestCase
     }
 
     /**
-     * Test constructor throws ValueError when default cannot be determined.
+     * Test constructor adds null to typeset when default cannot be inferred.
      */
-    public function testConstructorThrowsValueErrorForUndeterminedDefault(): void
+    public function testConstructorAddsNullWhenNoOtherDefaultCanBeInferred(): void
     {
-        // Test: Attempt to create a Sequence with object type but no default
-        $this->expectException(ValueError::class);
-        $this->expectExceptionMessage("A default value could not be determined");
+        // Test: Create a Sequence with DateTime type and no default.
+        $seq = new Sequence('DateTime');
 
-        new Sequence('DateTime');
+        // Check there are two types in the typeset, null and DateTime.
+        $this->assertCount(2, $seq->valueTypes);
+        $this->assertTrue($seq->valueTypes->contains('null'));
+        $this->assertTrue($seq->valueTypes->contains('DateTime'));
     }
 
     /**
