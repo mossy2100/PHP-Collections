@@ -7,6 +7,7 @@ namespace Galaxon\Collections\Tests\Sequence;
 use Galaxon\Collections\Sequence;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+use UnderflowException;
 
 /**
  * Tests for Sequence transformation and utility methods.
@@ -306,6 +307,175 @@ class SequenceTransformationTest extends TestCase
 
         // Test: Verify sum calculation
         $this->assertSame(15, $seq->sum());
+    }
+
+    /**
+     * Test min method.
+     */
+    public function testMin(): void
+    {
+        // Test: Find minimum value
+        $seq = new Sequence('int');
+        $seq->append(5, 2, 8, 1, 9, 3);
+
+        // Test: Verify minimum value
+        $this->assertSame(1, $seq->min());
+    }
+
+    /**
+     * Test min method with floats.
+     */
+    public function testMinWithFloats(): void
+    {
+        // Test: Find minimum float value
+        $seq = new Sequence('float');
+        $seq->append(3.14, 2.71, 1.41, 4.67);
+
+        // Test: Verify minimum float value
+        $this->assertSame(1.41, $seq->min());
+    }
+
+    /**
+     * Test min method with negative numbers.
+     */
+    public function testMinWithNegativeNumbers(): void
+    {
+        // Test: Find minimum with negative values
+        $seq = new Sequence('int');
+        $seq->append(5, -2, 8, -10, 3);
+
+        // Test: Verify minimum negative value
+        $this->assertSame(-10, $seq->min());
+    }
+
+    /**
+     * Test min method throws UnderflowException on empty Sequence.
+     */
+    public function testMinThrowsUnderflowOnEmpty(): void
+    {
+        // Test: Attempt to find min of empty Sequence
+        $this->expectException(UnderflowException::class);
+        $this->expectExceptionMessage("Cannot find the minimum value of empty Sequence.");
+
+        $seq = new Sequence('int');
+        $seq->min();
+    }
+
+    /**
+     * Test max method.
+     */
+    public function testMax(): void
+    {
+        // Test: Find maximum value
+        $seq = new Sequence('int');
+        $seq->append(5, 2, 8, 1, 9, 3);
+
+        // Test: Verify maximum value
+        $this->assertSame(9, $seq->max());
+    }
+
+    /**
+     * Test max method with floats.
+     */
+    public function testMaxWithFloats(): void
+    {
+        // Test: Find maximum float value
+        $seq = new Sequence('float');
+        $seq->append(3.14, 2.71, 1.41, 4.67);
+
+        // Test: Verify maximum float value
+        $this->assertSame(4.67, $seq->max());
+    }
+
+    /**
+     * Test max method with negative numbers.
+     */
+    public function testMaxWithNegativeNumbers(): void
+    {
+        // Test: Find maximum with negative values
+        $seq = new Sequence('int');
+        $seq->append(-5, -2, -8, -1, -3);
+
+        // Test: Verify maximum negative value
+        $this->assertSame(-1, $seq->max());
+    }
+
+    /**
+     * Test max method throws UnderflowException on empty Sequence.
+     */
+    public function testMaxThrowsUnderflowOnEmpty(): void
+    {
+        // Test: Attempt to find max of empty Sequence
+        $this->expectException(UnderflowException::class);
+        $this->expectExceptionMessage("Cannot find the maximum value of empty Sequence.");
+
+        $seq = new Sequence('int');
+        $seq->max();
+    }
+
+    /**
+     * Test average method.
+     */
+    public function testAverage(): void
+    {
+        // Test: Calculate average
+        $seq = new Sequence('int');
+        $seq->append(1, 2, 3, 4, 5);
+
+        // Test: Verify average calculation
+        $this->assertSame(3, $seq->average());
+    }
+
+    /**
+     * Test average method with floats.
+     */
+    public function testAverageWithFloats(): void
+    {
+        // Test: Calculate average of floats
+        $seq = new Sequence('float');
+        $seq->append(1.5, 2.5, 3.5, 4.5);
+
+        // Test: Verify average calculation
+        $this->assertSame(3.0, $seq->average());
+    }
+
+    /**
+     * Test average method returns float for division.
+     */
+    public function testAverageReturnsFloat(): void
+    {
+        // Test: Calculate average that results in float
+        $seq = new Sequence('int');
+        $seq->append(1, 2, 3);
+
+        // Test: Verify average is 2.0 (float)
+        $this->assertEquals(2.0, $seq->average());
+    }
+
+    /**
+     * Test average method with single item.
+     */
+    public function testAverageWithSingleItem(): void
+    {
+        // Test: Calculate average of single item
+        $seq = new Sequence('int');
+        $seq->append(42);
+
+        // Test: Verify average equals the single item
+        $this->assertSame(42, $seq->average());
+    }
+
+    /**
+     * Test average method throws UnderflowException on empty Sequence.
+     */
+    public function testAverageThrowsUnderflowOnEmpty(): void
+    {
+        // Test: Attempt to find average of empty Sequence
+        $this->expectException(UnderflowException::class);
+        $this->expectExceptionMessage("Cannot calculate the average value of empty Sequence.");
+
+        $seq = new Sequence('int');
+        $seq->average();
     }
 
     /**

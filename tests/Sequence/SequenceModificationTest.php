@@ -104,9 +104,9 @@ class SequenceModificationTest extends TestCase
 
         // Test: Verify items were prepended in order
         $this->assertCount(4, $seq);
-        $this->assertSame('c', $seq[0]); // Last prepended is first
+        $this->assertSame('a', $seq[0]);
         $this->assertSame('b', $seq[1]);
-        $this->assertSame('a', $seq[2]);
+        $this->assertSame('c', $seq[2]);
         $this->assertSame('d', $seq[3]);
     }
 

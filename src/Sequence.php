@@ -20,8 +20,10 @@ use ValueError;
  *
  * 2. Allowed types for Sequence values can be specified in the constructor, enabling the Sequence to function like a
  * generic array (or equivalent) in C# or Java, i.e. `new Sequence('int')` is equivalent to `new List<int>` in C#.
- * Allowed types must be specified as strings (with union types and nullable syntax supported), or an iterable with
- * values equal to type names. See TypeSet for more details.
+ * Allowed types can be specified as strings (with union types and nullable syntax supported), or an iterable of string
+ * values equal to type names. These are two different ways to specify multiple types and can't be combined; so you
+ * can't specify, for example, `['int|string', '?float]`. Specifying null for the allowed types (not 'null') means
+ * values of any type are allowed. See TypeSet for more details.
  * (NB: Intersection types and DNF syntax are currently NOT supported.)
  *
  * 3. Sequence items can be set at positions beyond the current range, but intermediate items will be filled in with a
@@ -30,6 +32,7 @@ use ValueError;
  *
  * 4. Array-like access using square brackets [] and iteration using foreach is supported via the ArrayAccess and
  * Iterator interfaces.
+ *
  * ## Automatic Defaults
  * For value types, the following defaults are used:
  * - null or mixed → null
@@ -37,9 +40,19 @@ use ValueError;
  * - float → 0.0
  * - string → '' (empty string)
  * - bool → false
- * - array → [] (empty array)
- * If the allowed types only permit specific classes, interfaces, or traits, then a default value of a matching type
- * must be provided, which will be cloned as needed.
+ * - array or iterable → [] (empty array)
+ * For other types (i.e. resource, object, interface, callable), the automatic default value will be null, and if 'null'
+ * has not been specified in the allowed types, it will be automatically added.
+ *
+ * For example:
+ * - `new Sequence('int')` → default_value parameter omitted, will be inferred from type constraints
+ * - `new Sequence('int', null)` → default_value explicitly set to null
+ *
+ * This pattern is used in the constructor, fromIterable(), and fill() methods to enable proper default value handling.
+ *
+ * ## Implementation Notes
+ * Several methods use `func_num_args()` to distinguish between "parameter omitted" and "parameter explicitly set to
+ * null". This is necessary because PHP doesn't provide a native way to make this distinction with optional parameters.
  *
  * @example Basic usage
  * $strings = new Sequence('string');
@@ -143,24 +156,6 @@ final class Sequence extends Collection implements ArrayAccess
         // We do this after the value types are known, in case the default value wasn't supplied and needs to be
         // inferred from the value typeset.
         $seq->setDefaultValue($default_value, func_num_args() < 3);
-
-        return $seq;
-    }
-
-    /**
-     * Create a new Sequence with the same types and default value as the calling object, and items copied from a
-     * source iterable (typically items from the calling Sequence, although not necessarily).
-     *
-     * @param iterable $items The iterable to copy items from.
-     * @return self The new Sequence.
-     */
-    public function fromSubset(iterable $items = []): self
-    {
-        // Construct the new Sequence.
-        $seq = new self($this->valueTypes, $this->defaultValue);
-
-        // Copy items.
-        $seq->import($items);
 
         return $seq;
     }
@@ -308,6 +303,24 @@ final class Sequence extends Collection implements ArrayAccess
         return is_object($this->defaultValue) ? clone $this->defaultValue : $this->defaultValue;
     }
 
+    /**
+     * Create a new Sequence with the same types and default value as the calling object, and items copied from a
+     * source iterable (typically items from the calling Sequence, although this is not enforced).
+     *
+     * @param iterable $items The iterable to copy items from.
+     * @return self The new Sequence.
+     */
+    private function fromSubset(iterable $items = []): self
+    {
+        // Construct the new Sequence.
+        $seq = new self($this->valueTypes, $this->defaultValue);
+
+        // Copy items.
+        $seq->import($items);
+
+        return $seq;
+    }
+
     // endregion
 
     // region Add items to the Sequence
@@ -345,6 +358,10 @@ final class Sequence extends Collection implements ArrayAccess
      *
      * NB: This is a mutating method.
      *
+     * Note that the list of elements is prepended as a whole, so that the prepended elements stay in the same order.
+     * This behaviour parallels array_unshift().
+     * @see https://www.php.net/manual/en/function.array-unshift.php
+     *
      * @param mixed ...$items The items to add to the Sequence.
      * @return $this The Sequence instance.
      *
@@ -355,11 +372,14 @@ final class Sequence extends Collection implements ArrayAccess
      */
     public function prepend(mixed ...$items): self
     {
-        foreach ($items as $item) {
+        // Go through the items in reverse order.
+        for ($i = count($items) - 1; $i >= 0; $i--) {
+            $item = $items[$i];
+
             // Check the item type.
             $this->valueTypes->check($item);
 
-            // Prepand an element at the start of the Sequence.
+            // Prepend an element at the start of the Sequence.
             array_unshift($this->items, $item);
         }
 
@@ -535,7 +555,15 @@ final class Sequence extends Collection implements ArrayAccess
     /**
      * Check if the Sequence is equal to another Collection.
      *
-     * Type constraints are ignored.
+     * "Equal" in this case means that the Sequences have the same:
+     * - type (i.e. they are both instances of Sequence)
+     * - number of items
+     * - item values (i.e. they are equal using strict equality)
+     * - order of items
+     *
+     * Type constraints are not considered, because these are only relevant when adding values to the Sequence.
+     * Therefore if the first Sequence only permits 'int' whereas the second permits both 'int' and 'string', the two
+     * Sequences will still compare as equal if the other conditions are met.
      *
      * @param Collection $other The other Sequence.
      * @return bool True if the Sequences are equal, false otherwise.
@@ -778,7 +806,7 @@ final class Sequence extends Collection implements ArrayAccess
      *
      * @param int $start_index The zero-based index position to start filling.
      * @param int $count The number of items to fill.
-     * @param mixed $value The value to fill with.
+     * @param mixed $value The value to fill with. Omit this parameter to use the default value.
      * @return $this The calling object, for chaining.
      */
     public function fill(int $start_index, int $count, mixed $value = null): self
@@ -786,11 +814,11 @@ final class Sequence extends Collection implements ArrayAccess
         // If no value is specified, use the default value.
         // Use func_num_args() here to check if the value was specified, instead of comparing it with null, because they
         // might actually want to fill with nulls.
-        $use_default_value = func_num_args() === 2;
+        $use_default = func_num_args() === 2;
 
         // Set the specified Sequence items.
         for ($i = 0; $i < $count; $i++) {
-            $this[$start_index + $i] = $use_default_value ? $this->getDefaultValue() : $value;
+            $this[$start_index + $i] = $use_default ? $this->getDefaultValue() : $value;
         }
 
         return $this;
@@ -896,9 +924,9 @@ final class Sequence extends Collection implements ArrayAccess
     /**
      * Find the product of the values in the Sequence.
      *
-     * @return float|int The product of the values in the Sequence.
+     * @return int|float The product of the values in the Sequence.
      */
-    public function product(): float|int
+    public function product(): int|float
     {
         return array_product($this->items);
     }
@@ -906,11 +934,62 @@ final class Sequence extends Collection implements ArrayAccess
     /**
      * Find the sum of the values in the Sequence.
      *
-     * @return float|int The sum of the values in the Sequence.
+     * @return int|float The sum of the values in the Sequence.
      */
-    public function sum(): float|int
+    public function sum(): int|float
     {
         return array_sum($this->items);
+    }
+
+    /**
+     * Find the minimum value in the Sequence.
+     *
+     * @return int|float The minimum value in the Sequence.
+     * @throws UnderflowException If the Sequence is empty.
+     */
+    public function min(): int|float
+    {
+        // Check we have items.
+        if ($this->empty()) {
+            throw new UnderflowException("Cannot find the minimum value of empty Sequence.");
+        }
+
+        // Find the minimum value.
+        return min($this->items);
+    }
+
+    /**
+     * Find the maximum value in the Sequence.
+     *
+     * @return int|float The maximum value in the Sequence.
+     * @throws UnderflowException If the Sequence is empty.
+     */
+    public function max(): int|float
+    {
+        // Check we have items.
+        if ($this->empty()) {
+            throw new UnderflowException("Cannot find the maximum value of empty Sequence.");
+        }
+
+        // Find the maximum value.
+        return max($this->items);
+    }
+
+    /**
+     * Find the average value in the Sequence.
+     *
+     * @return int|float The average value in the Sequence.
+     * @throws UnderflowException If the Sequence is empty.
+     */
+    public function average(): int|float
+    {
+        // Check we have items.
+        if ($this->empty()) {
+            throw new UnderflowException("Cannot calculate the average value of empty Sequence.");
+        }
+
+        // Find the average value.
+        return $this->sum() / $this->count();
     }
 
     /**
@@ -941,15 +1020,14 @@ final class Sequence extends Collection implements ArrayAccess
      *
      * @param int $count The number of indexes to choose (default: 1).
      * @return int[] An array containing the chosen indexes.
-     * @throws UnderflowException If the Sequence is sempty.
-     * @throws OutOfRangeException If the count is out of range or the Sequence doesn't have enough items to choose the
-     * specified count.
+     * @throws OutOfRangeException If the Sequence is empty, or the count is non-positive, or the Sequence doesn't
+     * have enough items to choose the requested number of items.
      */
     private function chooseRandIndexes(int $count = 1): array
     {
         // Guards.
         if ($this->empty()) {
-            throw new UnderflowException("Cannot choose items from an empty Sequence.");
+            throw new OutOfRangeException("Cannot choose items from an empty Sequence.");
         }
         if ($count <= 0) {
             throw new OutOfRangeException("Count must be greater than 0.");
@@ -979,9 +1057,8 @@ final class Sequence extends Collection implements ArrayAccess
      *
      * @param int $count The number of items to choose (default: 1).
      * @return array<int, mixed> An array containing the chosen items (indexes and values) in random order.
-     * @throws UnderflowException If the Sequence is empty.
-     * @throws OutOfRangeException If the count is out of range or the Sequence doesn't have enough items to choose the
-     * specified count.
+     * @throws OutOfRangeException If the Sequence is empty, the count is out of range or the Sequence doesn't
+     * have enough items to choose the specified count.
      * @example
      * $seq = Sequence::range(1, 10);
      * $items = $seq->chooseRand(3);
@@ -1008,9 +1085,8 @@ final class Sequence extends Collection implements ArrayAccess
      *
      * @param int $count The number of items to remove (default: 1).
      * @return list<mixed> An array containing the removed values in random order.
-     * @throws UnderflowException If the Sequence is empty.
-     * @throws OutOfRangeException If the count is out of range or the Sequence doesn't have enough items to remove
-     * the specified count.
+     * @throws OutOfRangeException If the Sequence is empty, the count is out of range, or the Sequence doesn't have
+     * enough items to remove the specified count.
      */
     public function removeRand(int $count = 1): array
     {

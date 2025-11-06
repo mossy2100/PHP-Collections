@@ -211,38 +211,177 @@ class SequenceConstructorTest extends TestCase
     }
 
     /**
-     * Test fromSubset method.
+     * Test fromIterable infers nullable types when null values present.
      */
-    public function testFromSubset(): void
+    public function testFromIterableInfersNullableTypes(): void
     {
-        // Test: Create original Sequence
-        $original = new Sequence('int', 0);
-        $original->append(1, 2, 3, 4, 5);
+        // Test: Create Sequence with null values (types inferred)
+        $seq = Sequence::fromIterable([1, null, 3, null, 5]);
 
-        // Test: Create subset with different items
-        $subset = $original->fromSubset([10, 20, 30]);
+        // Test: Verify all items preserved
+        $this->assertCount(5, $seq);
+        $this->assertSame(1, $seq[0]);
+        $this->assertNull($seq[1]);
+        $this->assertSame(5, $seq[4]);
 
-        // Test: Verify subset has same types and default but different items
-        $this->assertCount(3, $subset);
-        $this->assertSame(10, $subset[0]);
-        $this->assertSame(30, $subset[2]);
-        $this->assertSame(0, $subset->defaultValue);
+        // Test: Verify both int and null types were inferred
+        $this->assertTrue($seq->valueTypes->containsAll('int', 'null'));
+        $this->assertCount(2, $seq->valueTypes);
     }
 
     /**
-     * Test fromSubset with empty items.
+     * Test fromIterable with explicit types (not inferred).
      */
-    public function testFromSubsetEmpty(): void
+    public function testFromIterableWithExplicitTypes(): void
     {
-        // Test: Create original Sequence
-        $original = new Sequence('string', '');
+        // Test: Create Sequence with explicit type constraint
+        $seq = Sequence::fromIterable([1, 2, 3], 'int');
 
-        // Test: Create empty subset
-        $subset = $original->fromSubset();
+        // Test: Verify type constraint applied
+        $this->assertTrue($seq->valueTypes->contains('int'));
+        $this->assertCount(1, $seq->valueTypes);
+    }
 
-        // Test: Verify subset is empty but has same configuration
-        $this->assertCount(0, $subset);
-        $this->assertSame('', $subset->defaultValue);
+    /**
+     * Test fromIterable with explicit types and custom default.
+     */
+    public function testFromIterableWithExplicitTypesAndCustomDefault(): void
+    {
+        // Test: Create Sequence with explicit types and custom default
+        $seq = Sequence::fromIterable([1, 2, 3], 'int', 99);
+
+        // Test: Verify custom default value set
+        $this->assertSame(99, $seq->defaultValue);
+        $this->assertCount(3, $seq);
+    }
+
+    /**
+     * Test fromIterable with type inference and custom default.
+     */
+    public function testFromIterableWithTypeInferenceAndCustomDefault(): void
+    {
+        // Test: Create Sequence with type inference and custom default
+        $seq = Sequence::fromIterable([1, 2, 3], true, 0);
+
+        // Test: Verify types inferred and default set
+        $this->assertTrue($seq->valueTypes->contains('int'));
+        $this->assertSame(0, $seq->defaultValue);
+    }
+
+    /**
+     * Test fromIterable infers multiple types correctly.
+     */
+    public function testFromIterableInfersMultipleTypes(): void
+    {
+        // Test: Create Sequence with various types
+        $seq = Sequence::fromIterable([1, 'hello', 3.14, true, false, null, []]);
+
+        // Test: Verify all unique types were inferred
+        $this->assertTrue($seq->valueTypes->contains('int'));
+        $this->assertTrue($seq->valueTypes->contains('string'));
+        $this->assertTrue($seq->valueTypes->contains('float'));
+        $this->assertTrue($seq->valueTypes->contains('bool'));
+        $this->assertTrue($seq->valueTypes->contains('null'));
+        $this->assertTrue($seq->valueTypes->contains('array'));
+    }
+
+    /**
+     * Test fromIterable with only null values.
+     */
+    public function testFromIterableWithOnlyNullValues(): void
+    {
+        // Test: Create Sequence containing only nulls
+        $seq = Sequence::fromIterable([null, null, null]);
+
+        // Test: Verify null type inferred
+        $this->assertCount(3, $seq);
+        $this->assertTrue($seq->valueTypes->contains('null'));
+        $this->assertNull($seq[0]);
+        $this->assertNull($seq[2]);
+    }
+
+    /**
+     * Test fromIterable throws TypeError when explicit type doesn't match values.
+     */
+    public function testFromIterableThrowsTypeErrorForMismatchedExplicitType(): void
+    {
+        // Test: Attempt to create Sequence with mismatched type
+        $this->expectException(TypeError::class);
+
+        Sequence::fromIterable([1, 2, 3], 'string');
+    }
+
+    /**
+     * Test fromIterable with generator and type inference.
+     */
+    public function testFromIterableWithGeneratorAndTypeInference(): void
+    {
+        // Test: Create Sequence from generator with type inference
+        $generator = function () {
+            yield 10;
+            yield 20;
+            yield 30;
+        };
+
+        $seq = Sequence::fromIterable($generator());
+
+        // Test: Verify items and types
+        $this->assertCount(3, $seq);
+        $this->assertSame(10, $seq[0]);
+        $this->assertSame(30, $seq[2]);
+        $this->assertTrue($seq->valueTypes->contains('int'));
+    }
+
+    /**
+     * Test fromIterable infers default value when types are inferred.
+     */
+    public function testFromIterableInfersDefaultValueWhenTypesInferred(): void
+    {
+        // Test: Create Sequence with inferred int type
+        $seq = Sequence::fromIterable([1, 2, 3]);
+
+        // Test: Verify default value inferred as 0 for int
+        $this->assertSame(0, $seq->defaultValue);
+    }
+
+    /**
+     * Test fromIterable infers default value with mixed types.
+     */
+    public function testFromIterableInfersDefaultValueWithMixedTypes(): void
+    {
+        // Test: Create Sequence with mixed types including null
+        $seq = Sequence::fromIterable([1, 'hello', null]);
+
+        // Test: Verify default value is null (since null is an option)
+        $this->assertNull($seq->defaultValue);
+    }
+
+    /**
+     * Test fromIterable with null type parameter explicitly.
+     */
+    public function testFromIterableWithNullTypeParameter(): void
+    {
+        // Test: Create Sequence with null as types parameter (any type allowed)
+        $seq = Sequence::fromIterable([1, 'hello', 3.14], null);
+
+        // Test: Verify no type constraints applied
+        $this->assertCount(3, $seq);
+        // When types is null, no specific types are added to the TypeSet
+        $this->assertTrue($seq->valueTypes->anyOk());
+    }
+
+    /**
+     * Test fromIterable with union type string.
+     */
+    public function testFromIterableWithUnionTypeString(): void
+    {
+        // Test: Create Sequence with union type constraint
+        $seq = Sequence::fromIterable([1, 'hello', 2, 'world'], 'int|string');
+
+        // Test: Verify both types accepted
+        $this->assertCount(4, $seq);
+        $this->assertTrue($seq->valueTypes->contains('int'));
+        $this->assertTrue($seq->valueTypes->contains('string'));
     }
 
     /**

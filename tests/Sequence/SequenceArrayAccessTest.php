@@ -274,10 +274,10 @@ class SequenceArrayAccessTest extends TestCase
     /**
      * Test chooseRand throws UnderflowException on empty Sequence.
      */
-    public function testChooseRandThrowsUnderflowOnEmpty(): void
+    public function testChooseRandThrowsExceptionOnEmpty(): void
     {
         // Test: Attempt to choose from empty Sequence
-        $this->expectException(UnderflowException::class);
+        $this->expectException(OutOfRangeException::class);
 
         $seq = new Sequence('int');
         $seq->chooseRand();
