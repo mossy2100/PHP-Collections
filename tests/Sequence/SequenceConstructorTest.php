@@ -149,9 +149,7 @@ class SequenceConstructorTest extends TestCase
         $seq = new Sequence('DateTime');
 
         // Check there are two types in the typeset, null and DateTime.
-        $this->assertCount(2, $seq->valueTypes);
-        $this->assertTrue($seq->valueTypes->contains('null'));
-        $this->assertTrue($seq->valueTypes->contains('DateTime'));
+        $this->assertTrue($seq->valueTypes->containsOnly('null', 'DateTime'));
     }
 
     /**
@@ -238,8 +236,7 @@ class SequenceConstructorTest extends TestCase
         $seq = Sequence::fromIterable([1, 2, 3], 'int');
 
         // Test: Verify type constraint applied
-        $this->assertTrue($seq->valueTypes->contains('int'));
-        $this->assertCount(1, $seq->valueTypes);
+        $this->assertTrue($seq->valueTypes->containsOnly('int'));
     }
 
     /**
@@ -277,12 +274,7 @@ class SequenceConstructorTest extends TestCase
         $seq = Sequence::fromIterable([1, 'hello', 3.14, true, false, null, []]);
 
         // Test: Verify all unique types were inferred
-        $this->assertTrue($seq->valueTypes->contains('int'));
-        $this->assertTrue($seq->valueTypes->contains('string'));
-        $this->assertTrue($seq->valueTypes->contains('float'));
-        $this->assertTrue($seq->valueTypes->contains('bool'));
-        $this->assertTrue($seq->valueTypes->contains('null'));
-        $this->assertTrue($seq->valueTypes->contains('array'));
+        $this->assertTrue($seq->valueTypes->containsOnly('int', 'string', 'float', 'bool', 'null', 'array'));
     }
 
     /**
@@ -380,8 +372,7 @@ class SequenceConstructorTest extends TestCase
 
         // Test: Verify both types accepted
         $this->assertCount(4, $seq);
-        $this->assertTrue($seq->valueTypes->contains('int'));
-        $this->assertTrue($seq->valueTypes->contains('string'));
+        $this->assertTrue($seq->valueTypes->containsOnly('int', 'string'));
     }
 
     /**

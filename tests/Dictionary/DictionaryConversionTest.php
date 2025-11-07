@@ -72,6 +72,43 @@ class DictionaryConversionTest extends TestCase
     }
 
     /**
+     * Test toArray preserves order.
+     */
+    public function testToArrayPreservesOrder(): void
+    {
+        $dict = new Dictionary('string', 'int');
+        $dict->add('first', 1);
+        $dict->add('second', 2);
+        $dict->add('third', 3);
+
+        // Test array entries are in insertion order.
+        $array = $dict->toArray();
+
+        $this->assertEquals('first', $array[0]->key);
+        $this->assertEquals('second', $array[1]->key);
+        $this->assertEquals('third', $array[2]->key);
+    }
+
+    /**
+     * Test toArray returns array with numeric indexes.
+     */
+    public function testToArrayReturnsNumericIndexes(): void
+    {
+        $dict = new Dictionary('string', 'int');
+        $dict->add('a', 1);
+        $dict->add('b', 2);
+
+        // Test array uses numeric indexes, not dictionary keys.
+        $array = $dict->toArray();
+
+        // Test array has sequential numeric keys.
+        $this->assertArrayHasKey(0, $array);
+        $this->assertArrayHasKey(1, $array);
+        $this->assertArrayNotHasKey('a', $array);
+        $this->assertArrayNotHasKey('b', $array);
+    }
+
+    /**
      * Test toSequence converts dictionary to Sequence.
      */
     public function testToSequenceConvertsToSequence(): void

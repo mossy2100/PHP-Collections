@@ -4,7 +4,6 @@ declare(strict_types = 1);
 
 namespace Galaxon\Collections;
 
-use ArrayIterator;
 use Countable;
 use Galaxon\Core\Stringify;
 use IteratorAggregate;
@@ -150,7 +149,7 @@ abstract class Collection implements Countable, IteratorAggregate, Stringable
     /**
      * Check if two Collections have the same type and number of items.
      *
-     * Protected helper method for use by equals() implementations.
+     * Protected helper method for use by eq() implementations.
      *
      * @param Collection $other The other Collection.
      * @return bool True if the Collections have the same type and number of items, false otherwise.
@@ -161,7 +160,7 @@ abstract class Collection implements Countable, IteratorAggregate, Stringable
     }
 
     /**
-     * Check if the Collection is equal to another Collection.
+     * Check if the Collection is equal to another Collection (definition of "equal" varies by type).
      *
      * @param Collection $other The other Collection.
      * @return bool True if the Collections are equal, false otherwise.
@@ -198,10 +197,7 @@ abstract class Collection implements Countable, IteratorAggregate, Stringable
      * @return Traversable The iterator.
      */
     #[Override]
-    public function getIterator(): Traversable
-    {
-        return new ArrayIterator($this->items);
-    }
+    abstract public function getIterator(): Traversable;
 
     // endregion
 

@@ -4,8 +4,11 @@ declare(strict_types = 1);
 
 namespace Galaxon\Collections;
 
+use ArrayIterator;
+use Galaxon\Core\Stringify;
 use Galaxon\Core\Types;
 use Override;
+use Traversable;
 use TypeError;
 use ValueError;
 
@@ -20,8 +23,10 @@ final class Set extends Collection
     /**
      * Construct a new Set by copying values from a source iterable.
      *
-     * The allowed types in the result Set can be specified, or inferred automatically from the source iterable by
-     * omitting the parameter or setting it to 'auto'.
+     * The allowed types in the resultant Set can be specified via the $types parameter as a string, iterable, or
+     * null, as in the constructor.
+     * Alternatively, they can be inferred automatically from the source iterable's values by omitting the $types
+     * parameter, or setting it to true.
      *
      * @param iterable $src The iterable to copy from.
      * @param string|iterable|null|true $types The allowed value types in the result (default true, for auto-detect).
@@ -70,9 +75,9 @@ final class Set extends Collection
             $this->valueTypes->check($item);
 
             // Add the item if new.
-            $key = Types::getStringKey($item);
-            if (!array_key_exists($key, $this->items)) {
-                $this->items[$key] = $item;
+            $index = Types::getUniqueString($item);
+            if (!array_key_exists($index, $this->items)) {
+                $this->items[$index] = $item;
             }
         }
 
@@ -82,6 +87,8 @@ final class Set extends Collection
 
     /**
      * Import values from an iterable into the Set.
+     *
+     * NB: This is a mutating method.
      *
      * @param iterable $src The source iterable.
      * @return $this The calling object.
@@ -98,44 +105,23 @@ final class Set extends Collection
     }
 
     /**
-     * Remove one or more items from the Set.
+     * Remove an item from the Set.
      *
      * NB: This is a mutating method.
      *
-     * @param mixed ...$items The items to remove from the Set, if present.
+     * @param mixed $item The item to remove from the Set, if present.
      * @return $this The modified Set.
      */
-    public function remove(mixed ...$items): self
+    public function remove(mixed $item): self
     {
-        // Remove each item.
-        foreach ($items as $item) {
-            // No type check needed. If it's in the set, remove it.
-            $key = Types::getStringKey($item);
-            if (array_key_exists($key, $this->items)) {
-                unset($this->items[$key]);
-            }
+        // No type check needed. If it's in the set, remove it.
+        $index = Types::getUniqueString($item);
+        if (array_key_exists($index, $this->items)) {
+            unset($this->items[$index]);
         }
 
         // Return $this for chaining.
         return $this;
-    }
-
-    // endregion
-
-    // region Contains method implementation
-
-    /**
-     * Check if the Set contains one or more items.
-     *
-     * Strict equality is used to compare items, i.e. the item must match on both value and type.
-     *
-     * @param mixed $value The items to check for.
-     * @return bool True if the Set contains the item, false otherwise.
-     */
-    #[Override]
-    public function contains(mixed $value): bool
-    {
-        return array_key_exists(Types::getStringKey($value), $this->items);
     }
 
     // endregion
@@ -213,12 +199,36 @@ final class Set extends Collection
 
     // endregion
 
-    // region Comparison methods
+    // region Comparison and inspection methods
+    // These are non-mutating and return bools.
+
+    /**
+     * Check if the Set contains one or more items.
+     *
+     * Strict equality is used to compare items, i.e. the item must match on both value and type.
+     *
+     * @param mixed $value The items to check for.
+     * @return bool True if the Set contains the item, false otherwise.
+     */
+    #[Override]
+    public function contains(mixed $value): bool
+    {
+        return array_key_exists(Types::getUniqueString($value), $this->items);
+    }
 
     /**
      * Check if the Set is equal to another Collection.
      *
-     * Type constraints are ignored.
+     * "Equal" in this case means that the Sets have the same:
+     * - type (i.e. they are both instances of Set)
+     * - number of items
+     * - item values (strict equality)
+     *
+     * Type constraints are not considered, because these are only relevant when adding values to a Set.
+     * Therefore, if the first Set only permits 'int' values whereas the second permits both 'int' and 'string',
+     * the two will still compare as equal if the other conditions are met.
+     *
+     * The order of the items is also not considered, because with Sets the order doesn't matter.
      *
      * @param Collection $other The other Set.
      * @return bool True if the Sets are equal, false otherwise.
@@ -343,10 +353,13 @@ final class Set extends Collection
      * Generate a string representation of the Set.
      *
      * @return string
+     * @throws ValueError If any values cannot be stringified.
+     * @throws TypeError If any values have an unknown type.
      */
     public function __toString(): string
     {
-        return '{' . implode(', ', array_map(static fn($item) => (string)$item, $this->items)) . '}';
+        $items = array_map(static fn($item) => Stringify::stringify($item), $this->items);
+        return '{' . implode(', ', $items) . '}';
     }
 
     // endregion
@@ -365,7 +378,7 @@ final class Set extends Collection
         // Construct the new Dictionary, using the same value types as the Set.
         $dict = new Dictionary('uint', $this->valueTypes);
 
-        // Copy the items into the new Dictionary.
+        // Copy the items into the new Dictionary. Sequential unsigned integers are generated for the keys.
         $key = 0;
         foreach ($this->items as $value) {
             $dict->add($key, $value);
@@ -393,6 +406,26 @@ final class Set extends Collection
 
         // Return the new Sequence.
         return $seq;
+    }
+
+    // endregion
+
+    // region IteratorAggregate implementation
+
+    /**
+     * Get iterator for foreach loops.
+     *
+     * @return Traversable The iterator.
+     */
+    #[Override]
+    public function getIterator(): Traversable
+    {
+        // This is more memory efficient than array_values() as it avoids an array copy.
+        // If a foreach loop is called on this generator then sequential unsigned integer keys will be generated by
+        // PHP automatically.
+        foreach ($this->items as $value) {
+            yield $value;
+        }
     }
 
     // endregion

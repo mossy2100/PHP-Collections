@@ -29,12 +29,10 @@ class DictionaryTransformTest extends TestCase
         $flipped = $dict->flip();
 
         // Check key typeset is as expected.
-        $this->assertEquals(1, $flipped->keyTypes->count());
-        $this->assertTrue($flipped->keyTypes->contains('int'));
+        $this->assertTrue($flipped->keyTypes->containsOnly('int'));
 
         // Check value typeset is as expected.
-        $this->assertEquals(1, $flipped->valueTypes->count());
-        $this->assertTrue($flipped->valueTypes->contains('string'));
+        $this->assertTrue($flipped->valueTypes->containsOnly('string'));
 
         // Test keys and values are swapped.
         $this->assertCount(3, $flipped);

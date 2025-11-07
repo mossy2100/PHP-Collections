@@ -145,28 +145,6 @@ unset($obj);  // Object is destroyed (weak reference)
 // Memory freed immediately by garbage collector
 ```
 
-**Use Case for WeakMap:**
-```php
-// Caching without memory leaks
-class Cache {
-    private WeakMap $cache;
-    
-    public function __construct() {
-        $this->cache = new WeakMap();
-    }
-    
-    public function get(object $obj): mixed {
-        return $this->cache[$obj] ?? null;
-    }
-    
-    public function set(object $obj, mixed $value): void {
-        $this->cache[$obj] = $value;
-    }
-}
-
-// When objects are destroyed, cache entries auto-cleanup ✅
-```
-
 ---
 
 ### Key Uniqueness

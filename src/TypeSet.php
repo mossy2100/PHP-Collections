@@ -230,17 +230,17 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
     // region Type name validation (private static methods)
 
     /**
-     * Normalize a type name by removing leading and trailing whitespace, and a leading backslash if present.
+     * Normalize a type name by trimming whitespace and backslashes from the start and end.
      *
-     * We strip the leading backslash so that contains() work correctly if the type name contains a leading backslash
-     * either when added to the TypeSet or provided to the method.
+     * We trim backslashes because class names may be provided with or without a leading backslash, and we want methods
+     * like contains() to work with either form.
      *
      * @param string $type The type name to normalize.
      * @return string The normalized type name.
      */
     private static function normalizeTypeName(string $type): string
     {
-        return ltrim(trim($type), '\\');
+        return trim($type, " \n\r\t\v\0\\");
     }
 
     /**
@@ -451,6 +451,17 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
     public function containsAny(string ...$types): bool
     {
         return array_any($types, fn($type) => $this->contains($type));
+    }
+
+    /**
+     * Check if the set contains only the given types.
+     *
+     * @param string ...$types The types to check for.
+     * @return bool If the set contains only the given types.
+     */
+    public function containsOnly(string ...$types): bool
+    {
+        return count($types) === count($this->types) && $this->containsAll(...$types);
     }
 
     /**

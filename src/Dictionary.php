@@ -57,8 +57,10 @@ final class Dictionary extends Collection implements ArrayAccess
     /**
      * Construct a new Dictionary by copying keys and values from a source iterable.
      *
-     * The allowed types in the result Dictionary can be specified, or inferred automatically from the source
-     * iterable by omitting the parameter or setting it to 'auto'.
+     * The allowed key and value types in the resultant Dictionary can be specified via the $key_types and $value_types
+     * parameters as a string, iterable, or null, as in the constructor.
+     * Alternatively, they can be inferred automatically from the source iterable's values by omitting either parameter,
+     * or setting it to true.
      *
      * @param iterable $src The source collection.
      * @param string|iterable|null|true $key_types Allowed key types in the result (default true, for auto-detect).
@@ -117,14 +119,6 @@ final class Dictionary extends Collection implements ArrayAccess
     public function values(): array
     {
         return array_values(array_map(static fn($item) => $item->value, $this->items));
-    }
-
-    /**
-     * Get all the key-value pairs as an array.
-     */
-    public function entries(): array
-    {
-        return array_values($this->items);
     }
 
     // endregion
@@ -197,13 +191,16 @@ final class Dictionary extends Collection implements ArrayAccess
      * Remove an item by key.
      *
      * @param mixed $key The key to remove.
-     * @return self The modified Dictionary.
+     * @return $this The modified Dictionary.
      */
     public function removeByKey(mixed $key): self
     {
+        // Remove the item denoted by the given key if present.
         if ($this->offsetExists($key)) {
             $this->offsetUnset($key);
         }
+
+        // Return $this for chaining.
         return $this;
     }
 
@@ -211,21 +208,25 @@ final class Dictionary extends Collection implements ArrayAccess
      * Remove one or more items by value.
      *
      * @param mixed $value The value to remove.
-     * @return self The modified Dictionary.
+     * @return $this The modified Dictionary.
      */
     public function removeByValue(mixed $value): self
     {
-        foreach ($this->items as $string_key => $pair) {
+        // Remove all items with the given value.
+        foreach ($this->items as $index => $pair) {
             if ($pair->value === $value) {
-                unset($this->items[$string_key]);
+                unset($this->items[$index]);
             }
         }
+
+        // Return $this for chaining.
         return $this;
     }
 
     // endregion
 
-    // region Inspection methods
+    // region Comparison and inspection methods
+    // These are non-mutating and return bools.
 
     /**
      * Check if the Dictionary contains a value.
@@ -244,7 +245,16 @@ final class Dictionary extends Collection implements ArrayAccess
     /**
      * Check if the Dictionary is equal to another Collection.
      *
-     * Type constraints are ignored.
+     * "Equal" in this case means that the Dictionaries have the same:
+     * - type (i.e. they are both instances of Dictionary)
+     * - number of items (i.e. key-value pairs)
+     * - item keys (strict equality)
+     * - item values (strict equality)
+     * - order of items
+     *
+     * Type constraints are not considered, because these are only relevant when adding items to a Dictionary.
+     * Therefore, if the first Dictionary only permits 'int' values whereas the second permits both 'int' and 'string',
+     * the two will still compare as equal if the other conditions are met.
      *
      * @param Collection $other The other Dictionary.
      * @return bool True if the Dictionaries are equal, false otherwise.
@@ -258,8 +268,8 @@ final class Dictionary extends Collection implements ArrayAccess
         }
 
         // Check keys and item order are equal.
-        // This actually compares the internal string keys (indexes), but that's sufficient for comparing the keys in
-        // the KeyValuePairs.
+        // This actually compares the indexes (i.e. internal string keys), but that's equivalent to comparing the keys
+        // in the KeyValuePairs. The !== operator compares type, value, and order of items.
         $this_keys = array_keys($this->items);
         $other_keys = array_keys($other->items);
         if ($this_keys !== $other_keys) {
@@ -267,7 +277,7 @@ final class Dictionary extends Collection implements ArrayAccess
         }
 
         // Check values are equal.
-        return array_all($this->items, fn($value, $key) => $this->items[$key]->value === $other->items[$key]->value);
+        return array_all($this->items, fn($pair, $index) => $this->items[$index]->value === $other->items[$index]->value);
     }
 
     /**
@@ -372,13 +382,13 @@ final class Dictionary extends Collection implements ArrayAccess
         $result = new self($key_types, $value_types);
 
         // Copy pairs from this dictionary.
-        foreach ($this->items as $string_key => $pair) {
-            $result->items[$string_key] = clone $pair;
+        foreach ($this->items as $index => $pair) {
+            $result->items[$index] = clone $pair;
         }
 
         // Copy pairs from the other dictionary.
-        foreach ($other->items as $string_key => $pair) {
-            $result->items[$string_key] = clone $pair;
+        foreach ($other->items as $index => $pair) {
+            $result->items[$index] = clone $pair;
         }
 
         return $result;
@@ -430,6 +440,44 @@ final class Dictionary extends Collection implements ArrayAccess
     // region ArrayAccess implementation
 
     /**
+     * Check if a given key exists in the dictionary.
+     *
+     * @param mixed $offset The key to check.
+     * @return bool True if the key is in the dictionary, false otherwise.
+     */
+    #[Override]
+    public function offsetExists(mixed $offset): bool
+    {
+        // Convert the key to an index.
+        $index = Types::getUniqueString($offset);
+
+        // Check index exists.
+        return array_key_exists($index, $this->items);
+    }
+
+    /**
+     * Get the value of an item by key.
+     *
+     * @param mixed $offset The key to get.
+     * @return mixed The value of the item.
+     * @throws OutOfBoundsException If the Dictionary does not contain the given key.
+     */
+    #[Override]
+    public function offsetGet(mixed $offset): mixed
+    {
+        // Convert the key to an index.
+        $index = Types::getUniqueString($offset);
+
+        // Check key exists.
+        if (!array_key_exists($index, $this->items)) {
+            throw new OutOfBoundsException("Unknown key: " . Stringify::abbrev($offset) . ".");
+        }
+
+        // Get the corresponding value.
+        return $this->items[$index]->value;
+    }
+
+    /**
      * Set an item by key.
      *
      * If a key is in use, the corresponding key-value pair will be replaced.
@@ -437,11 +485,12 @@ final class Dictionary extends Collection implements ArrayAccess
      * Both the key and value types will be checked, and if either is invalid, a TypeError will be thrown.
      *
      * NB: If no offset is specified (e.g. $dict[] = $value), the $offset parameter value will be null.
-     * Thus, if this syntax is used, the key will be null, if null is an allowed key type.
-     * If not, a TypeError will be thrown
+     * There's no way to know if the offset was not provided (i.e. $dict[]) or was null (i.e. $dict[null]).
+     * Thus, if no offset is given, the Dictionary key is taken to be null, if null is an allowed key type.
+     * If not, a TypeError will be thrown.
      * This behavior means if multiple $dict[] = $value expressions are used, the effect will not be to append
      * multiple values to the dictionary, as with an ordinary PHP array.
-     * Rather, it will be to keep setting the value for the null key.
+     * Rather, it will keep setting the value for the null key.
      *
      * @param mixed $offset The key to set.
      * @param mixed $value The value to set.
@@ -454,44 +503,11 @@ final class Dictionary extends Collection implements ArrayAccess
         $this->keyTypes->check($offset, 'key');
         $this->valueTypes->check($value, 'value');
 
-        // Get the string version of this key.
-        $string_key = Types::getStringKey($offset);
+        // Convert the key to an index.
+        $index = Types::getUniqueString($offset);
 
         // Store the key-value pair in the items array.
-        $this->items[$string_key] = new KeyValuePair($offset, $value);
-    }
-
-    /**
-     * Get the value of an item by key.
-     *
-     * @param mixed $offset The key to get.
-     * @return mixed The value of the item.
-     */
-    #[Override]
-    public function offsetGet(mixed $offset): mixed
-    {
-        // Get the string version of this key.
-        $string_key = Types::getStringKey($offset);
-
-        // Check key exists.
-        if (!array_key_exists($string_key, $this->items)) {
-            throw new OutOfBoundsException("Unknown key: " . Stringify::abbrev($offset) . ".");
-        }
-
-        // Get the corresponding value.
-        return $this->items[$string_key]->value;
-    }
-
-    /**
-     * Check if a given key exists in the dictionary.
-     *
-     * @param mixed $offset The key to check.
-     * @return bool True if the key is in the dictionary, false otherwise.
-     */
-    #[Override]
-    public function offsetExists(mixed $offset): bool
-    {
-        return array_key_exists(Types::getStringKey($offset), $this->items);
+        $this->items[$index] = new KeyValuePair($offset, $value);
     }
 
     /**
@@ -499,38 +515,21 @@ final class Dictionary extends Collection implements ArrayAccess
      *
      * @param mixed $offset The key to unset.
      * @return void
+     * @throws OutOfBoundsException If the Dictionary does not contain the given key.
      */
     #[Override]
     public function offsetUnset(mixed $offset): void
     {
-        // Get the string version of this key.
-        $string_key = Types::getStringKey($offset);
+        // Convert the key to an index.
+        $index = Types::getUniqueString($offset);
 
-        // Check key exists.
-        if (!array_key_exists($string_key, $this->items)) {
+        // Check index exists.
+        if (!array_key_exists($index, $this->items)) {
             throw new OutOfBoundsException("Unknown key: " . Stringify::abbrev($offset) . ".");
         }
 
         // Unset the array item.
-        unset($this->items[$string_key]);
-    }
-
-    // endregion
-
-    // region IteratorAggregate implementation
-
-    /**
-     * Get iterator for foreach loops.
-     *
-     * @return Traversable
-     */
-    #[Override]
-    public function getIterator(): Traversable
-    {
-        // This loop ignores the internal string keys, and returns the keys and values from the KeyValuePairs.
-        foreach ($this->items as $item) {
-            yield $item->key => $item->value;
-        }
+        unset($this->items[$index]);
     }
 
     // endregion
@@ -567,6 +566,24 @@ final class Dictionary extends Collection implements ArrayAccess
     public function toSet(): Set
     {
         return Set::fromIterable($this->items);
+    }
+
+    // endregion
+
+    // region IteratorAggregate implementation
+
+    /**
+     * Get iterator for foreach loops.
+     *
+     * @return Traversable
+     */
+    #[Override]
+    public function getIterator(): Traversable
+    {
+        // This loop ignores the indexes, and returns the keys and values from the KeyValuePairs.
+        foreach ($this->items as $item) {
+            yield $item->key => $item->value;
+        }
     }
 
     // endregion

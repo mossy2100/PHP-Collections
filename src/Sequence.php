@@ -5,9 +5,11 @@ declare(strict_types = 1);
 namespace Galaxon\Collections;
 
 use ArrayAccess;
+use ArrayIterator;
 use Galaxon\Core\Types;
 use OutOfRangeException;
 use Override;
+use Traversable;
 use TypeError;
 use UnderflowException;
 use ValueError;
@@ -119,7 +121,7 @@ final class Sequence extends Collection implements ArrayAccess
     /**
      * Construct a new Sequence by copying values from a source iterable.
      *
-     * The allowed types in the result Sequence can be specified via the $types parameter as a string, iterable, or
+     * The allowed types in the resultant Sequence can be specified via the $types parameter as a string, iterable, or
      * null, as in the constructor.
      * Alternatively, they can be inferred automatically from the source iterable's values by omitting the $types
      * parameter, or setting it to true.
@@ -455,22 +457,19 @@ final class Sequence extends Collection implements ArrayAccess
      * NB: This is a mutating method.
      *
      * @param int $index The zero-based index of the item to remove.
-     * @return mixed The removed value.
+     * @return $this The modified Sequence.
      * @throws OutOfRangeException If the index is outside the valid range for the Sequence.
      */
-    public function removeByIndex(int $index): mixed
+    public function removeByIndex(int $index): self
     {
         // Check the index is valid.
         $this->checkIndex($index);
 
-        // Get the item.
-        $item = $this->items[$index];
-
-        // Remove it from the Sequence.
+        // Remove the item from the Sequence.
         array_splice($this->items, $index, 1);
 
-        // Return the item.
-        return $item;
+        // Return this for chaining.
+        return $this;
     }
 
     /**
@@ -479,21 +478,18 @@ final class Sequence extends Collection implements ArrayAccess
      * NB: This is a mutating method.
      *
      * @param mixed $value The value to remove.
-     * @return int The number of items removed.
+     * @return $this The modified Sequence.
      */
-    public function removeByValue(mixed $value): int
+    public function removeByValue(mixed $value): self
     {
-        // Get the number of items in the Sequence.
-        $orig_count = count($this->items);
-
         // Filter the Sequence to remove the matching values.
         $this->items = array_values(array_filter(
             $this->items,
             static fn($item) => $item !== $value
         ));
 
-        // Return the number of items removed.
-        return $orig_count - count($this->items);
+        // Return this for chaining.
+        return $this;
     }
 
     /**
@@ -536,7 +532,8 @@ final class Sequence extends Collection implements ArrayAccess
 
     // endregion
 
-    // region Inspection methods
+    // region Comparison and inspection methods
+    // These are non-mutating and return bools.
 
     /**
      * Check if the Sequence contains a value.
@@ -558,12 +555,12 @@ final class Sequence extends Collection implements ArrayAccess
      * "Equal" in this case means that the Sequences have the same:
      * - type (i.e. they are both instances of Sequence)
      * - number of items
-     * - item values (i.e. they are equal using strict equality)
+     * - item values (strict equality)
      * - order of items
      *
-     * Type constraints are not considered, because these are only relevant when adding values to the Sequence.
-     * Therefore if the first Sequence only permits 'int' whereas the second permits both 'int' and 'string', the two
-     * Sequences will still compare as equal if the other conditions are met.
+     * Type constraints are not considered, because these are only relevant when adding values to a Sequence.
+     * Therefore, if the first Sequence only permits 'int' values whereas the second permits both 'int' and 'string',
+     * the two will still compare as equal if the other conditions are met.
      *
      * @param Collection $other The other Sequence.
      * @return bool True if the Sequences are equal, false otherwise.
@@ -854,8 +851,7 @@ final class Sequence extends Collection implements ArrayAccess
         // Apply the callback to each item.
         $items = array_map($fn, $this->items);
 
-        // Construct the result.
-        // Use fromIterable() rather than fromSubset() because we don't know the types returned from the callback.
+        // Construct the new Sequence, inferring types from the callback results.
         return self::fromIterable($items);
     }
 
@@ -1118,6 +1114,42 @@ final class Sequence extends Collection implements ArrayAccess
     // region ArrayAccess implementation
 
     /**
+     * Check if a given index is valid.
+     *
+     * @param mixed $offset The Sequence index position.
+     * @return bool If the given index is an integer and within the current valid range for the Sequence.
+     * @throws TypeError If the index is not an integer.
+     */
+    #[Override]
+    public function offsetExists(mixed $offset): bool
+    {
+        // Check the index is an integer.
+        if (!is_int($offset)) {
+            throw Types::createError('offset', 'int', $offset);
+        }
+
+        return array_key_exists($offset, $this->items);
+    }
+
+    /**
+     * Get a value from the Sequence.
+     *
+     * @param mixed $offset The zero-based index position to get.
+     * @return mixed The value at the specified index.
+     * @throws TypeError If the index is not an integer.
+     * @throws OutOfRangeException If the index is outside the valid range for the Sequence.
+     */
+    #[Override]
+    public function offsetGet(mixed $offset): mixed
+    {
+        // Check the index is valid.
+        $this->checkIndex($offset);
+
+        // Get the item at the specified index.
+        return $this->items[$offset];
+    }
+
+    /**
      * Append or set a Sequence item.
      *
      * If the index is out of range, the Sequence will be increased in size to accommodate it.
@@ -1148,7 +1180,7 @@ final class Sequence extends Collection implements ArrayAccess
             // Check the index is valid.
             $this->checkIndex($offset, false);
 
-            // Fill in any missing items with defaults.
+            // Fill in any missing positions with defaults.
             $start = count($this->items);
             for ($i = $start; $i < $offset; $i++) {
                 $this->items[$i] = $this->getDefaultValue();
@@ -1157,42 +1189,6 @@ final class Sequence extends Collection implements ArrayAccess
             // Set the item value.
             $this->items[$offset] = $value;
         }
-    }
-
-    /**
-     * Get a value from the Sequence.
-     *
-     * @param mixed $offset The zero-based index position to get.
-     * @return mixed The value at the specified index.
-     * @throws TypeError If the index is not an integer.
-     * @throws OutOfRangeException If the index is outside the valid range for the Sequence.
-     */
-    #[Override]
-    public function offsetGet(mixed $offset): mixed
-    {
-        // Check the index is valid.
-        $this->checkIndex($offset);
-
-        // Get the item at the specified index.
-        return $this->items[$offset];
-    }
-
-    /**
-     * Check if a given index is valid.
-     *
-     * @param mixed $offset The Sequence index position.
-     * @return bool If the given index is an integer and within the current valid range for the Sequence.
-     * @throws TypeError If the index is not an integer.
-     */
-    #[Override]
-    public function offsetExists(mixed $offset): bool
-    {
-        // Check the index is an integer.
-        if (!is_int($offset)) {
-            throw Types::createError('offset', 'int', $offset);
-        }
-
-        return array_key_exists($offset, $this->items);
     }
 
     /**
@@ -1253,16 +1249,26 @@ final class Sequence extends Collection implements ArrayAccess
         // Create the new Set.
         $set = new Set($this->valueTypes);
 
-        // Get the unique values.
-        $items = array_unique($this->items);
-
-        // Add the unique values to the Set.
-        foreach ($items as $item) {
-            $set->add($item);
-        }
+        // Add the values to the Set. Duplicates will be ignored.
+        $set->add(...$this->items);
 
         // Return the new Set.
         return $set;
+    }
+
+    // endregion
+
+    // region IteratorAggregate implementation
+
+    /**
+     * Get iterator for foreach loops.
+     *
+     * @return Traversable The iterator.
+     */
+    #[Override]
+    public function getIterator(): Traversable
+    {
+        return new ArrayIterator($this->items);
     }
 
     // endregion

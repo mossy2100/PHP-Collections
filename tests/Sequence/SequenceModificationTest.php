@@ -196,10 +196,9 @@ class SequenceModificationTest extends TestCase
         // Test: Remove item by index
         $seq = new Sequence('int');
         $seq->append(10, 20, 30, 40, 50);
-        $removed = $seq->removeByIndex(2);
+        $seq->removeByIndex(2);
 
         // Test: Verify item was removed and returned
-        $this->assertSame(30, $removed);
         $this->assertCount(4, $seq);
         $this->assertSame(40, $seq[2]); // Next item shifted down
     }
@@ -225,10 +224,9 @@ class SequenceModificationTest extends TestCase
         // Test: Remove all items matching value
         $seq = new Sequence('int');
         $seq->append(1, 2, 3, 2, 4, 2, 5);
-        $count = $seq->removeByValue(2);
+        $seq->removeByValue(2);
 
         // Test: Verify all matching values were removed
-        $this->assertSame(3, $count);
         $this->assertCount(4, $seq);
         $this->assertFalse($seq->contains(2));
     }
@@ -241,10 +239,9 @@ class SequenceModificationTest extends TestCase
         // Test: Attempt to remove non-existent value
         $seq = new Sequence('int');
         $seq->append(1, 2, 3);
-        $count = $seq->removeByValue(10);
+        $seq->removeByValue(10);
 
         // Test: Verify nothing was removed
-        $this->assertSame(0, $count);
         $this->assertCount(3, $seq);
     }
 
