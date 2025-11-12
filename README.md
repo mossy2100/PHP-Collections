@@ -1,1 +1,495 @@
-# PHP-Collections
+# Galaxon Collections
+
+A comprehensive, type-safe collection library for PHP 8.4+ that extends PHP's array capabilities with runtime type validation, immutable operations, and support for any type as keys.
+
+## Why Galaxon Collections?
+
+PHP's native arrays are powerful but have limitations:
+- **Keys restricted to strings and integers** - Can't use objects, arrays, or resources as keys
+- **No type safety** - Arrays accept any mix of types without validation
+- **Type coercion issues** - Keys like `1`, `'1'`, `true`, and `1.0` all become the same key
+- **Limited operations** - Basic array functions lack chaining, immutability, and advanced transformations
+
+Galaxon Collections solves these problems with:
+
+✅ **Any type as keys** - Use objects, arrays, resources, booleans, floats, null as Dictionary keys
+
+✅ **Runtime type validation** - Optional type constraints with compile-time-like checking
+
+✅ **Rich API** - Fluent interfaces, method chaining, functional programming support
+
+✅ **Immutable operations** - Transformations return new collections without modifying originals
+
+✅ **Type inference** - Automatically detect types from your data
+
+✅ **Mathematical correctness** - Proper type safety for operations like sum() and product()
+
+## Features
+
+### Type Safety
+```php
+// Restrict types at runtime
+$numbers = new Sequence('int');
+$numbers->append(1, 2, 3);    // ✅ Works
+$numbers->append('four');      // ❌ TypeError
+
+// Union types
+$mixed = new Sequence('int|string');
+$mixed->append(1, 'two', 3);   // ✅ All work
+
+// Type inference
+$seq = new Sequence(source: [1, 2, 3]);
+// Automatically infers type as 'int'
+```
+
+### Unrestricted Keys
+```php
+// PHP arrays: keys must be string|int
+$array[new DateTime()] = 'event';  // ❌ Fatal error
+$array[[1, 2]] = 'coords';         // ❌ Illegal offset
+
+// Dictionary: any type works
+$dict = new Dictionary();
+$dict[new DateTime()] = 'event';         // ✅ Works
+$dict[[1, 2, 3]] = 'coordinates';        // ✅ Works
+$dict[fopen('file.txt', 'r')] = 'data';  // ✅ Works
+$dict[true] = 'yes';                     // ✅ Works
+$dict[null] = 'empty';                   // ✅ Works
+```
+
+### Functional Programming
+```php
+$numbers = new Sequence('int', source: [1, 2, 3, 4, 5]);
+
+// Method chaining
+$result = $numbers
+    ->filter(fn($n) => $n % 2 === 0)  // Keep evens
+    ->map(fn($n) => $n * 2)            // Double them
+    ->reverse();                       // Reverse order
+
+echo $result; // [10, 8, 4]
+
+// Original unchanged (immutable operations)
+echo $numbers; // [1, 2, 3, 4, 5]
+```
+
+### Set Operations
+```php
+$set1 = new Set('int', [1, 2, 3, 4]);
+$set2 = new Set('int', [3, 4, 5, 6]);
+
+$union = $set1->union($set2);           // {1, 2, 3, 4, 5, 6}
+$intersection = $set1->intersect($set2); // {3, 4}
+$difference = $set1->diff($set2);        // {1, 2}
+
+// Subset checking
+$set1->isSubsetOf($set2);      // false
+$set1->isDisjointFrom($set2);  // false
+```
+
+## Installation
+
+```bash
+composer require galaxon/collections
+```
+
+**Requirements:**
+- PHP 8.4 or higher
+- `galaxon/core` package
+
+## Quick Start
+
+### Sequence - Type-safe lists
+```php
+use Galaxon\Collections\Sequence;
+
+// Create with type inference
+$seq = new Sequence(source: [1, 2, 3, 4, 5]);
+
+// Add items
+$seq->append(6, 7, 8);
+$seq->prepend(0);
+
+// Remove items
+$item = $seq->removeByIndex(0);  // Returns removed value
+$count = $seq->removeByValue(3); // Returns count removed
+
+// Access items
+echo $seq[0];        // 0
+echo $seq->first();  // 0
+echo $seq->last();   // 8
+
+// Transformations
+$evens = $seq->filter(fn($n) => $n % 2 === 0);
+$doubled = $seq->map(fn($n) => $n * 2);
+$sorted = $seq->sort();
+
+// Aggregations
+echo $seq->sum();      // 36
+echo $seq->product();  // 0
+echo $seq->average();  // 4.5
+echo $seq->min();      // 0
+echo $seq->max();      // 8
+```
+
+### Dictionary - Key-value pairs with any type
+```php
+use Galaxon\Collections\Dictionary;
+
+// Create with type inference
+$dict = new Dictionary(source: ['a' => 1, 'b' => 2]);
+
+// Use objects as keys
+$dict[new DateTime('2024-01-01')] = 'New Year';
+
+// Use arrays as keys
+$dict[[10, 20]] = 'coordinates';
+
+// Type constraints
+$typed = new Dictionary('string', 'int');
+$typed['count'] = 42;      // ✅ Works
+$typed['count'] = 'text';  // ❌ TypeError
+
+// Check and access
+if ($dict->keyExists('a')) {
+    echo $dict['a'];  // 1
+}
+
+// Iteration
+foreach ($dict as $key => $value) {
+    echo "$key => $value\n";
+}
+```
+
+### Set - Unique values
+```php
+use Galaxon\Collections\Set;
+
+// Duplicates automatically removed
+$set = new Set(source: [1, 2, 2, 3, 3, 3]);
+echo $set->count(); // 3
+
+// Set operations
+$a = new Set('int', [1, 2, 3]);
+$b = new Set('int', [2, 3, 4]);
+
+$a->union($b);       // {1, 2, 3, 4}
+$a->intersect($b);   // {2, 3}
+$a->diff($b);        // {1}
+
+// Membership testing
+var_dump($set->contains(2));  // true
+var_dump($set->contains(5));  // false
+```
+
+## Collection Classes
+
+### Base Class
+
+#### [Collection](docs/Collection.md)
+The abstract base class for all collection types, providing shared functionality and defining the common interface.
+
+**Key Features:**
+- Implements Countable, IteratorAggregate, Stringable
+- Common methods: count(), empty(), clear(), all(), any()
+- Type safety through TypeSet integration
+- Consistent API across all collection types
+
+**Note:** Cannot be instantiated directly - use Sequence, Dictionary, or Set.
+
+### Core Collections
+
+#### [Sequence](docs/Sequence.md)
+A type-safe ordered list with zero-based integer indexing, similar to `List<T>` in C# or Java.
+
+**Key Features:**
+- Sequential integer indexes (0, 1, 2, ...)
+- Allows duplicate values
+- Maintains insertion order
+- Array-like access with `[]`
+- Rich transformation methods (map, filter, sort, etc.)
+- Aggregation methods (sum, product, average, min, max)
+- Gap-filling with default values
+
+**Best For:**
+- Ordered collections where position matters
+- Lists that can contain duplicates
+- When you need indexed access
+- Mathematical operations on numeric sequences
+
+#### [Dictionary](docs/Dictionary.md)
+A type-safe key-value collection that accepts **any PHP type** for both keys and values.
+
+**Key Features:**
+- Any type as keys (objects, arrays, resources, scalars, null)
+- Any type as values
+- Type constraints for both keys and values
+- Array-like access with `[]`
+- No key coercion (preserves exact types)
+- Transformation methods (map, filter, flip, sort)
+
+**Best For:**
+- When you need object/array/resource keys
+- Associative data with type safety
+- Avoiding PHP's key coercion issues
+- Complex key-value mappings
+
+#### [Set](docs/Set.md)
+A type-safe collection of unique values with set operations.
+
+**Key Features:**
+- Uniqueness enforced automatically
+- Set operations (union, intersection, difference)
+- Subset/superset testing
+- Disjoint checking
+- Any value type
+
+**Best For:**
+- Removing duplicates
+- Mathematical set operations
+- Membership testing
+- When order doesn't matter
+
+### Supporting Classes
+
+#### [TypeSet](docs/TypeSet.md)
+Manages type constraints for collections with runtime validation.
+
+**Key Features:**
+- Flexible type specification (strings, union types, nullable)
+- Runtime type checking
+- Type inference from values
+- Default value inference
+- Support for pseudotypes (scalar, number, uint, mixed, etc.)
+- Class/interface/trait matching with inheritance
+
+**Best For:**
+- Runtime type validation
+- Building type-safe APIs
+- Type inference in generic code
+
+#### [KeyValuePair](docs/KeyValuePair.md)
+Immutable container for a key-value pair where both can be any type.
+
+**Key Features:**
+- Readonly/immutable
+- Any type for key and value
+- Preserves exact types
+- Simple and lightweight
+
+**Best For:**
+- Internal Dictionary storage
+- Representing key-value associations in custom code
+- When you need immutable pairs
+
+## Type Safety Examples
+
+### Type Constraints
+
+```php
+// Single type
+$ints = new Sequence('int');
+$ints->append(1, 2, 3);
+
+// Union types
+$mixed = new Sequence('int|string|null');
+$mixed->append(1, 'hello', null);
+
+// Nullable types
+$nullable = new Sequence('?DateTime');
+$nullable->append(new DateTime(), null);
+
+// Class types
+$dates = new Sequence('DateTime');
+$dates->append(new DateTime());
+
+// Pseudotypes
+$scalars = new Sequence('scalar');  // int|float|string|bool
+$numbers = new Sequence('number');  // int|float
+$uints = new Sequence('uint');      // unsigned int (>= 0)
+```
+
+### Type Inference
+
+```php
+// Automatic type detection
+$seq = new Sequence(source: [1, 2, 3]);
+// Type inferred as 'int', default value inferred as 0
+
+// Mixed types
+$seq = new Sequence(source: [1, 'hello', null]);
+// Types inferred as 'int|string|null'
+
+// Dictionary inference
+$dict = new Dictionary(source: ['a' => 1, 'b' => 2]);
+// Key type: 'string', Value type: 'int'
+```
+
+### Runtime Validation
+
+```php
+$numbers = new Sequence('int');
+
+try {
+    $numbers->append('not a number');
+} catch (TypeError $e) {
+    echo $e->getMessage();
+    // "Disallowed type: string."
+}
+```
+
+## Advanced Features
+
+### Default Values and Gap-Filling
+
+```php
+$seq = new Sequence('int', 99);  // Custom default
+
+// Setting beyond current range fills gaps
+$seq[5] = 10;
+// Result: [99, 99, 99, 99, 99, 10]
+```
+
+### Fluent Interfaces
+
+```php
+$result = (new Sequence('int'))
+    ->append(1, 2, 3, 4, 5)
+    ->filter(fn($n) => $n > 2)
+    ->map(fn($n) => $n * 2)
+    ->sort();
+// Result: [6, 8, 10]
+```
+
+### Mathematical Operations
+
+```php
+$numbers = new Sequence('number', source: [1, 2, 3, 4, 5]);
+
+echo $numbers->sum();      // 15
+echo $numbers->product();  // 120
+echo $numbers->average();  // 3
+echo $numbers->min();      // 1
+echo $numbers->max();      // 5
+
+// Type-safe: throws TypeError for non-numeric values
+$strings = new Sequence('string', source: ['1', '2', '3']);
+$strings->sum(); // TypeError!
+```
+
+### Range Generation
+
+```php
+// Integer ranges
+$seq = Sequence::range(1, 10);        // [1, 2, 3, ..., 10]
+$seq = Sequence::range(10, 1, -1);    // [10, 9, 8, ..., 1]
+
+// Float ranges
+$seq = Sequence::range(0.0, 1.0, 0.1); // [0.0, 0.1, 0.2, ..., 1.0]
+```
+
+### Conversion Methods
+
+```php
+// Sequence ↔ Dictionary
+$seq = new Sequence('int', source: [10, 20, 30]);
+$dict = $seq->toDictionary();
+// Result: Dictionary with keys 0, 1, 2
+
+// Sequence ↔ Set
+$seq = new Sequence(source: [1, 2, 2, 3, 3, 3]);
+$set = $seq->toSet();
+// Result: Set with {1, 2, 3} (duplicates removed)
+
+// Any collection → Array
+$array = $collection->toArray();
+```
+
+## Performance Considerations
+
+### Memory Efficiency
+- Collections use internal PHP arrays for storage
+- KeyValuePair adds minimal overhead (just object wrapper)
+- TypeSet validation is optimized for common types
+
+### Type Checking Overhead
+- Type validation happens on write operations only
+- Read operations have no type checking overhead
+- Type inference scans values once during construction
+
+### Best Practices
+```php
+// ✅ Good: Specify types explicitly when known
+$numbers = new Sequence('int');
+
+// ✅ Good: Use type inference for dynamic data
+$seq = new Sequence(source: $dynamicArray);
+
+// ⚠️ Acceptable: No constraints for truly mixed data
+$mixed = new Sequence();
+
+// ❌ Avoid: Excessive type constraints on simple scripts
+// (Use when type safety matters for your use case)
+```
+
+## Testing
+
+The library includes comprehensive test coverage:
+
+```bash
+# Run all tests
+vendor/bin/phpunit
+
+# Run specific test class
+vendor/bin/phpunit tests/Sequence/SequenceTransformationTest.php
+
+# Run with coverage
+vendor/bin/phpunit --coverage-html build/coverage
+```
+
+**Test Coverage:**
+- 250+ tests across all classes
+- 100% coverage on TypeSet and KeyValuePair
+- Comprehensive coverage on Sequence, Dictionary, and Set
+- Edge cases, error conditions, and type safety
+
+## Documentation
+
+Detailed documentation for each class:
+
+- **[Collection](docs/Collection.md)** - Abstract base class for all collections
+- **[Sequence](docs/Sequence.md)** - Type-safe ordered lists
+- **[Dictionary](docs/Dictionary.md)** - Key-value pairs with unrestricted types
+- **[Set](docs/Set.md)** - Unique value collections
+- **[TypeSet](docs/TypeSet.md)** - Runtime type validation
+- **[KeyValuePair](docs/KeyValuePair.md)** - Immutable key-value pairs
+
+## Requirements
+
+- **PHP**: 8.4 or higher
+- **Dependencies**:
+  - `galaxon/core` - Core utility functions
+
+## License
+
+MIT License - see LICENSE file for details
+
+## Contributing
+
+Contributions are welcome! Please:
+
+1. Fork the repository
+2. Create a feature branch
+3. Add tests for new functionality
+4. Ensure all tests pass
+5. Submit a pull request
+
+## Support
+
+- **Issues**: https://github.com/mossy2100/PHP-Collections/issues
+- **Documentation**: See `docs/` directory
+- **Examples**: See test files for comprehensive usage examples
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for version history and changes.
