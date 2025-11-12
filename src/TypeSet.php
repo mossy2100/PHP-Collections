@@ -192,14 +192,13 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
     }
 
     /**
-     * Try to get a sane default value for this type set.
+     * Try to infer a sane default value for this type set.
      *
      * @param mixed $default_value The default value.
-     * @return bool True if a default value was found, false otherwise.
+     * @return bool True if a default value could be inferred, false otherwise.
      */
-    public function tryGetDefaultValue(mixed &$default_value): bool
+    public function tryInferDefaultValue(mixed &$default_value): bool
     {
-        $result = true;
         if ($this->nullOk()) {
             $default_value = null;
         }
@@ -219,10 +218,10 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
             $default_value = [];
         }
         else {
-            $result = false;
+            return false;
         }
 
-        return $result;
+        return true;
     }
 
     // endregion
@@ -410,6 +409,7 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
      *
      * @param mixed $value The value to get the type name from.
      * @return $this The modified set.
+     * @throws ValueError If the type name is invalid.
      */
     public function addValueType(mixed $value): self
     {

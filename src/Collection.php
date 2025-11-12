@@ -42,11 +42,11 @@ abstract class Collection implements Countable, IteratorAggregate, Stringable
     /**
      * Constructor.
      *
-     * @param string|iterable|null $types Optional value type constraint for collection items.
+     * @param null|string|iterable $types Optional value type constraint for collection items.
      * @throws TypeError If a type is not specified as a string.
      * @throws ValueError If a type name is invalid.
      */
-    public function __construct(string|iterable|null $types = null)
+    public function __construct(null|string|iterable $types = null)
     {
         // Convert provided types to a TypeSet object.
         $this->valueTypes = new TypeSet($types);
@@ -61,7 +61,7 @@ abstract class Collection implements Countable, IteratorAggregate, Stringable
      * @param iterable $src The source collection.
      * @return static The new Collection.
      */
-    abstract public static function fromIterable(iterable $src): static;
+//    abstract public static function fromIterable(iterable $src): static;
 
     // endregion
 
@@ -149,12 +149,12 @@ abstract class Collection implements Countable, IteratorAggregate, Stringable
     /**
      * Check if two Collections have the same type and number of items.
      *
-     * Protected helper method for use by eq() implementations.
+     * Protected helper method for use by equals() implementations.
      *
      * @param Collection $other The other Collection.
      * @return bool True if the Collections have the same type and number of items, false otherwise.
      */
-    protected function eqTypeAndCount(Collection $other): bool
+    protected function equalTypeAndCount(Collection $other): bool
     {
         return $this::class === $other::class && count($this->items) === count($other->items);
     }
@@ -165,7 +165,7 @@ abstract class Collection implements Countable, IteratorAggregate, Stringable
      * @param Collection $other The other Collection.
      * @return bool True if the Collections are equal, false otherwise.
      */
-    abstract public function eq(Collection $other): bool;
+    abstract public function equals(Collection $other): bool;
 
     // endregion
 
