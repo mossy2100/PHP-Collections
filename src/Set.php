@@ -21,37 +21,38 @@ final class Set extends Collection
     // region Constructor and factory methods
 
     /**
-     * Construct a new Set by copying values from a source iterable.
+     * Constructor.
      *
-     * The allowed types in the resultant Set can be specified via the $types parameter as a string, iterable, or
-     * null, as in the constructor.
-     * Alternatively, they can be inferred automatically from the source iterable's values by omitting the $types
-     * parameter, or setting it to true.
+     * The allowed types for values in the Set can be specified in several ways:
+     * - null = Values of any type are allowed.
+     * - string = A type name, or multiple types using union type or nullable type syntax, e.g. 'string', 'int|null', '?int'
+     * - iterable = Array or other collection of type names, e.g. ['string', 'int']
+     * - true = The types will be inferred from the source iterable's values.
      *
-     * @param iterable $src The iterable to copy from.
-     * @param string|iterable|null|true $types The allowed value types in the result (default true, for auto-detect).
-     * @return static The new Set.
-     * @throws ValueError If any specified types are invalid.
-     * @throws TypeError If any of the values have a disallowed type.
+     * If a source iterable is provided, the Set will be initialized with values from the iterable.
+     *
+     * @param null|string|iterable|true $types Optional type constraint for members (default true, for infer).
+     * @param iterable $source A source iterable to import values from (optional).
+     * @throws ValueError If a type name is invalid.
+     * @throws TypeError If a type is not specified as a string, or any imported values have disallowed types.
      */
-    public static function fromIterable(iterable $src, string|iterable|null|true $types = true): static
+    public function __construct(null|string|iterable|true $types = true, iterable $source = [])
     {
+        // Determine if we should infer the types from the source iterable.
         $infer = $types === true;
 
-        // Instantiate the Set with or without types as requested.
-        $set = new self($infer ? null : $types);
+        // Instantiate the object and typeset.
+        parent::__construct($infer ? null : $types);
 
-        foreach ($src as $item) {
+        foreach ($source as $item) {
             // Collect types from the source iterable if requested.
             if ($infer) {
-                $set->valueTypes->addValueType($item);
+                $this->valueTypes->addValueType($item);
             }
 
             // Add item to the new Set.
-            $set->add($item);
+            $this->add($item);
         }
-
-        return $set;
     }
 
     // endregion
@@ -110,18 +111,19 @@ final class Set extends Collection
      * NB: This is a mutating method.
      *
      * @param mixed $item The item to remove from the Set, if present.
-     * @return $this The modified Set.
+     * @return bool True if an item was removed, false otherwise.
      */
-    public function remove(mixed $item): self
+    public function remove(mixed $item): bool
     {
-        // No type check needed. If it's in the set, remove it.
+        // Check if the item is in the set.
         $index = Types::getUniqueString($item);
         if (array_key_exists($index, $this->items)) {
+            // Remove the item.
             unset($this->items[$index]);
+            return true;
         }
 
-        // Return $this for chaining.
-        return $this;
+        return false;
     }
 
     // endregion
@@ -234,68 +236,68 @@ final class Set extends Collection
      * @return bool True if the Sets are equal, false otherwise.
      */
     #[Override]
-    public function eq(Collection $other): bool
+    public function equals(Collection $other): bool
     {
         // Check type and item count are equal.
-        if (!$this->eqTypeAndCount($other)) {
+        if (!$this->equalTypeAndCount($other)) {
             return false;
         }
 
-        // Check values are equal. Order doesn't matter, so we can call subset().
-        return $this->subset($other);
+        // Check values are equal. Order doesn't matter, so we can call isSubsetOf().
+        return $this->isSubsetOf($other);
     }
 
     /**
-     * Checks if a set is a subset of another set.
+     * Checks if this set is a subset of another set.
      *
      * @param self $other The set to compare with.
-     * @return bool If $this is a subset of $other.
+     * @return bool True if $this is a subset of $other, false otherwise.
      */
-    public function subset(self $other): bool
+    public function isSubsetOf(self $other): bool
     {
         return array_all($this->items, static fn($item) => $other->contains($item));
     }
 
     /**
-     * Checks if a set is a proper subset of another set.
+     * Checks if this set is a proper subset of another set.
      *
      * @param self $other The set to compare with.
-     * @return bool If $this is a proper subset of $other.
+     * @return bool True if $this is a proper subset of $other, false otherwise.
      */
-    public function properSubset(self $other): bool
+    public function isProperSubsetOf(self $other): bool
     {
-        return ($this->count() < $other->count()) && $this->subset($other);
+        return ($this->count() < $other->count()) && $this->isSubsetOf($other);
     }
 
     /**
-     * Checks if a set is a superset of another set.
+     * Checks if this set is a superset of another set.
      *
      * @param self $other The set to compare with.
-     * @return bool If $this is a superset of $other.
+     * @return bool True if $this is a superset of $other, false otherwise.
      */
-    public function superset(self $other): bool
+    public function isSupersetOf(self $other): bool
     {
-        return $other->subset($this);
+        return $other->isSubsetOf($this);
     }
 
     /**
-     * Checks if a set is a proper superset of another set.
+     * Checks if this set is a proper superset of another set.
      *
      * @param self $other The set to compare with.
-     * @return bool If $this is a proper superset of $other.
+     * @return bool True if $this is a proper superset of $other, false otherwise.
      */
-    public function properSuperset(self $other): bool
+    public function isProperSupersetOf(self $other): bool
     {
-        return $other->properSubset($this);
+        return $other->isProperSubsetOf($this);
     }
 
     /**
-     * Checks if two sets are disjoint, i.e. they have no elements in common.
+     * Checks if this set is disjoint from another set, i.e. they have no elements in common.
      *
      * @param self $other The set to compare with.
-     * @return bool True if the sets are disjoint; false otherwise.
+     * @return bool True if this set is disjoint from the other set, false otherwise.
      */
-    public function disjoint(self $other): bool
+    public function isDisjointFrom(self $other): bool
     {
         return array_all($this->items, static fn($item) => !$other->contains($item));
     }
