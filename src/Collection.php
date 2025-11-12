@@ -219,13 +219,13 @@ abstract class Collection implements Countable, IteratorAggregate, Stringable
     }
 
     /**
-     * Convert the Collection to an array of KeyValuePair objects.
+     * Convert the Collection to an array.
      *
      * @return array The array.
      */
     public function toArray(): array
     {
-        return $this->items;
+        return array_values($this->items);
     }
 
     // endregion

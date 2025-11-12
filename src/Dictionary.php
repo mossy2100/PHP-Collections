@@ -612,17 +612,6 @@ final class Dictionary extends Collection implements ArrayAccess
     // region Conversion methods
 
     /**
-     * Convert the Dictionary to an array of KeyValuePair objects.
-     *
-     * @return array The array.
-     */
-    #[Override]
-    public function toArray(): array
-    {
-        return array_values($this->items);
-    }
-
-    /**
      * Convert the Dictionary to a Sequence of KeyValuePairs.
      *
      * @return Sequence The new Sequence.

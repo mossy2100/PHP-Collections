@@ -369,29 +369,6 @@ final class Set extends Collection
     // region Conversion methods
 
     /**
-     * Convert the Set to a Dictionary.
-     *
-     * The keys will be sequential integers starting from 0.
-     *
-     * @return Dictionary The new Dictionary.
-     */
-    public function toDictionary(): Dictionary
-    {
-        // Construct the new Dictionary, using the same value types as the Set.
-        $dict = new Dictionary('uint', $this->valueTypes);
-
-        // Copy the items into the new Dictionary. Sequential unsigned integers are generated for the keys.
-        $key = 0;
-        foreach ($this->items as $value) {
-            $dict->add($key, $value);
-            $key++;
-        }
-
-        // Return the new Dictionary.
-        return $dict;
-    }
-
-    /**
      * Convert the Set to a Sequence.
      *
      * @return Sequence The new Sequence.
