@@ -235,7 +235,7 @@ class DictionaryInspectionTest extends TestCase
     }
 
     /**
-     * Test eq returns true for identical dictionaries.
+     * Test equals returns true for identical dictionaries.
      */
     public function testEqReturnsTrueForIdenticalDictionaries(): void
     {
@@ -248,12 +248,12 @@ class DictionaryInspectionTest extends TestCase
         $dict2->add('b', 2);
 
         // Test dictionaries are equal.
-        $this->assertTrue($dict1->eq($dict2));
-        $this->assertTrue($dict2->eq($dict1));
+        $this->assertTrue($dict1->equals($dict2));
+        $this->assertTrue($dict2->equals($dict1));
     }
 
     /**
-     * Test eq returns false for dictionaries with different values.
+     * Test equals returns false for dictionaries with different values.
      */
     public function testEqReturnsFalseForDifferentValues(): void
     {
@@ -264,11 +264,11 @@ class DictionaryInspectionTest extends TestCase
         $dict2->add('a', 2);
 
         // Test dictionaries are not equal.
-        $this->assertFalse($dict1->eq($dict2));
+        $this->assertFalse($dict1->equals($dict2));
     }
 
     /**
-     * Test eq returns false for dictionaries with different keys.
+     * Test equals returns false for dictionaries with different keys.
      */
     public function testEqReturnsFalseForDifferentKeys(): void
     {
@@ -279,11 +279,11 @@ class DictionaryInspectionTest extends TestCase
         $dict2->add('b', 1);
 
         // Test dictionaries are not equal.
-        $this->assertFalse($dict1->eq($dict2));
+        $this->assertFalse($dict1->equals($dict2));
     }
 
     /**
-     * Test eq returns false for dictionaries with different counts.
+     * Test equals returns false for dictionaries with different counts.
      */
     public function testEqReturnsFalseForDifferentCounts(): void
     {
@@ -295,11 +295,11 @@ class DictionaryInspectionTest extends TestCase
         $dict2->add('b', 2);
 
         // Test dictionaries are not equal.
-        $this->assertFalse($dict1->eq($dict2));
+        $this->assertFalse($dict1->equals($dict2));
     }
 
     /**
-     * Test eq returns false for different dictionary order.
+     * Test equals returns false for different dictionary order.
      */
     public function testEqReturnsFalseForDifferentOrder(): void
     {
@@ -312,11 +312,11 @@ class DictionaryInspectionTest extends TestCase
         $dict2->add('a', 1);
 
         // Test dictionaries are not equal due to order.
-        $this->assertFalse($dict1->eq($dict2));
+        $this->assertFalse($dict1->equals($dict2));
     }
 
     /**
-     * Test eq on empty dictionaries.
+     * Test equals on empty dictionaries.
      */
     public function testEqOnEmptyDictionaries(): void
     {
@@ -324,7 +324,7 @@ class DictionaryInspectionTest extends TestCase
         $dict2 = new Dictionary();
 
         // Test empty dictionaries are equal.
-        $this->assertTrue($dict1->eq($dict2));
+        $this->assertTrue($dict1->equals($dict2));
     }
 
     /**

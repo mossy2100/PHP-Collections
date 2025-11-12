@@ -136,12 +136,12 @@ class DictionaryConstructorTest extends TestCase
     }
 
     /**
-     * Test fromIterable with a plain PHP array.
+     * Test constructor with a source array.
      */
-    public function testFromIterableWithArray(): void
+    public function testConstructorWithSourceArray(): void
     {
         $arr = ['a' => 1, 'b' => 2, 'c' => 3];
-        $dict = Dictionary::fromIterable($arr);
+        $dict = new Dictionary(source: $arr);
 
         // Test all items were copied.
         $this->assertCount(3, $dict);
@@ -151,12 +151,12 @@ class DictionaryConstructorTest extends TestCase
     }
 
     /**
-     * Test fromIterable with an empty array.
+     * Test constructor with an empty source array.
      */
-    public function testFromIterableWithEmptyArray(): void
+    public function testConstructorWithEmptySourceArray(): void
     {
         $arr = [];
-        $dict = Dictionary::fromIterable($arr);
+        $dict = new Dictionary(source: $arr);
 
         // Test the dictionary is empty.
         $this->assertCount(0, $dict);
@@ -164,16 +164,16 @@ class DictionaryConstructorTest extends TestCase
     }
 
     /**
-     * Test fromIterable with mixed key types.
+     * Test constructor infers mixed key and value types.
      */
-    public function testFromIterableWithMixedKeyAndValueTypes(): void
+    public function testConstructorInfersMixedKeyAndValueTypes(): void
     {
         $arr = [
             1     => 'one',
             'two' => 2,
             3     => true
         ];
-        $dict = Dictionary::fromIterable($arr);
+        $dict = new Dictionary(source: $arr);
 
         // Check the key typeset includes both types.
         $this->assertTrue($dict->keyTypes->containsOnly('string', 'int'));
@@ -188,15 +188,15 @@ class DictionaryConstructorTest extends TestCase
     }
 
     /**
-     * Test fromIterable with another Dictionary.
+     * Test constructor with another Dictionary as source.
      */
-    public function testFromIterableWithDictionary(): void
+    public function testConstructorWithDictionaryAsSource(): void
     {
         $original = new Dictionary('string', 'int');
         $original->add('a', 1);
         $original->add('b', 2);
 
-        $copy = Dictionary::fromIterable($original);
+        $copy = new Dictionary(source: $original);
 
         // Test all items were copied.
         $this->assertCount(2, $copy);
@@ -210,12 +210,12 @@ class DictionaryConstructorTest extends TestCase
     }
 
     /**
-     * Test fromIterable infers types correctly.
+     * Test constructor infers types correctly.
      */
-    public function testFromIterableInfersTypes(): void
+    public function testConstructorInfersTypes(): void
     {
         $arr = ['key1' => 10, 'key2' => 20];
-        $dict = Dictionary::fromIterable($arr);
+        $dict = new Dictionary(source: $arr);
 
         // Test the dictionary works with the inferred types.
         $this->assertCount(2, $dict);
@@ -226,13 +226,13 @@ class DictionaryConstructorTest extends TestCase
     }
 
     /**
-     * Test fromIterable with explicit key and value types (not inferred).
+     * Test constructor with explicit key and value types (not inferred).
      */
-    public function testFromIterableWithExplicitTypes(): void
+    public function testConstructorWithExplicitTypesAndSource(): void
     {
         // Test: Create Dictionary with explicit type constraints
         $arr = ['a' => 1, 'b' => 2];
-        $dict = Dictionary::fromIterable($arr, 'string', 'int');
+        $dict = new Dictionary('string', 'int', $arr);
 
         // Test: Verify type constraints applied
         $this->assertTrue($dict->keyTypes->containsOnly('string'));
@@ -240,25 +240,25 @@ class DictionaryConstructorTest extends TestCase
     }
 
     /**
-     * Test fromIterable throws TypeError when explicit types don't match values.
+     * Test constructor throws TypeError when explicit types don't match values.
      */
-    public function testFromIterableThrowsTypeErrorForMismatchedExplicitTypes(): void
+    public function testConstructorThrowsTypeErrorForMismatchedExplicitTypes(): void
     {
         // Test: Attempt to create Dictionary with mismatched explicit types
         $this->expectException(TypeError::class);
 
         $arr = ['a' => 1, 'b' => 2];
-        Dictionary::fromIterable($arr, 'string', 'string'); // Values are int, not string
+        new Dictionary('string', 'string', $arr); // Values are int, not string
     }
 
     /**
-     * Test fromIterable with null type parameters (any type allowed).
+     * Test constructor with null type parameters (any type allowed).
      */
-    public function testFromIterableWithNullTypeParameters(): void
+    public function testConstructorWithNullTypeParameters(): void
     {
         // Test: Create Dictionary with null type parameters
         $arr = ['a' => 1, 'b' => 'two'];
-        $dict = Dictionary::fromIterable($arr, null, null);
+        $dict = new Dictionary(null, null, $arr);
 
         // Test: Verify any types allowed
         $this->assertTrue($dict->keyTypes->anyOk());
@@ -267,9 +267,9 @@ class DictionaryConstructorTest extends TestCase
     }
 
     /**
-     * Test fromIterable infers nullable key types when null keys present.
+     * Test constructor infers nullable key types when null keys present.
      */
-    public function testFromIterableInfersNullableKeyTypes(): void
+    public function testConstructorInfersNullableKeyTypes(): void
     {
         // Test: Create Dictionary with null keys (types inferred)
         // Use another Dictionary as source since PHP arrays can't have null keys
@@ -278,7 +278,7 @@ class DictionaryConstructorTest extends TestCase
         $source->add(null, 2);
         $source->add('b', 3);
 
-        $dict = Dictionary::fromIterable($source);
+        $dict = new Dictionary(source: $source);
 
         // Test: Verify all items preserved
         $this->assertCount(3, $dict);
@@ -291,13 +291,13 @@ class DictionaryConstructorTest extends TestCase
     }
 
     /**
-     * Test fromIterable infers nullable value types when null values present.
+     * Test constructor infers nullable value types when null values present.
      */
-    public function testFromIterableInfersNullableValueTypes(): void
+    public function testConstructorInfersNullableValueTypes(): void
     {
         // Test: Create Dictionary with null values (types inferred)
         $arr = ['a' => 1, 'b' => null, 'c' => 3];
-        $dict = Dictionary::fromIterable($arr);
+        $dict = new Dictionary(source: $arr);
 
         // Test: Verify all items preserved
         $this->assertCount(3, $dict);
@@ -310,9 +310,9 @@ class DictionaryConstructorTest extends TestCase
     }
 
     /**
-     * Test fromIterable infers multiple key types correctly.
+     * Test constructor infers multiple key types correctly.
      */
-    public function testFromIterableInfersMultipleKeyTypes(): void
+    public function testConstructorInfersMultipleKeyTypes(): void
     {
         // Test: Create Dictionary with various key types
         // Use another Dictionary as source since PHP arrays can't have bool/null keys
@@ -322,16 +322,16 @@ class DictionaryConstructorTest extends TestCase
         $source->add(true, 3);
         $source->add(null, 4);
 
-        $dict = Dictionary::fromIterable($source);
+        $dict = new Dictionary(source: $source);
 
         // Test: Verify all unique key types were inferred
         $this->assertTrue($dict->keyTypes->containsOnly('string', 'int', 'bool', 'null'));
     }
 
     /**
-     * Test fromIterable infers multiple value types correctly.
+     * Test constructor infers multiple value types correctly.
      */
-    public function testFromIterableInfersMultipleValueTypes(): void
+    public function testConstructorInfersMultipleValueTypes(): void
     {
         // Test: Create Dictionary with various value types
         $arr = [
@@ -342,23 +342,23 @@ class DictionaryConstructorTest extends TestCase
             'e' => null,
             'f' => []
         ];
-        $dict = Dictionary::fromIterable($arr);
+        $dict = new Dictionary(source: $arr);
 
         // Test: Verify all unique value types were inferred
         $this->assertTrue($dict->valueTypes->containsOnly('int', 'string', 'float', 'bool', 'null', 'array'));
     }
 
     /**
-     * Test fromIterable with only null keys.
+     * Test constructor with only null keys.
      */
-    public function testFromIterableWithOnlyNullKey(): void
+    public function testConstructorWithOnlyNullKey(): void
     {
         // Test: Create Dictionary with only null key
         // Use another Dictionary as source since PHP arrays can't have null keys
         $source = new Dictionary();
         $source->add(null, 'value');
 
-        $dict = Dictionary::fromIterable($source);
+        $dict = new Dictionary(source: $source);
 
         // Test: Verify null key type inferred
         $this->assertCount(1, $dict);
@@ -367,13 +367,13 @@ class DictionaryConstructorTest extends TestCase
     }
 
     /**
-     * Test fromIterable with only null values.
+     * Test constructor with only null values.
      */
-    public function testFromIterableWithOnlyNullValues(): void
+    public function testConstructorWithOnlyNullValues(): void
     {
         // Test: Create Dictionary containing only nulls
         $arr = ['a' => null, 'b' => null, 'c' => null];
-        $dict = Dictionary::fromIterable($arr);
+        $dict = new Dictionary(source: $arr);
 
         // Test: Verify null value type inferred
         $this->assertCount(3, $dict);
@@ -383,13 +383,13 @@ class DictionaryConstructorTest extends TestCase
     }
 
     /**
-     * Test fromIterable with explicit types and type inference disabled.
+     * Test constructor with explicit types and type inference disabled.
      */
-    public function testFromIterableWithExplicitTypesDisablesInference(): void
+    public function testConstructorWithExplicitTypesDisablesInference(): void
     {
         // Test: Create Dictionary with explicit types
         $arr = ['a' => 1, 'b' => 2];
-        $dict = Dictionary::fromIterable($arr, 'string', 'int');
+        $dict = new Dictionary('string', 'int', $arr);
 
         // Test: Verify only explicit types, no additional inference
         $this->assertTrue($dict->keyTypes->containsOnly('string'));
@@ -397,13 +397,13 @@ class DictionaryConstructorTest extends TestCase
     }
 
     /**
-     * Test fromIterable with union type string for keys.
+     * Test constructor with union type string for keys.
      */
-    public function testFromIterableWithUnionTypeStringForKeys(): void
+    public function testConstructorWithUnionTypeStringForKeys(): void
     {
         // Test: Create Dictionary with union type for keys
         $arr = [1 => 'one', 'two' => 2];
-        $dict = Dictionary::fromIterable($arr, 'int|string', 'int|string');
+        $dict = new Dictionary('int|string', 'int|string', $arr);
 
         // Test: Verify both key types accepted
         $this->assertCount(2, $dict);
@@ -411,9 +411,9 @@ class DictionaryConstructorTest extends TestCase
     }
 
     /**
-     * Test fromIterable with generator and type inference.
+     * Test constructor with generator and type inference.
      */
-    public function testFromIterableWithGeneratorAndTypeInference(): void
+    public function testConstructorWithGeneratorAndTypeInference(): void
     {
         // Test: Create Dictionary from generator with type inference
         $generator = function () {
@@ -422,7 +422,7 @@ class DictionaryConstructorTest extends TestCase
             yield 'c' => 30;
         };
 
-        $dict = Dictionary::fromIterable($generator());
+        $dict = new Dictionary(source: $generator());
 
         // Test: Verify items and types
         $this->assertCount(3, $dict);

@@ -10,6 +10,7 @@ use Galaxon\Collections\KeyValuePair;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use TypeError;
+use OutOfBoundsException;
 
 /**
  * Tests for Dictionary add and remove methods.
@@ -146,29 +147,37 @@ class DictionaryAddRemoveTest extends TestCase
         // Test removing an item.
         $result = $dict->removeByKey('a');
 
-        // Test fluent interface.
-        $this->assertSame($dict, $result);
-
         // Test the item was removed.
+        $this->assertEquals(1, $result);
         $this->assertCount(1, $dict);
         $this->assertFalse($dict->keyExists('a'));
         $this->assertEquals(2, $dict['b']);
     }
 
     /**
-     * Test removeByKey with non-existent key does nothing.
+     * Test removeByKey with non-existent key throws OutOfBoundsException.
      */
     public function testRemoveByKeyNonExistentKey(): void
     {
         $dict = new Dictionary('string', 'int');
         $dict->add('a', 1);
 
-        // Test removing a non-existent key doesn't throw.
+        // Test removing a non-existent key throws exception.
+        $this->expectException(OutOfBoundsException::class);
         $dict->removeByKey('nonexistent');
+    }
 
-        // Test the dictionary is unchanged.
-        $this->assertCount(1, $dict);
-        $this->assertEquals(1, $dict['a']);
+    /**
+     * Test removeByKey with key with disallowed type throws TypeError.
+     */
+    public function testRemoveByKeyDisallowedType(): void
+    {
+        $dict = new Dictionary('string', 'int');
+        $dict->add('a', 1);
+
+        // Test removing a key with an invalid type throws exception.
+        $this->expectException(TypeError::class);
+        $dict->removeByKey(3.14);
     }
 
     /**
@@ -184,10 +193,8 @@ class DictionaryAddRemoveTest extends TestCase
         // Test removing by value.
         $result = $dict->removeByValue(1);
 
-        // Test fluent interface.
-        $this->assertSame($dict, $result);
-
         // Test both items with value 1 were removed.
+        $this->assertEquals(2, $result);
         $this->assertCount(1, $dict);
         $this->assertFalse($dict->keyExists('a'));
         $this->assertFalse($dict->keyExists('c'));

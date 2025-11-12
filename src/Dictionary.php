@@ -42,63 +42,75 @@ final class Dictionary extends Collection implements ArrayAccess
     /**
      * Constructor.
      *
-     * @param string|iterable|null $key_types Allowed types for dictionary keys. Accepts a type string
-     *     (e.g. 'int|string|null'), or an iterable of type names, or null for any.
-     * @param string|iterable|null $value_types Allowed types for dictionary values. Accepts a type string
-     *     (e.g. 'float|bool'), or an iterable of type names, or null for any.
-     */
-    public function __construct(string|iterable|null $key_types = null, string|iterable|null $value_types = null)
-    {
-        // Convert provided types to TypeSet objects.
-        $this->keyTypes = new TypeSet($key_types);
-        parent::__construct($value_types);
-    }
-
-    /**
-     * Construct a new Dictionary by copying keys and values from a source iterable.
+     *  Allowed types can be specified in several ways:
+     *  - null = Values of any type are allowed.
+     *  - string = A type name, or multiple types using union type or nullable type syntax, e.g. 'string', 'int|null', '?int'
+     *  - iterable = Array or other collection of type names, e.g. ['string', 'int']
+     *  - true = The types will be inferred from the source iterable's values.
      *
-     * The allowed key and value types in the resultant Dictionary can be specified via the $key_types and $value_types
-     * parameters as a string, iterable, or null, as in the constructor.
-     * Alternatively, they can be inferred automatically from the source iterable's values by omitting either parameter,
-     * or setting it to true.
+     * If a source iterable is provided, the Dictionary will be initialized with key-value pairs from the iterable.
      *
-     * @param iterable $src The source collection.
-     * @param string|iterable|null|true $key_types Allowed key types in the result (default true, for auto-detect).
-     * @param string|iterable|null|true $value_types Allowed value types in the result (default true, for auto-detect).
-     * @return self The new Dictionary.
-     * @throws ValueError If any specified types are invalid.
-     * @throws TypeError If any of the keys or values have a disallowed type.
+     * @param null|string|iterable|true $key_types Allowed types for keys (default true, for infer).
+     * @param null|string|iterable|true $value_types Allowed types for values (default true, for infer).
+     * @param iterable $source A source iterable to import key-value pairs from (optional).
+     * @throws ValueError If a type name is invalid.
+     * @throws TypeError If a type name is not specified as a string, or any imported keys or values have disallowed types.
      */
-    #[Override]
-    public static function fromIterable(
-        iterable $src,
-        string|iterable|null|true $key_types = true,
-        string|iterable|null|true $value_types = true
-    ): static
+    public function __construct(
+        null|string|iterable|true $key_types = true,
+        null|string|iterable|true $value_types = true,
+        iterable $source = []
+    )
     {
+        // Determine if we should infer types from the source iterable.
         $infer_keys = $key_types === true;
         $infer_values = $value_types === true;
 
-        // Instantiate the Dictionary with or without types as requested.
-        $dict = new self(
-            $infer_keys ? null : $key_types,
-            $infer_values ? null : $value_types
-        );
+        // Instantiate the object and typesets.
+        parent::__construct($infer_values ? null : $value_types);
+        $this->keyTypes = new TypeSet($infer_keys ? null : $key_types);
 
-        foreach ($src as $key => $value) {
-            // Collect types from the source iterable if requested.
+        // Import initial key-value pairs from the source iterable.
+        foreach ($source as $key => $value) {
+            // Infer types from the source iterable if requested.
             if ($infer_keys) {
-                $dict->keyTypes->addValueType($key);
+                $this->keyTypes->addValueType($key);
             }
             if ($infer_values) {
-                $dict->valueTypes->addValueType($value);
+                $this->valueTypes->addValueType($value);
             }
 
             // Add item to the new Dictionary.
-            $dict[$key] = $value;
+            $this[$key] = $value;
+        }
+    }
+
+    // endregion
+
+    // region Private helper methods
+
+    /**
+     * Validate an key (a.k.a. offset) argument.
+     *
+     * @param mixed $key The key to validate.
+     * @return string The key as a corresponding index string.
+     * @throws TypeError If the key has a disallowed type.
+     * @throws OutOfBoundsException If the key does not exist in the Dictionary.
+     */
+    private function checkKey(mixed $key): string
+    {
+        // Check the key type is valid.
+        $this->keyTypes->check($key, 'key');
+
+        // Convert the key to an index.
+        $index = Types::getUniqueString($key);
+
+        // Check index (and thus key) exists in the Dictionary.
+        if (!array_key_exists($index, $this->items)) {
+            throw new OutOfBoundsException("Unknown key: " . Stringify::abbrev($key) . ".");
         }
 
-        return $dict;
+        return $index;
     }
 
     // endregion
@@ -191,36 +203,50 @@ final class Dictionary extends Collection implements ArrayAccess
      * Remove an item by key.
      *
      * @param mixed $key The key to remove.
-     * @return $this The modified Dictionary.
+     * @return mixed The value of the removed item.
+     * @throws TypeError If the key has a disallowed type.
+     * @throws OutOfBoundsException If the Dictionary does not contain the given key.
      */
-    public function removeByKey(mixed $key): self
+    public function removeByKey(mixed $key): mixed
     {
-        // Remove the item denoted by the given key if present.
-        if ($this->offsetExists($key)) {
-            $this->offsetUnset($key);
-        }
+        // Validate the key.
+        $index = $this->checkKey($key);
 
-        // Return $this for chaining.
-        return $this;
+        // Get the corresponding value.
+        $value = $this->items[$index]->value;
+
+        // Remove the item denoted by the given key.
+        $this->offsetUnset($key);
+
+        // Return the value of the removed item.
+        return $value;
     }
 
     /**
      * Remove one or more items by value.
      *
      * @param mixed $value The value to remove.
-     * @return $this The modified Dictionary.
+     * @return int The number of items removed.
+     * @throws TypeError If the value has a disallowed type.
      */
-    public function removeByValue(mixed $value): self
+    public function removeByValue(mixed $value): int
     {
+        // Check the value type is valid.
+        $this->valueTypes->check($value, 'value');
+
+        // Initialize the counter.
+        $n_removed = 0;
+
         // Remove all items with the given value.
         foreach ($this->items as $index => $pair) {
             if ($pair->value === $value) {
                 unset($this->items[$index]);
+                $n_removed++;
             }
         }
 
-        // Return $this for chaining.
-        return $this;
+        // Return the number of items removed.
+        return $n_removed;
     }
 
     // endregion
@@ -260,10 +286,10 @@ final class Dictionary extends Collection implements ArrayAccess
      * @return bool True if the Dictionaries are equal, false otherwise.
      */
     #[Override]
-    public function eq(Collection $other): bool
+    public function equals(Collection $other): bool
     {
         // Check type and item count are equal.
-        if (!$this->eqTypeAndCount($other)) {
+        if (!$this->equalTypeAndCount($other)) {
             return false;
         }
 
@@ -460,18 +486,14 @@ final class Dictionary extends Collection implements ArrayAccess
      *
      * @param mixed $offset The key to get.
      * @return mixed The value of the item.
+     * @throws TypeError If the offset (key) has a disallowed type.
      * @throws OutOfBoundsException If the Dictionary does not contain the given key.
      */
     #[Override]
     public function offsetGet(mixed $offset): mixed
     {
-        // Convert the key to an index.
-        $index = Types::getUniqueString($offset);
-
-        // Check key exists.
-        if (!array_key_exists($index, $this->items)) {
-            throw new OutOfBoundsException("Unknown key: " . Stringify::abbrev($offset) . ".");
-        }
+        // Validate the key.
+        $index = $this->checkKey($offset);
 
         // Get the corresponding value.
         return $this->items[$index]->value;
@@ -515,18 +537,14 @@ final class Dictionary extends Collection implements ArrayAccess
      *
      * @param mixed $offset The key to unset.
      * @return void
+     * @throws TypeError If the offset (key) has a disallowed type.
      * @throws OutOfBoundsException If the Dictionary does not contain the given key.
      */
     #[Override]
     public function offsetUnset(mixed $offset): void
     {
-        // Convert the key to an index.
-        $index = Types::getUniqueString($offset);
-
-        // Check index exists.
-        if (!array_key_exists($index, $this->items)) {
-            throw new OutOfBoundsException("Unknown key: " . Stringify::abbrev($offset) . ".");
-        }
+        // Validate the key.
+        $index = $this->checkKey($offset);
 
         // Unset the array item.
         unset($this->items[$index]);
@@ -537,7 +555,7 @@ final class Dictionary extends Collection implements ArrayAccess
     // region Conversion methods
 
     /**
-     * Convert the Collection to an array of KeyValuePair objects.
+     * Convert the Dictionary to an array of KeyValuePair objects.
      *
      * @return array The array.
      */
@@ -554,18 +572,7 @@ final class Dictionary extends Collection implements ArrayAccess
      */
     public function toSequence(): Sequence
     {
-        return Sequence::fromIterable($this->items);
-    }
-
-    /**
-     * Convert the Dictionary to a Set. The resulting Dictionary will contain only unique KeyValuePairs from the
-     * Sequence.
-     *
-     * @return Set The new Set.
-     */
-    public function toSet(): Set
-    {
-        return Set::fromIterable($this->items);
+        return new Sequence(source: $this->items);
     }
 
     // endregion
