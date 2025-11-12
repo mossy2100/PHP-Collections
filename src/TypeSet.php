@@ -270,6 +270,8 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
      * Check if the given type name looks like a valid resource type.
      *
      * The string must match the result of get_debug_type() NOT gettype() or get_resource_type().
+     * Examples: 'resource (stream)', 'resource (curl)', etc.
+     * This is necessary to distinguish resource types from class names.
      * @see https://www.php.net/manual/en/function.get-debug-type.php
      * @see https://www.php.net/manual/en/resource.php
      *
@@ -281,8 +283,10 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
         $ok = preg_match("/^resource \([\w. ]+\)$/", $type);
 
         if ($ok === false) {
+            // @codeCoverageIgnoreStart
             $error = preg_last_error_msg();
             throw new RuntimeException("PCRE error when testing for valid resource type name: $error");
+            // @codeCoverageIgnoreEnd
         }
 
         return $ok === 1;
@@ -305,8 +309,10 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
         $ok = preg_match("/^\\\\?($class_name_part)(?:\\\\$class_name_part)*$/", $type);
 
         if ($ok === false) {
+            // @codeCoverageIgnoreStart
             $error = preg_last_error_msg();
             throw new RuntimeException("PCRE error when testing for valid class name: $error");
+            // @codeCoverageIgnoreEnd
         }
 
         return $ok === 1;
