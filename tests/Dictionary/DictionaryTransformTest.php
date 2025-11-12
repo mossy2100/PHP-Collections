@@ -8,6 +8,7 @@ use Galaxon\Collections\Dictionary;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use TypeError;
+use ValueError;
 
 /**
  * Tests for Dictionary transformation methods (flip, merge, filter).
@@ -61,22 +62,19 @@ class DictionaryTransformTest extends TestCase
     }
 
     /**
-     * Test flip with duplicate values keeps last key.
+     * Test flip with duplicate values throws ValueError.
      */
-    public function testFlipWithDuplicateValuesKeepsLast(): void
+    public function testFlipWithDuplicateValuesThrowsValueError(): void
     {
         $dict = new Dictionary('string', 'int');
         $dict->add('first', 1);
         $dict->add('second', 2);
         $dict->add('third', 1);
 
-        // Test flipping with duplicate values.
-        $flipped = $dict->flip();
-
-        // Test only the last key for value 1 is kept.
-        $this->assertCount(2, $flipped);
-        $this->assertEquals('third', $flipped[1]);
-        $this->assertEquals('second', $flipped[2]);
+        // Test flipping with duplicate values throws ValueError.
+        $this->expectException(ValueError::class);
+        $this->expectExceptionMessage("Cannot flip Dictionary: values are not unique.");
+        $dict->flip();
     }
 
     /**

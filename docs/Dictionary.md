@@ -30,25 +30,27 @@ $dict[null] = 'empty';                  // ✅ Null key
 
 ```php
 public function __construct(
-    string|iterable|null $key_types = null,
-    string|iterable|null $value_types = null
+    null|string|iterable|true $key_types = true,
+    null|string|iterable|true $value_types = true,
+    iterable $source = []
 )
 ```
 
-Create a Dictionary with optional type constraints.
+Create a Dictionary with optional type constraints and initial key-value pairs from a source iterable.
 
-**Type Specification:**
-- **null** - Any type allowed (no constraints)
-- **String** - e.g. `'int'` allows only ints
-- **String with union type syntax** - e.g. `'int|string'` allows int OR string
-- **String with nullable syntax** - e.g. `'?int'` allows int OR null
-- **Array (or other collection) of strings** - e.g. `['int', 'string']` allows int OR string
+**Type Constraints:**
+
+The `$key_types` and `$value_types` parameters accept:
+- `null` - Any type allowed (no constraints)
+- `string` - A type name, or multiple types using union type or nullable type syntax (e.g., `'int'`, `'int|string'`, `'?int'`)
+- `iterable` - Array or other collection of type names (e.g., `['int', 'string']`)
+- `true` (default) - Types will be inferred automatically from the source iterable's keys and values
 
 **Note:** String union syntax and array syntax cannot be combined. Use `'int|string'` OR `['int', 'string']`, not `['int|string', 'float']`.
 
 **Examples:**
 ```php
-// No type constraints
+// No type constraints, empty Dictionary
 $dict = new Dictionary();
 
 // String keys, int values
@@ -68,47 +70,120 @@ $dict = new Dictionary('string', '?int');
 
 // Nullable values (using array)
 $dict = new Dictionary('string', ['int', 'null']);
+
+// Create from array with type inference (default)
+$dict = new Dictionary(source: ['a' => 1, 'b' => 2, 'c' => 3]);
+echo $dict->count(); // 3
+// Types inferred: keyTypes = 'string', valueTypes = 'int'
+
+// Create from array with explicit types
+$dict = new Dictionary('string', 'int', ['a' => 1, 'b' => 2]);
+echo $dict->count(); // 2
+
+// Mixed types - infers union types
+$dict = new Dictionary(source: [1 => 'one', 'two' => 2, 3 => true]);
+// Types inferred: keyTypes = 'int|string', valueTypes = 'string|int|bool'
+
+// No type constraints (any type allowed)
+$dict = new Dictionary(null, null, ['a' => 1, 'b' => 'text']);
+
+// From another Dictionary
+$original = new Dictionary('string', 'int');
+$original->add('x', 10);
+$copy = new Dictionary(source: $original);
+echo $copy->count(); // 1
+
+// From generator with type inference
+$generator = function() {
+    yield 'a' => 10;
+    yield 'b' => 20;
+    yield 'c' => 30;
+};
+$dict = new Dictionary(source: $generator());
+echo $dict->count(); // 3
 ```
 
 ## Factory Methods
 
-### fromIterable()
+### combine()
 
 ```php
-public static function fromIterable(
-    iterable $src,
-    string|iterable|null|true $key_types = true,
-    string|iterable|null|true $value_types = true
-): static
+public static function combine(
+    iterable $keys,
+    iterable $values,
+    bool $infer_types = true
+): self
 ```
 
-Create Dictionary from an iterable with automatic type inference.
+Create a new Dictionary by combining separate iterables of keys and values.
 
-**Type Specification:**
-- `true` (default) - Automatically infer types from the data
-- `string`, `iterable`, or `null` - Work the same as in the constructor (see above)
+**Parameters:**
+- `$keys` - Iterable of keys
+- `$values` - Iterable of values
+- `$infer_types` - Whether to infer key and value types from the data (default: `true`)
+
+**Type Inference:**
+- When `$infer_types = true` (default), types are automatically inferred from the provided keys and values
+- When `$infer_types = false`, no type constraints are applied (any type allowed)
+
+**Throws:**
+- `ValueError` if the iterables have different counts
+- `ValueError` if keys are not unique
 
 **Examples:**
 ```php
-// Infer both key and value types (default)
-$dict = Dictionary::fromIterable(['a' => 1, 'b' => 2]);
-// Result: keyTypes = 'string', valueTypes = 'int'
+// Basic usage with type inference
+$keys = ['name', 'age', 'email'];
+$values = ['Alice', 30, 'alice@example.com'];
+$dict = Dictionary::combine($keys, $values);
+// Types inferred: keyTypes = 'string', valueTypes = 'string|int'
 
-// Mixed types - infers union types
-$dict = Dictionary::fromIterable([1 => 'one', 'two' => 2]);
-// Result: keyTypes = 'int|string', valueTypes = 'string|int'
+// With object keys
+$date1 = new DateTime('2024-01-01');
+$date2 = new DateTime('2024-02-01');
+$keys = [$date1, $date2];
+$values = ['New Year', 'February'];
+$dict = Dictionary::combine($keys, $values);
+echo $dict[$date1]; // 'New Year'
 
-// Explicit type constraints (no inference)
-$dict = Dictionary::fromIterable(['a' => 1], 'string', 'int');
+// With array keys
+$coords1 = [10, 20];
+$coords2 = [30, 40];
+$keys = [$coords1, $coords2];
+$values = ['Location A', 'Location B'];
+$dict = Dictionary::combine($keys, $values);
+echo $dict[[10, 20]]; // 'Location A'
 
-// Explicit union types
-$dict = Dictionary::fromIterable($data, 'int|string', ['float', 'bool']);
+// Disable type inference for maximum flexibility
+$keys = ['a', 'b'];
+$values = [1, 2];
+$dict = Dictionary::combine($keys, $values, false);
+// No type constraints - can add any types later
+$dict->add(123, 'text');      // ✅ Works
+$dict->add(true, [1, 2, 3]);  // ✅ Works
 
-// No type constraints (any type allowed)
-$dict = Dictionary::fromIterable(['a' => 1], null, null);
+// With generators
+$keysGen = function() {
+    yield 'key1';
+    yield 'key2';
+};
+$valuesGen = function() {
+    yield 100;
+    yield 200;
+};
+$dict = Dictionary::combine($keysGen(), $valuesGen());
 
-// From another Dictionary
-$copy = Dictionary::fromIterable($original);
+// Error: Mismatched counts
+$keys = ['a', 'b', 'c'];
+$values = [1, 2];
+$dict = Dictionary::combine($keys, $values);
+// ValueError: Cannot combine: keys count (3) does not match values count (2).
+
+// Error: Duplicate keys
+$keys = ['a', 'b', 'a'];
+$values = [1, 2, 3];
+$dict = Dictionary::combine($keys, $values);
+// ValueError: Cannot combine: keys are not unique.
 ```
 
 ## Adding and Removing Items
@@ -153,27 +228,33 @@ $dict->import(['a' => 1, 'b' => 2, 'c' => 3]);
 ### removeByKey()
 
 ```php
-public function removeByKey(mixed $key): self
+public function removeByKey(mixed $key): mixed
 ```
 
-Remove item by key. Returns `$this` for chaining.
+Remove item by key. Returns the value of the removed item.
 
 **Example:**
 ```php
-$dict->removeByKey('obsolete');
+$dict = new Dictionary(source: ['a' => 1, 'b' => 2, 'c' => 3]);
+$value = $dict->removeByKey('b');
+echo $value; // 2
+echo $dict->count(); // 2 (item removed)
 ```
 
 ### removeByValue()
 
 ```php
-public function removeByValue(mixed $value): self
+public function removeByValue(mixed $value): int
 ```
 
-Remove all items with matching value. Returns `$this` for chaining.
+Remove all items with matching value. Returns the count of items removed.
 
 **Example:**
 ```php
-$dict->removeByValue(null); // Remove all null values
+$dict = new Dictionary(source: ['a' => 1, 'b' => 2, 'c' => 1]);
+$count = $dict->removeByValue(1);
+echo $count; // 2 (removed 'a' and 'c')
+echo $dict->count(); // 1 (only 'b' remains)
 ```
 
 ### clear()
@@ -223,7 +304,7 @@ Get all keys as an array.
 
 **Example:**
 ```php
-$dict = Dictionary::fromIterable(['a' => 1, 'b' => 2]);
+$dict = new Dictionary(source: ['a' => 1, 'b' => 2]);
 $keys = $dict->keys(); // ['a', 'b']
 ```
 
@@ -237,7 +318,7 @@ Get all values as an array.
 
 **Example:**
 ```php
-$dict = Dictionary::fromIterable(['a' => 1, 'b' => 2]);
+$dict = new Dictionary(source: ['a' => 1, 'b' => 2]);
 $values = $dict->values(); // [1, 2]
 ```
 
@@ -319,8 +400,8 @@ Type constraints are ignored.
 
 **Example:**
 ```php
-$dict1 = Dictionary::fromIterable(['a' => 1, 'b' => 2]);
-$dict2 = Dictionary::fromIterable(['a' => 1, 'b' => 2]);
+$dict1 = new Dictionary(source: ['a' => 1, 'b' => 2]);
+$dict2 = new Dictionary(source: ['a' => 1, 'b' => 2]);
 
 var_dump($dict1->eq($dict2)); // true
 ```
@@ -335,7 +416,7 @@ Check if all items pass a test.
 
 **Example:**
 ```php
-$dict = Dictionary::fromIterable(['a' => 1, 'b' => 2]);
+$dict = new Dictionary(source: ['a' => 1, 'b' => 2]);
 
 // Note: Callback receives KeyValuePair objects
 $allPositive = $dict->all(fn($pair) => $pair->value > 0);
@@ -380,7 +461,7 @@ Sort by keys using spaceship operator (mutating). Returns `$this`.
 
 **Example:**
 ```php
-$dict = Dictionary::fromIterable(['z' => 1, 'a' => 2, 'm' => 3]);
+$dict = new Dictionary(source: ['z' => 1, 'a' => 2, 'm' => 3]);
 $dict->sortByKey();
 // Order: a, m, z
 ```
@@ -395,7 +476,7 @@ Sort by values using spaceship operator (mutating). Returns `$this`.
 
 **Example:**
 ```php
-$dict = Dictionary::fromIterable(['a' => 30, 'b' => 10, 'c' => 20]);
+$dict = new Dictionary(source: ['a' => 30, 'b' => 10, 'c' => 20]);
 $dict->sortByValue();
 // Order by value: 10, 20, 30
 ```
@@ -412,7 +493,7 @@ Return new Dictionary with items that pass the test.
 
 **Example:**
 ```php
-$dict = Dictionary::fromIterable([
+$dict = new Dictionary(source: [
     'apple' => 5,
     'banana' => 3,
     'cherry' => 8
@@ -433,18 +514,23 @@ $aFruits = $dict->filter(fn($key, $value) => str_starts_with($key, 'a'));
 public function flip(): self
 ```
 
-Swap keys with values. Duplicate values overwrite earlier entries (like `array_flip()`).
+Swap keys with values. All values in the Dictionary must be unique.
+
+**Throws:** `ValueError` if the Dictionary contains duplicate values.
 
 **Example:**
 ```php
-$dict = Dictionary::fromIterable(['a' => 1, 'b' => 2]);
+$dict = new Dictionary(source: ['a' => 1, 'b' => 2, 'c' => 3]);
 $flipped = $dict->flip();
-// Result: [1 => 'a', 2 => 'b']
+// Result: [1 => 'a', 2 => 'b', 3 => 'c']
 
-// Duplicate values - last wins
-$dict = Dictionary::fromIterable(['a' => 1, 'b' => 1, 'c' => 2]);
-$flipped = $dict->flip();
-// Result: [1 => 'b', 2 => 'c']  ('b' overwrites 'a')
+// Duplicate values cause an error
+$dict = new Dictionary(source: ['a' => 1, 'b' => 1, 'c' => 2]);
+try {
+    $flipped = $dict->flip();
+} catch (ValueError $e) {
+    echo $e->getMessage(); // "Cannot flip Dictionary: values are not unique."
+}
 ```
 
 ### merge()
@@ -457,8 +543,8 @@ Return new Dictionary with items from both. Duplicate keys keep value from secon
 
 **Example:**
 ```php
-$dict1 = Dictionary::fromIterable(['a' => 1, 'b' => 2]);
-$dict2 = Dictionary::fromIterable(['b' => 20, 'c' => 3]);
+$dict1 = new Dictionary(source: ['a' => 1, 'b' => 2]);
+$dict2 = new Dictionary(source: ['b' => 20, 'c' => 3]);
 $merged = $dict1->merge($dict2);
 // Result: ['a' => 1, 'b' => 20, 'c' => 3]
 ```
@@ -468,7 +554,7 @@ $merged = $dict1->merge($dict2);
 Full foreach support with original keys:
 
 ```php
-$dict = Dictionary::fromIterable(['name' => 'Alice', 'age' => 30]);
+$dict = new Dictionary(source: ['name' => 'Alice', 'age' => 30]);
 
 foreach ($dict as $key => $value) {
     echo "$key: $value\n";
@@ -504,19 +590,6 @@ Convert to Sequence of KeyValuePairs.
 **Example:**
 ```php
 $seq = $dict->toSequence();
-```
-
-### toSet()
-
-```php
-public function toSet(): Set
-```
-
-Convert to Set of unique KeyValuePairs.
-
-**Example:**
-```php
-$set = $dict->toSet();
 ```
 
 ## Usage Examples
@@ -559,7 +632,7 @@ if ($files->keyExists($handle)) {
 ### Data transformation pipeline
 
 ```php
-$sales = Dictionary::fromIterable([
+$sales = new Dictionary(source: [
     'Product A' => 1500,
     'Product B' => 3200,
     'Product C' => 800
@@ -579,7 +652,7 @@ foreach ($highValue as $product => $amount) {
 ### Grouping data
 
 ```php
-$users = Dictionary::fromIterable([
+$users = new Dictionary(source: [
     'alice@example.com' => 'Alice',
     'bob@example.com' => 'Bob',
     'charlie@test.com' => 'Charlie'

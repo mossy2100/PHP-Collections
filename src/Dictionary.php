@@ -85,6 +85,59 @@ final class Dictionary extends Collection implements ArrayAccess
         }
     }
 
+    /**
+     * Create a new Dictionary by combining separate iterables of keys and values.
+     *
+     * By default, the key and value types will be automatically inferred from the provided iterables.
+     * Otherwise, if $infer_types is false, the key and value typesets will both be null (i.e. any types allowed).
+     *
+     * @param iterable $keys The keys for the Dictionary.
+     * @param iterable $values The values for the Dictionary.
+     * @param bool $infer_types Whether to infer the key and value types (default true).
+     * @return self A new Dictionary with the combined keys and values.
+     * @throws ValueError If the iterables have different counts or if keys are not unique.
+     */
+    public static function combine(iterable $keys, iterable $values, bool $infer_types = true): self
+    {
+        // Convert to arrays to check counts, and enable access keys and values using a common numerical index.
+        $keys_array = is_array($keys) ? array_values($keys) : iterator_to_array($keys, false);
+        $values_array = is_array($values) ? array_values($values) : iterator_to_array($values, false);
+
+        // Check counts match.
+        $key_count = count($keys_array);
+        $value_count = count($values_array);
+        if ($key_count !== $value_count) {
+            throw new ValueError("Cannot combine: keys count ($key_count) does not match values count ($value_count).");
+        }
+
+        // Create a new Dictionary and add items, checking for duplicate keys along the way.
+        $dict = new self();
+        for ($i = 0; $i < $key_count; $i++) {
+            // Get the key.
+            $key = $keys_array[$i];
+
+            // Check for duplicate keys.
+            if (isset($dict[$key])) {
+                throw new ValueError("Cannot combine: keys are not unique.");
+            }
+
+            // Get the value.
+            $value = $values_array[$i];
+
+            // Infer types if requested.
+            if ($infer_types) {
+                $dict->keyTypes->addValueType($key);
+                $dict->valueTypes->addValueType($value);
+            }
+
+            // Add the key-value pair to the Dictionary.
+            $dict[$key] = $value;
+        }
+
+        // Return the Dictionary.
+        return $dict;
+    }
+
     // endregion
 
     // region Private helper methods
@@ -370,11 +423,10 @@ final class Dictionary extends Collection implements ArrayAccess
     /**
      * Swaps keys with values.
      *
-     * If there are two keys referencing the same values, then the resulting array will contain only one key-value pair,
-     * with the key equal to the value, and the value equal to the last key encountered that referenced that value.
-     * No exception will be thrown. This matches the behavior of array_flip().
+     * All values in the Dictionary must be unique for flip to succeed.
      *
-     * @return self
+     * @return self A new Dictionary with keys and values swapped.
+     * @throws ValueError If the Dictionary contains duplicate values.
      */
     public function flip(): self
     {
@@ -383,6 +435,11 @@ final class Dictionary extends Collection implements ArrayAccess
 
         // Iterate over the items in the current dictionary.
         foreach ($this->items as $item) {
+            // Check if this value already exists as a key in the result.
+            if ($result->keyExists($item->value)) {
+                throw new ValueError("Cannot flip Dictionary: values are not unique.");
+            }
+
             // Add the flipped key-value pair to the result. Calls offsetSet().
             $result[$item->value] = $item->key;
         }
