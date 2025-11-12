@@ -80,11 +80,16 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
     /**
      * Constructor.
      *
-     * @param string|iterable|null $types The types to add to the TypeSet.
+     * The types in the TypeSet can be specified in several ways:
+     * - null = None.
+     * - string = A type name, or multiple types using union type or nullable type syntax, e.g. 'string', 'int|null', '?int'
+     * - iterable = Array or other collection of type names, e.g. ['string', 'int']
+     *
+     * @param null|string|iterable $types The types to add to the TypeSet (default null).
      * @throws TypeError If a type is not specified as a string.
      * @throws ValueError If a type name is invalid.
      */
-    public function __construct(string|iterable|null $types = null)
+    public function __construct(null|string|iterable $types = null)
     {
         // If some types have been provided, add them to the TypeSet.
         if ($types !== null) {
@@ -280,16 +285,7 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
      */
     private static function isResourceType(string $type): bool
     {
-        $ok = preg_match("/^resource \([\w. ]+\)$/", $type);
-
-        if ($ok === false) {
-            // @codeCoverageIgnoreStart
-            $error = preg_last_error_msg();
-            throw new RuntimeException("PCRE error when testing for valid resource type name: $error");
-            // @codeCoverageIgnoreEnd
-        }
-
-        return $ok === 1;
+        return (bool)preg_match("/^resource \([\w. ]+\)$/", $type);
     }
 
     /**
@@ -306,16 +302,7 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
     private static function isClassType(string $type): bool
     {
         $class_name_part = "[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*";
-        $ok = preg_match("/^\\\\?($class_name_part)(?:\\\\$class_name_part)*$/", $type);
-
-        if ($ok === false) {
-            // @codeCoverageIgnoreStart
-            $error = preg_last_error_msg();
-            throw new RuntimeException("PCRE error when testing for valid class name: $error");
-            // @codeCoverageIgnoreEnd
-        }
-
-        return $ok === 1;
+        return (bool)preg_match("/^\\\\?($class_name_part)(?:\\\\$class_name_part)*$/", $type);
     }
 
     /**
@@ -350,7 +337,7 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
      */
     private function _add(string $type): self
     {
-        // Trim whitespace and leading backslash.
+        // Trim whitespace and backslash.
         $type = self::normalizeTypeName($type);
 
         // Check if the type string is valid. This isn't bulletproof, but it will prevent most incorrect strings.

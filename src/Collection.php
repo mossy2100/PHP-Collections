@@ -52,17 +52,6 @@ abstract class Collection implements Countable, IteratorAggregate, Stringable
         $this->valueTypes = new TypeSet($types);
     }
 
-    /**
-     * Construct a new Collection from an iterable.
-     *
-     * The intention is that, by default, key and value types will be automatically inferred from the iterable's items.
-     * However, implementing methods may include the option to specify type constraints.
-     *
-     * @param iterable $src The source collection.
-     * @return static The new Collection.
-     */
-//    abstract public static function fromIterable(iterable $src): static;
-
     // endregion
 
     // region Modification methods
