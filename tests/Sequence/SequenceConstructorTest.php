@@ -165,13 +165,13 @@ class SequenceConstructorTest extends TestCase
     }
 
     /**
-     * Test fromIterable factory method with array.
+     * Test constructor with source array.
      */
-    public function testFromIterableWithArray(): void
+    public function testConstructorWithSourceArray(): void
     {
         // Test: Create Sequence from array
         $source = [1, 2, 3, 4, 5];
-        $seq = Sequence::fromIterable($source);
+        $seq = new Sequence(source: $source);
 
         // Test: Verify all items are copied
         $this->assertCount(5, $seq);
@@ -180,13 +180,13 @@ class SequenceConstructorTest extends TestCase
     }
 
     /**
-     * Test fromIterable factory method with mixed types.
+     * Test constructor with mixed types.
      */
-    public function testFromIterableWithMixedTypes(): void
+    public function testConstructorWithMixedTypes(): void
     {
         // Test: Create Sequence from mixed type array
         $source = [1, 'two', 3.0, true];
-        $seq = Sequence::fromIterable($source);
+        $seq = new Sequence(source: $source);
 
         // Test: Verify all items and types are preserved
         $this->assertCount(4, $seq);
@@ -197,24 +197,24 @@ class SequenceConstructorTest extends TestCase
     }
 
     /**
-     * Test fromIterable factory method with empty iterable.
+     * Test constructor with empty source array.
      */
-    public function testFromIterableWithEmptyArray(): void
+    public function testConstructorWithEmptySourceArray(): void
     {
         // Test: Create Sequence from empty array
-        $seq = Sequence::fromIterable([]);
+        $seq = new Sequence(source: []);
 
         // Test: Verify Sequence is empty
         $this->assertCount(0, $seq);
     }
 
     /**
-     * Test fromIterable infers nullable types when null values present.
+     * Test constructor infers nullable types when null values present.
      */
-    public function testFromIterableInfersNullableTypes(): void
+    public function testConstructorInfersNullableTypes(): void
     {
         // Test: Create Sequence with null values (types inferred)
-        $seq = Sequence::fromIterable([1, null, 3, null, 5]);
+        $seq = new Sequence(source: [1, null, 3, null, 5]);
 
         // Test: Verify all items preserved
         $this->assertCount(5, $seq);
@@ -228,24 +228,24 @@ class SequenceConstructorTest extends TestCase
     }
 
     /**
-     * Test fromIterable with explicit types (not inferred).
+     * Test constructor with explicit types (not inferred).
      */
-    public function testFromIterableWithExplicitTypes(): void
+    public function testConstructorWithExplicitTypesAndSource(): void
     {
         // Test: Create Sequence with explicit type constraint
-        $seq = Sequence::fromIterable([1, 2, 3], 'int');
+        $seq = new Sequence('int', null, [1, 2, 3]);
 
         // Test: Verify type constraint applied
         $this->assertTrue($seq->valueTypes->containsOnly('int'));
     }
 
     /**
-     * Test fromIterable with explicit types and custom default.
+     * Test constructor with explicit types and custom default.
      */
-    public function testFromIterableWithExplicitTypesAndCustomDefault(): void
+    public function testConstructorWithExplicitTypesAndCustomDefault(): void
     {
         // Test: Create Sequence with explicit types and custom default
-        $seq = Sequence::fromIterable([1, 2, 3], 'int', 99);
+        $seq = new Sequence('int', 99, [1, 2, 3]);
 
         // Test: Verify custom default value set
         $this->assertSame(99, $seq->defaultValue);
@@ -253,12 +253,12 @@ class SequenceConstructorTest extends TestCase
     }
 
     /**
-     * Test fromIterable with type inference and custom default.
+     * Test constructor with type inference and custom default.
      */
-    public function testFromIterableWithTypeInferenceAndCustomDefault(): void
+    public function testConstructorWithTypeInferenceAndCustomDefault(): void
     {
         // Test: Create Sequence with type inference and custom default
-        $seq = Sequence::fromIterable([1, 2, 3], true, 0);
+        $seq = new Sequence(true, 0, [1, 2, 3]);
 
         // Test: Verify types inferred and default set
         $this->assertTrue($seq->valueTypes->contains('int'));
@@ -266,24 +266,24 @@ class SequenceConstructorTest extends TestCase
     }
 
     /**
-     * Test fromIterable infers multiple types correctly.
+     * Test constructor infers multiple types correctly.
      */
-    public function testFromIterableInfersMultipleTypes(): void
+    public function testConstructorInfersMultipleTypes(): void
     {
         // Test: Create Sequence with various types
-        $seq = Sequence::fromIterable([1, 'hello', 3.14, true, false, null, []]);
+        $seq = new Sequence(source: [1, 'hello', 3.14, true, false, null, []]);
 
         // Test: Verify all unique types were inferred
         $this->assertTrue($seq->valueTypes->containsOnly('int', 'string', 'float', 'bool', 'null', 'array'));
     }
 
     /**
-     * Test fromIterable with only null values.
+     * Test constructor with only null values.
      */
-    public function testFromIterableWithOnlyNullValues(): void
+    public function testConstructorWithOnlyNullValues(): void
     {
         // Test: Create Sequence containing only nulls
-        $seq = Sequence::fromIterable([null, null, null]);
+        $seq = new Sequence(source: [null, null, null]);
 
         // Test: Verify null type inferred
         $this->assertCount(3, $seq);
@@ -293,20 +293,20 @@ class SequenceConstructorTest extends TestCase
     }
 
     /**
-     * Test fromIterable throws TypeError when explicit type doesn't match values.
+     * Test constructor throws TypeError when explicit type doesn't match values.
      */
-    public function testFromIterableThrowsTypeErrorForMismatchedExplicitType(): void
+    public function testConstructorThrowsTypeErrorForMismatchedExplicitType(): void
     {
         // Test: Attempt to create Sequence with mismatched type
         $this->expectException(TypeError::class);
 
-        Sequence::fromIterable([1, 2, 3], 'string');
+        new Sequence('string', null, [1, 2, 3]);
     }
 
     /**
-     * Test fromIterable with generator and type inference.
+     * Test constructor with generator and type inference.
      */
-    public function testFromIterableWithGeneratorAndTypeInference(): void
+    public function testConstructorWithGeneratorAndTypeInference(): void
     {
         // Test: Create Sequence from generator with type inference
         $generator = function () {
@@ -315,7 +315,7 @@ class SequenceConstructorTest extends TestCase
             yield 30;
         };
 
-        $seq = Sequence::fromIterable($generator());
+        $seq = new Sequence(source: $generator());
 
         // Test: Verify items and types
         $this->assertCount(3, $seq);
@@ -325,36 +325,36 @@ class SequenceConstructorTest extends TestCase
     }
 
     /**
-     * Test fromIterable infers default value when types are inferred.
+     * Test constructor infers default value when types are inferred.
      */
-    public function testFromIterableInfersDefaultValueWhenTypesInferred(): void
+    public function testConstructorInfersDefaultValueWhenTypesInferred(): void
     {
         // Test: Create Sequence with inferred int type
-        $seq = Sequence::fromIterable([1, 2, 3]);
+        $seq = new Sequence(source: [1, 2, 3]);
 
         // Test: Verify default value inferred as 0 for int
         $this->assertSame(0, $seq->defaultValue);
     }
 
     /**
-     * Test fromIterable infers default value with mixed types.
+     * Test constructor infers default value with mixed types.
      */
-    public function testFromIterableInfersDefaultValueWithMixedTypes(): void
+    public function testConstructorInfersDefaultValueWithMixedTypes(): void
     {
         // Test: Create Sequence with mixed types including null
-        $seq = Sequence::fromIterable([1, 'hello', null]);
+        $seq = new Sequence(source: [1, 'hello', null]);
 
         // Test: Verify default value is null (since null is an option)
         $this->assertNull($seq->defaultValue);
     }
 
     /**
-     * Test fromIterable with null type parameter explicitly.
+     * Test constructor with null type parameter explicitly.
      */
-    public function testFromIterableWithNullTypeParameter(): void
+    public function testConstructorWithNullTypeParameter(): void
     {
         // Test: Create Sequence with null as types parameter (any type allowed)
-        $seq = Sequence::fromIterable([1, 'hello', 3.14], null);
+        $seq = new Sequence(null, null, [1, 'hello', 3.14]);
 
         // Test: Verify no type constraints applied
         $this->assertCount(3, $seq);
@@ -363,12 +363,12 @@ class SequenceConstructorTest extends TestCase
     }
 
     /**
-     * Test fromIterable with union type string.
+     * Test constructor with union type string.
      */
-    public function testFromIterableWithUnionTypeString(): void
+    public function testConstructorWithUnionTypeString(): void
     {
         // Test: Create Sequence with union type constraint
-        $seq = Sequence::fromIterable([1, 'hello', 2, 'world'], 'int|string');
+        $seq = new Sequence('int|string', null, [1, 'hello', 2, 'world']);
 
         // Test: Verify both types accepted
         $this->assertCount(4, $seq);

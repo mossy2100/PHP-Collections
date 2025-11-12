@@ -7,6 +7,7 @@ namespace Galaxon\Collections\Tests\Sequence;
 use Galaxon\Collections\Sequence;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+use TypeError;
 use UnderflowException;
 
 /**
@@ -245,14 +246,14 @@ class SequenceTransformationTest extends TestCase
      */
     public function testFillWithDefaultValue(): void
     {
-        // Test: Fill with default value
-        $seq = new Sequence('int', 0);
-        $seq->fill(0, 5);
+        // Test: Fill with value.
+        $seq = new Sequence('int');
+        $seq->fill(0, 5, 99);
 
-        // Test: Verify filled with defaults
+        // Test: Verify filled with specified value.
         $this->assertCount(5, $seq);
-        $this->assertSame(0, $seq[0]);
-        $this->assertSame(0, $seq[4]);
+        $this->assertSame(99, $seq[0]);
+        $this->assertSame(99, $seq[4]);
     }
 
     /**
@@ -284,7 +285,7 @@ class SequenceTransformationTest extends TestCase
     }
 
     /**
-     * Test product method.
+     * Test product method with integers.
      */
     public function testProduct(): void
     {
@@ -297,7 +298,84 @@ class SequenceTransformationTest extends TestCase
     }
 
     /**
-     * Test sum method.
+     * Test product method with floats.
+     */
+    public function testProductWithFloats(): void
+    {
+        // Test: Calculate product with floats
+        $seq = new Sequence('float');
+        $seq->append(2.5, 4.0, 2.0);
+
+        // Test: Verify product calculation
+        $this->assertSame(20.0, $seq->product());
+    }
+
+    /**
+     * Test product method with mixed int and float.
+     */
+    public function testProductWithMixedNumericTypes(): void
+    {
+        // Test: Calculate product with mixed types
+        $seq = new Sequence('int|float');
+        $seq->append(2, 3.5, 2);
+
+        // Test: Verify product calculation (result is float)
+        $this->assertSame(14.0, $seq->product());
+    }
+
+    /**
+     * Test product method with empty sequence returns multiplicative identity.
+     */
+    public function testProductWithEmptySequence(): void
+    {
+        // Test: Calculate product of empty sequence
+        $seq = new Sequence('int');
+
+        // Test: Verify returns 1 (multiplicative identity)
+        $this->assertSame(1, $seq->product());
+    }
+
+    /**
+     * Test product method with single value.
+     */
+    public function testProductWithSingleValue(): void
+    {
+        // Test: Calculate product with one value
+        $seq = new Sequence('int');
+        $seq->append(42);
+
+        // Test: Verify returns the value itself
+        $this->assertSame(42, $seq->product());
+    }
+
+    /**
+     * Test product method throws TypeError for non-numeric values.
+     */
+    public function testProductThrowsTypeErrorForNonNumericValues(): void
+    {
+        // Test: Attempt to calculate product with strings
+        $seq = new Sequence('string');
+        $seq->append('1', '2', '3');
+
+        $this->expectException(TypeError::class);
+        $seq->product();
+    }
+
+    /**
+     * Test product method with negative numbers.
+     */
+    public function testProductWithNegativeNumbers(): void
+    {
+        // Test: Calculate product with negative numbers
+        $seq = new Sequence('int');
+        $seq->append(-2, 3, -4);
+
+        // Test: Verify product calculation
+        $this->assertSame(24, $seq->product());
+    }
+
+    /**
+     * Test sum method with integers.
      */
     public function testSum(): void
     {
@@ -307,6 +385,96 @@ class SequenceTransformationTest extends TestCase
 
         // Test: Verify sum calculation
         $this->assertSame(15, $seq->sum());
+    }
+
+    /**
+     * Test sum method with floats.
+     */
+    public function testSumWithFloats(): void
+    {
+        // Test: Calculate sum with floats
+        $seq = new Sequence('float');
+        $seq->append(1.5, 2.5, 3.5);
+
+        // Test: Verify sum calculation
+        $this->assertSame(7.5, $seq->sum());
+    }
+
+    /**
+     * Test sum method with mixed int and float.
+     */
+    public function testSumWithMixedNumericTypes(): void
+    {
+        // Test: Calculate sum with mixed types
+        $seq = new Sequence('int|float');
+        $seq->append(1, 2.5, 3);
+
+        // Test: Verify sum calculation (result is float)
+        $this->assertSame(6.5, $seq->sum());
+    }
+
+    /**
+     * Test sum method with empty sequence returns additive identity.
+     */
+    public function testSumWithEmptySequence(): void
+    {
+        // Test: Calculate sum of empty sequence
+        $seq = new Sequence('int');
+
+        // Test: Verify returns 0 (additive identity)
+        $this->assertSame(0, $seq->sum());
+    }
+
+    /**
+     * Test sum method with single value.
+     */
+    public function testSumWithSingleValue(): void
+    {
+        // Test: Calculate sum with one value
+        $seq = new Sequence('int');
+        $seq->append(42);
+
+        // Test: Verify returns the value itself
+        $this->assertSame(42, $seq->sum());
+    }
+
+    /**
+     * Test sum method throws TypeError for non-numeric values.
+     */
+    public function testSumThrowsTypeErrorForNonNumericValues(): void
+    {
+        // Test: Attempt to calculate sum with strings
+        $seq = new Sequence('string');
+        $seq->append('1', '2', '3');
+
+        $this->expectException(TypeError::class);
+        $seq->sum();
+    }
+
+    /**
+     * Test sum method with negative numbers.
+     */
+    public function testSumWithNegativeNumbers(): void
+    {
+        // Test: Calculate sum with negative numbers
+        $seq = new Sequence('int');
+        $seq->append(-5, 3, -2, 8);
+
+        // Test: Verify sum calculation
+        $this->assertSame(4, $seq->sum());
+    }
+
+    /**
+     * Test sum method with zero.
+     */
+    public function testSumWithZero(): void
+    {
+        // Test: Calculate sum with zeros
+        $seq = new Sequence('int');
+        $seq->append(0, 5, 0, 3);
+
+        // Test: Verify sum calculation
+        $this->assertSame(8, $seq->sum());
     }
 
     /**

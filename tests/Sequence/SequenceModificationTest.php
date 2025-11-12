@@ -196,9 +196,10 @@ class SequenceModificationTest extends TestCase
         // Test: Remove item by index
         $seq = new Sequence('int');
         $seq->append(10, 20, 30, 40, 50);
-        $seq->removeByIndex(2);
+        $removed_item = $seq->removeByIndex(2);
 
         // Test: Verify item was removed and returned
+        $this->assertEquals(30, $removed_item);
         $this->assertCount(4, $seq);
         $this->assertSame(40, $seq[2]); // Next item shifted down
     }

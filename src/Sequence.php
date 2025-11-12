@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace Galaxon\Collections;
 
+use ArithmeticError;
 use ArrayAccess;
 use ArrayIterator;
 use Galaxon\Core\Types;
@@ -46,12 +47,6 @@ use ValueError;
  * For other types (i.e. resource, object, interface, callable), the automatic default value will be null, and if 'null'
  * has not been specified in the allowed types, it will be automatically added.
  *
- * For example:
- * - `new Sequence('int')` → default_value parameter omitted, will be inferred from type constraints
- * - `new Sequence('int', null)` → default_value explicitly set to null
- *
- * This pattern is used in the constructor, fromIterable(), and fill() methods to enable proper default value handling.
- *
  * ## Implementation Notes
  * Several methods use `func_num_args()` to distinguish between "parameter omitted" and "parameter explicitly set to
  * null". This is necessary because PHP doesn't provide a native way to make this distinction with optional parameters.
@@ -91,75 +86,73 @@ final class Sequence extends Collection implements ArrayAccess
     // region Constructor and factory methods
 
     /**
-     * Create a new Sequence, with optional type restriction and default value.
+     * Create a new Sequence, with optional type restriction, default value, and value source.
      *
      * The allowed types for values in the Sequence can be specified in several ways:
      * - null = Values of any type are allowed.
      * - string = A type name, or multiple types using union type or nullable type syntax, e.g. 'string', 'int|null', '?int'
      * - iterable = Array or other collection of type names, e.g. ['string', 'int']
+     * - true = The types will be inferred from the source iterable's values.
      *
      * A default value may be specified, which is used to fill gaps when increasing the Sequence length as a side
-     * effect of calling insert(), fill(), or offsetSet() (either directly or via square bracket syntax).
-     * If a default value is not provided, it will be determined automatically.
+     * effect of calling insert() or offsetSet() (either directly or via square bracket syntax).
+     * If a default value is not provided (or is null), it will be determined automatically.
      * If the default value is an object, it will be cloned as needed.
      * It doesn't really make sense to have a resource as a default value, but it's allowed.
      *
-     * @param string|iterable|null $types Allowed types for values in the Sequence.
-     * @param mixed $default_value Default value for new items (default null).
-     * @throws ValueError If any type names are invalid.
-     * @throws TypeError If the default value has a disallowed type.
-     */
-    public function __construct(string|iterable|null $types = null, mixed $default_value = null)
-    {
-        // Construct the base Collection.
-        parent::__construct($types);
-
-        // Set the default value.
-        $this->setDefaultValue($default_value, func_num_args() < 2);
-    }
-
-    /**
-     * Construct a new Sequence by copying values from a source iterable.
+     * If a source iterable is provided, the Sequence will be initialized with values from the iterable.
      *
-     * The allowed types in the resultant Sequence can be specified via the $types parameter as a string, iterable, or
-     * null, as in the constructor.
-     * Alternatively, they can be inferred automatically from the source iterable's values by omitting the $types
-     * parameter, or setting it to true.
-     *
-     * @param iterable $src The iterable to copy from.
-     * @param string|iterable|null|true $types The allowed value types in the result (default true).
+     * @param null|string|iterable|true $types Allowed types for values in the Sequence (default true, for infer).
      * @param mixed $default_value Default value for new items (default null).
-     * @return static The new Sequence instance.
-     * @throws ValueError If any specified types are invalid.
-     * @throws TypeError If any of the values have a disallowed type.
+     * @param iterable $source A source iterable to import values from (optional).
+     * @throws ValueError If a type name is invalid.
+     * @throws TypeError If a type is not specified as a string, or any imported values have disallowed types.
      */
-    public static function fromIterable(
-        iterable $src,
-        string|iterable|null|true $types = true,
-        mixed $default_value = null
-    ): static
+    public function __construct(
+        null|string|iterable|true $types = true,
+        mixed $default_value = null,
+        iterable $source = []
+    )
     {
+        // Determine if we should infer types from the source iterable.
         $infer = $types === true;
 
-        // Instantiate the Sequence with or without types as requested.
-        $seq = new self($infer ? null : $types);
+        // Instantiate the object and typeset.
+        parent::__construct($infer ? null : $types);
 
-        foreach ($src as $item) {
+        // Import values from the source iterable.
+        foreach ($source as $item) {
             // Collect types from the source iterable if requested.
             if ($infer) {
-                $seq->valueTypes->addValueType($item);
+                $this->valueTypes->addValueType($item);
             }
 
             // Add item to the new Sequence.
-            $seq->append($item);
+            $this->append($item);
         }
 
         // Set the default value.
         // We do this after the value types are known, in case the default value wasn't supplied and needs to be
         // inferred from the value typeset.
-        $seq->setDefaultValue($default_value, func_num_args() < 3);
+        // Check if we should infer the default value from the allowed types.
+        if ($default_value === null) {
+            // Try to determine a sane default for common types.
+            if (!$this->valueTypes->tryInferDefaultValue($default_value)) {
+                // If no default value could be inferred, use null and allow nulls in the Sequence.
+                $this->valueTypes->add('null');
+            }
+        }
+        elseif (!$this->valueTypes->match($default_value)) {
+            // The default value has a disallowed type.
+            throw new TypeError(
+                'The default value has an invalid type. ' .
+                'Expected one of: ' . $this->valueTypes . ', ' .
+                'but got: ' . Types::getBasicType($default_value) . '.'
+            );
+        }
 
-        return $seq;
+        // Set the default value.
+        $this->defaultValue = $default_value;
     }
 
     /**
@@ -257,42 +250,6 @@ final class Sequence extends Collection implements ArrayAccess
     }
 
     /**
-     * Set the default value.
-     *
-     * The second parameter enables us to distinguish between the case where the default value is explicitly set to
-     * null, and the case where the default value is not specified and should be inferred from the value typeset.
-     *
-     * @param mixed $default_value The default value.
-     * @param bool $infer If the default value wasn't supplied and should be inferred from the value typeset.
-     * @return void
-     * @throws TypeError If the default value is provided but has a disallowed type.
-     */
-    private function setDefaultValue(mixed $default_value, bool $infer = false): void
-    {
-        // Check if we should infer the default value from the typeset.
-        if ($infer) {
-            // Try to determine a sane default for common types.
-            if (!$this->valueTypes->tryGetDefaultValue($default_value)) {
-                // If no default value could be determined, allow nulls in the Sequence.
-                $this->valueTypes->add('null');
-                // The default value should already be null, but set it explicitly just in case.
-                $default_value = null;
-            }
-        }
-        elseif (!$this->valueTypes->match($default_value)) {
-            // The default value has a disallowed type.
-            throw new TypeError(
-                'The default value has an invalid type. ' .
-                'Expected one of: ' . $this->valueTypes . ', ' .
-                'but got: ' . Types::getBasicType($default_value) . '.'
-            );
-        }
-
-        // Set the default value.
-        $this->defaultValue = $default_value;
-    }
-
-    /**
      * Get a new default value.
      *
      * If the default value is an object, clone it.
@@ -312,15 +269,10 @@ final class Sequence extends Collection implements ArrayAccess
      * @param iterable $items The iterable to copy items from.
      * @return self The new Sequence.
      */
-    private function fromSubset(iterable $items = []): self
+    private function fromSubset(iterable $items): self
     {
         // Construct the new Sequence.
-        $seq = new self($this->valueTypes, $this->defaultValue);
-
-        // Copy items.
-        $seq->import($items);
-
-        return $seq;
+        return new self($this->valueTypes, $this->defaultValue, $items);
     }
 
     // endregion
@@ -457,19 +409,19 @@ final class Sequence extends Collection implements ArrayAccess
      * NB: This is a mutating method.
      *
      * @param int $index The zero-based index of the item to remove.
-     * @return $this The modified Sequence.
+     * @return mixed The removed item.
      * @throws OutOfRangeException If the index is outside the valid range for the Sequence.
      */
-    public function removeByIndex(int $index): self
+    public function removeByIndex(int $index): mixed
     {
         // Check the index is valid.
         $this->checkIndex($index);
 
         // Remove the item from the Sequence.
-        array_splice($this->items, $index, 1);
+        $removed_items = array_splice($this->items, $index, 1);
 
-        // Return this for chaining.
-        return $this;
+        // Return the removed item.
+        return $removed_items[0];
     }
 
     /**
@@ -478,18 +430,21 @@ final class Sequence extends Collection implements ArrayAccess
      * NB: This is a mutating method.
      *
      * @param mixed $value The value to remove.
-     * @return $this The modified Sequence.
+     * @return int The number of items removed.
      */
-    public function removeByValue(mixed $value): self
+    public function removeByValue(mixed $value): int
     {
+        // Get the initial count of items.
+        $init_count = count($this->items);
+
         // Filter the Sequence to remove the matching values.
         $this->items = array_values(array_filter(
             $this->items,
             static fn($item) => $item !== $value
         ));
 
-        // Return this for chaining.
-        return $this;
+        // Return the number of items removed.
+        return $init_count - $this->count();
     }
 
     /**
@@ -566,10 +521,10 @@ final class Sequence extends Collection implements ArrayAccess
      * @return bool True if the Sequences are equal, false otherwise.
      */
     #[Override]
-    public function eq(Collection $other): bool
+    public function equals(Collection $other): bool
     {
         // Check type and item count are equal.
-        if (!$this->eqTypeAndCount($other)) {
+        if (!$this->equalTypeAndCount($other)) {
             return false;
         }
 
@@ -803,19 +758,14 @@ final class Sequence extends Collection implements ArrayAccess
      *
      * @param int $start_index The zero-based index position to start filling.
      * @param int $count The number of items to fill.
-     * @param mixed $value The value to fill with. Omit this parameter to use the default value.
+     * @param mixed $value The value to fill with.
      * @return $this The calling object, for chaining.
      */
-    public function fill(int $start_index, int $count, mixed $value = null): self
+    public function fill(int $start_index, int $count, mixed $value): self
     {
-        // If no value is specified, use the default value.
-        // Use func_num_args() here to check if the value was specified, instead of comparing it with null, because they
-        // might actually want to fill with nulls.
-        $use_default = func_num_args() === 2;
-
         // Set the specified Sequence items.
         for ($i = 0; $i < $count; $i++) {
-            $this[$start_index + $i] = $use_default ? $this->getDefaultValue() : $value;
+            $this[$start_index + $i] = $value;
         }
 
         return $this;
@@ -852,7 +802,7 @@ final class Sequence extends Collection implements ArrayAccess
         $items = array_map($fn, $this->items);
 
         // Construct the new Sequence, inferring types from the callback results.
-        return self::fromIterable($items);
+        return new self(source: $items);
     }
 
     /**
@@ -914,27 +864,42 @@ final class Sequence extends Collection implements ArrayAccess
      */
     public function reduce(callable $fn, mixed $init): mixed
     {
-        return array_reduce($this->items, $fn, $init);
+        // Manually iterate instead of using array_reduce() to ensure strict type checking on the callback parameters.
+        $accumulator = $init;
+        foreach ($this->items as $item) {
+            $accumulator = $fn($accumulator, $item);
+        }
+        return $accumulator;
     }
 
     /**
      * Find the product of the values in the Sequence.
      *
      * @return int|float The product of the values in the Sequence.
+     * @throws TypeError If the Sequence contains non-numeric values.
      */
     public function product(): int|float
     {
-        return array_product($this->items);
+        // Use a custom reducer to find the product instead of array_product(), because that function will allow
+        // non-numbers, and this one will not. It's more consistent with the type-safe philosophy of this
+        // library to be strict.
+        $prod = static fn(int|float $acc, int|float $item): int|float => $acc * $item;
+        return $this->reduce($prod, 1);
     }
 
     /**
      * Find the sum of the values in the Sequence.
      *
      * @return int|float The sum of the values in the Sequence.
+     * @throws TypeError If the Sequence contains non-numeric values.
      */
     public function sum(): int|float
     {
-        return array_sum($this->items);
+        // Use a custom reducer to find the product instead of array_product(), because that function will allow
+        // non-numbers, and this one will not. It's more consistent with the type-safe philosophy of this
+        // library to be strict.
+        $sum = static fn(int|float $acc, int|float $item): int|float => $acc + $item;
+        return $this->reduce($sum, 0);
     }
 
     /**

@@ -10,7 +10,6 @@ use OutOfRangeException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use TypeError;
-use UnderflowException;
 
 /**
  * Tests for Sequence ArrayAccess implementation and random methods.

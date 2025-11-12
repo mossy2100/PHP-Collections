@@ -16,10 +16,22 @@ A type-specific list implementation with zero-based sequential integer indexing.
 ### __construct()
 
 ```php
-public function __construct(string|iterable|null $types = null, mixed $default_value = null)
+public function __construct(
+    null|string|iterable|true $types = true,
+    mixed $default_value = null,
+    iterable $source = []
+)
 ```
 
-Create a new Sequence with optional type constraints and default value.
+Create a new Sequence with optional type constraints, default value, and initial values from a source iterable.
+
+**Type Constraints:**
+
+The `$types` parameter accepts:
+- `null` - Values of any type are allowed
+- `string` - A type name, or multiple types using union type or nullable type syntax (e.g., `'string'`, `'int|null'`, `'?int'`)
+- `iterable` - Array or other collection of type names (e.g., `['string', 'int']`)
+- `true` (default) - Types will be inferred automatically from the source iterable's values
 
 **Default Value Inference:**
 
@@ -62,41 +74,31 @@ var_dump($seq->valueTypes->contains('null')); // true (auto-added)
 // Object type with explicit default
 $seq = new Sequence('DateTime', new DateTime());
 echo $seq->defaultValue instanceof DateTime; // true
+
+// Create from array with type inference (default)
+$seq = new Sequence(source: [1, 2, 3, 4, 5]);
+echo $seq->count(); // 5
+// Types inferred as 'int', default value inferred as 0
+
+// Create from array with explicit types
+$seq = new Sequence('int', null, [1, 2, 3]);
+echo $seq->count(); // 3
+
+// Create with custom default and source
+$seq = new Sequence('int', 99, [1, 2, 3]);
+echo $seq->defaultValue; // 99
+
+// Create from generator with type inference
+$generator = function() {
+    yield 10;
+    yield 20;
+    yield 30;
+};
+$seq = new Sequence(source: $generator());
+echo $seq->count(); // 3
 ```
 
 ## Factory Methods
-
-### fromIterable()
-
-```php
-public static function fromIterable(
-    iterable $src,
-    string|iterable|null|true $types = true,
-    mixed $default_value = null
-): static
-```
-
-Create a Sequence from an iterable with optional type inference.
-
-**Examples:**
-```php
-// Infer types from values (default)
-$seq = Sequence::fromIterable([1, 2, 3, 4, 5]);
-
-// Explicit type constraint
-$seq = Sequence::fromIterable([1, 2, 3], 'int');
-
-// With custom default value
-$seq = Sequence::fromIterable([1, 2, 3], 'int', 99);
-
-// From generator
-$generator = function() {
-    yield 1;
-    yield 2;
-    yield 3;
-};
-$seq = Sequence::fromIterable($generator());
-``` 
 
 ### range()
 
@@ -319,22 +321,22 @@ var_dump($seq->contains(2));   // true
 var_dump($seq->contains('2')); // false (strict)
 ```
 
-### eq()
+### equals()
 
 ```php
-public function eq(Collection $other): bool
+public function equals(Collection $other): bool
 ```
 
 Check if equal to another Collection. Collections must be same class, have same count, and same values in same order. Type constraints are ignored.
 
 **Example:**
 ```php
-$seq1 = Sequence::fromIterable([1, 2, 3]);
-$seq2 = Sequence::fromIterable([1, 2, 3]);
-$seq3 = Sequence::fromIterable([1, 2, 4]);
+$seq1 = new Sequence(source: [1, 2, 3]);
+$seq2 = new Sequence(source: [1, 2, 3]);
+$seq3 = new Sequence(source: [1, 2, 4]);
 
-var_dump($seq1->eq($seq2)); // true
-var_dump($seq1->eq($seq3)); // false
+var_dump($seq1->equals($seq2)); // true
+var_dump($seq1->equals($seq3)); // false
 ```
 
 ### indexExists()
@@ -580,8 +582,8 @@ Return a new Sequence with items from both Sequences.
 
 **Example:**
 ```php
-$seq1 = Sequence::fromIterable([1, 2, 3]);
-$seq2 = Sequence::fromIterable([4, 5, 6]);
+$seq1 = new Sequence(source: [1, 2, 3]);
+$seq2 = new Sequence(source: [4, 5, 6]);
 $merged = $seq1->merge($seq2);
 
 echo $merged->count(); // 6
@@ -597,7 +599,7 @@ Return a new Sequence with items in reverse order (non-mutating).
 
 **Example:**
 ```php
-$seq = Sequence::fromIterable(['a', 'b', 'c']);
+$seq = new Sequence(source: ['a', 'b', 'c']);
 $reversed = $seq->reverse();
 
 echo $reversed[0]; // 'c'
@@ -642,10 +644,10 @@ echo $chunks[3]->count(); // 1 (remainder)
 ### fill()
 
 ```php
-public function fill(int $start_index, int $count, mixed $value = null): self
+public function fill(int $start_index, int $count, mixed $value): self
 ```
 
-Fill a portion of the Sequence with a value. Omitting the value uses the default value. Returns `$this` for chaining.
+Fill a portion of the Sequence with a value. Returns `$this` for chaining.
 
 **Examples:**
 ```php
@@ -653,9 +655,9 @@ $seq = new Sequence('int');
 $seq->append(1, 2, 3, 4, 5);
 $seq->fill(1, 3, 99); // [1, 99, 99, 99, 5]
 
-// Fill with default value
+// Fill with a specific value
 $seq = new Sequence('int', 0);
-$seq->fill(0, 5); // [0, 0, 0, 0, 0]
+$seq->fill(0, 5, 7); // [7, 7, 7, 7, 7]
 ```
 
 ## Aggregation Methods
@@ -1019,7 +1021,7 @@ $sorted = $dates->sortBy(fn($a, $b) => $a <=> $b);
 ### Data processing pipeline
 
 ```php
-$data = Sequence::fromIterable([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+$data = new Sequence(source: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
 
 $result = $data
     ->filter(fn($x) => $x % 2 === 0)  // [2, 4, 6, 8, 10]
@@ -1044,8 +1046,8 @@ echo $seq->count(); // 11
 ### Merging sequences
 
 ```php
-$seq1 = Sequence::fromIterable(['a', 'b', 'c']);
-$seq2 = Sequence::fromIterable(['d', 'e', 'f']);
+$seq1 = new Sequence(source: ['a', 'b', 'c']);
+$seq2 = new Sequence(source: ['d', 'e', 'f']);
 $combined = $seq1->merge($seq2);
 
 echo $combined->join('-'); // 'a-b-c-d-e-f'
