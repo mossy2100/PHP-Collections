@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Galaxon\Collections;
 
@@ -41,7 +41,8 @@ use ValueError;
  *
  * ### Resource types
  * Examples: 'resource (stream)', 'resource (curl)', etc.
- * These must be given as the "resource (xxx)" format, as returned from get_debug_type(), to distinguish them from class names.
+ * These must be given as the "resource (xxx)" format, as returned from get_debug_type(), to distinguish them from class
+ * names.
  *
  * ### Class, interface and trait names
  * - Class names: 'DateTime', 'MyNameSpace\MyClass' (leading '\' optional; includes inheritance)
@@ -82,7 +83,7 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
      *
      * The types in the TypeSet can be specified in several ways:
      * - null = None.
-     * - string = A type name, or multiple types using union type or nullable type syntax, e.g. 'string', 'int|null', '?int'
+     * - string = A type name, or multiple types using union or nullable type syntax, e.g. 'string', 'int|null', '?int'
      * - iterable = Array or other collection of type names, e.g. ['string', 'int']
      *
      * @param null|string|iterable $types The types to add to the TypeSet (default null).
@@ -167,7 +168,7 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
             foreach ($this->types as $type) {
                 // Check for a matching class or interface.
                 // By using 'instanceof' here instead of comparing the result of get_class() or get_debug_type() with
-                // the type names in the TypeSet, we can also match on parent classes and interfaces, which is what we want.
+                // the type names in the TypeSet, we can also match on parent classes and interfaces.
                 if ((class_exists($type) || interface_exists($type)) && $value instanceof $type) {
                     return true;
                 }
@@ -206,23 +207,17 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
     {
         if ($this->nullOk()) {
             $default_value = null;
-        }
-        elseif ($this->contains('bool')) {
+        } elseif ($this->contains('bool')) {
             $default_value = false;
-        }
-        elseif ($this->containsAny('int', 'uint', 'number', 'scalar')) {
+        } elseif ($this->containsAny('int', 'uint', 'number', 'scalar')) {
             $default_value = 0;
-        }
-        elseif ($this->contains('float')) {
+        } elseif ($this->contains('float')) {
             $default_value = 0.0;
-        }
-        elseif ($this->contains('string')) {
+        } elseif ($this->contains('string')) {
             $default_value = '';
-        }
-        elseif ($this->containsAny('array', 'iterable')) {
+        } elseif ($this->containsAny('array', 'iterable')) {
             $default_value = [];
-        }
-        else {
+        } else {
             return false;
         }
 
@@ -335,7 +330,7 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
      * @throws ValueError If the type name is invalid.
      * @see TypeSet::isValid()
      */
-    private function _add(string $type): self
+    private function addType(string $type): self
     {
         // Trim whitespace and backslash.
         $type = self::normalizeTypeName($type);
@@ -384,12 +379,11 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
             // Check for question mark nullable notation (e.g. '?string').
             if (strlen($type) > 1 && $type[0] === '?') {
                 // Add null and the type being made nullable.
-                $this->_add('null');
-                $this->_add(substr($type, 1));
-            }
-            else {
+                $this->addType('null');
+                $this->addType(substr($type, 1));
+            } else {
                 // Add the type.
-                $this->_add($type);
+                $this->addType($type);
             }
         }
 
@@ -406,7 +400,7 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
      */
     public function addValueType(mixed $value): self
     {
-        return $this->_add(get_debug_type($value));
+        return $this->addType(get_debug_type($value));
     }
 
     // endregion

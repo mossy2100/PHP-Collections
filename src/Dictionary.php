@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Galaxon\Collections;
 
@@ -44,7 +44,7 @@ final class Dictionary extends Collection implements ArrayAccess
      *
      *  Allowed types can be specified in several ways:
      *  - null = Values of any type are allowed.
-     *  - string = A type name, or multiple types using union type or nullable type syntax, e.g. 'string', 'int|null', '?int'
+     *  - string = A type name, or multiple types using union or nullable type syntax, e.g. 'string', 'int|null', '?int'
      *  - iterable = Array or other collection of type names, e.g. ['string', 'int']
      *  - true = The types will be inferred from the source iterable's values.
      *
@@ -54,14 +54,13 @@ final class Dictionary extends Collection implements ArrayAccess
      * @param null|string|iterable|true $value_types Allowed types for values (default true, for infer).
      * @param iterable $source A source iterable to import key-value pairs from (optional).
      * @throws ValueError If a type name is invalid.
-     * @throws TypeError If a type name is not specified as a string, or any imported keys or values have disallowed types.
+     * @throws TypeError If a type name is not specified as a string, or any imported keys/values have disallowed types.
      */
     public function __construct(
         null|string|iterable|true $key_types = true,
         null|string|iterable|true $value_types = true,
         iterable $source = []
-    )
-    {
+    ) {
         // Determine if we should infer types from the source iterable.
         $infer_keys = $key_types === true;
         $infer_values = $value_types === true;
@@ -210,15 +209,12 @@ final class Dictionary extends Collection implements ArrayAccess
             if ($key_or_pair instanceof KeyValuePair) {
                 $key = $key_or_pair->key;
                 $value = $key_or_pair->value;
-            }
-            else {
+            } else {
                 throw new TypeError("Invalid key-value pair: " . Stringify::abbrev($key_or_pair));
             }
-        }
-        elseif ($n_args === 2) {
+        } elseif ($n_args === 2) {
             $key = $key_or_pair;
-        }
-        else {
+        } else {
             throw new ArgumentCountError("The add() method takes 1 or 2 parameters, got $n_args.");
         }
 
@@ -342,7 +338,7 @@ final class Dictionary extends Collection implements ArrayAccess
     public function equals(Collection $other): bool
     {
         // Check type and item count are equal.
-        if (!$this->equalTypeAndCount($other)) {
+        if (!$other instanceof self || count($this->items) !== count($other->items)) {
             return false;
         }
 
@@ -356,7 +352,8 @@ final class Dictionary extends Collection implements ArrayAccess
         }
 
         // Check values are equal.
-        return array_all($this->items, fn($pair, $index) => $this->items[$index]->value === $other->items[$index]->value);
+        $eq = fn($pair, $index) => $this->items[$index]->value === $other->items[$index]->value;
+        return array_all($this->items, $eq);
     }
 
     /**

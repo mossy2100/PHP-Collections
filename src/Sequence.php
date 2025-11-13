@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Galaxon\Collections;
 
@@ -90,7 +90,7 @@ final class Sequence extends Collection implements ArrayAccess
      *
      * The allowed types for values in the Sequence can be specified in several ways:
      * - null = Values of any type are allowed.
-     * - string = A type name, or multiple types using union type or nullable type syntax, e.g. 'string', 'int|null', '?int'
+     * - string = A type name, or multiple types using union or nullable type syntax, e.g. 'string', 'int|null', '?int'
      * - iterable = Array or other collection of type names, e.g. ['string', 'int']
      * - true = The types will be inferred from the source iterable's values.
      *
@@ -112,8 +112,7 @@ final class Sequence extends Collection implements ArrayAccess
         null|string|iterable|true $types = true,
         mixed $default_value = null,
         iterable $source = []
-    )
-    {
+    ) {
         // Determine if we should infer types from the source iterable.
         $infer = $types === true;
 
@@ -141,8 +140,7 @@ final class Sequence extends Collection implements ArrayAccess
                 // If no default value could be inferred, use null and allow nulls in the Sequence.
                 $this->valueTypes->add('null');
             }
-        }
-        elseif (!$this->valueTypes->match($default_value)) {
+        } elseif (!$this->valueTypes->match($default_value)) {
             // The default value has a disallowed type.
             throw new TypeError(
                 'The default value has an invalid type. ' .
@@ -207,8 +205,7 @@ final class Sequence extends Collection implements ArrayAccess
             for ($i = $start; $i <= $end; $i += $step) {
                 $seq->append($i);
             }
-        }
-        else {
+        } else {
             // Descending.
             for ($i = $start; $i >= $end; $i += $step) {
                 $seq->append($i);
@@ -524,12 +521,13 @@ final class Sequence extends Collection implements ArrayAccess
     public function equals(Collection $other): bool
     {
         // Check type and item count are equal.
-        if (!$this->equalTypeAndCount($other)) {
+        if (!$other instanceof self || count($this->items) !== count($other->items)) {
             return false;
         }
 
         // Check values are equal.
-        return array_all($this->items, fn($value, $key) => $this->items[$key] === $other->items[$key]);
+        $eq = fn($value, $key) => $this->items[$key] === $other->items[$key];
+        return array_all($this->items, $eq);
     }
 
     /**
@@ -1138,8 +1136,7 @@ final class Sequence extends Collection implements ArrayAccess
 
             // Append a new item to the Sequence.
             $this->append($value);
-        }
-        else {
+        } else {
             // Called from $sequence[$key] = $value
 
             // Check the index is valid.

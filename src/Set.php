@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Galaxon\Collections;
 
@@ -25,7 +25,7 @@ final class Set extends Collection
      *
      * The allowed types for values in the Set can be specified in several ways:
      * - null = Values of any type are allowed.
-     * - string = A type name, or multiple types using union type or nullable type syntax, e.g. 'string', 'int|null', '?int'
+     * - string = A type name, or multiple types using union or nullable type syntax, e.g. 'string', 'int|null', '?int'
      * - iterable = Array or other collection of type names, e.g. ['string', 'int']
      * - true = The types will be inferred from the source iterable's values.
      *
@@ -239,7 +239,7 @@ final class Set extends Collection
     public function equals(Collection $other): bool
     {
         // Check type and item count are equal.
-        if (!$this->equalTypeAndCount($other)) {
+        if (!$other instanceof self || count($this->items) !== count($other->items)) {
             return false;
         }
 

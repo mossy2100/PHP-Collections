@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Galaxon\Collections;
 
@@ -136,19 +136,6 @@ abstract class Collection implements Countable, IteratorAggregate, Stringable
     }
 
     /**
-     * Check if two Collections have the same type and number of items.
-     *
-     * Protected helper method for use by equals() implementations.
-     *
-     * @param Collection $other The other Collection.
-     * @return bool True if the Collections have the same type and number of items, false otherwise.
-     */
-    protected function equalTypeAndCount(Collection $other): bool
-    {
-        return $this::class === $other::class && count($this->items) === count($other->items);
-    }
-
-    /**
      * Check if the Collection is equal to another Collection (definition of "equal" varies by type).
      *
      * @param Collection $other The other Collection.
@@ -171,7 +158,7 @@ abstract class Collection implements Countable, IteratorAggregate, Stringable
      * The callback's parameter types should match or be wider than the Collection's type constraints.
      *
      * @param callable $callback A callback function that accepts an item and returns a bool.
-     * @return self A new Collection with the kept items.
+     * @return static A new Collection with the kept items.
      * @throws TypeError If the callback's parameter types don't match the Collection's key and/or value types.
      */
     abstract public function filter(callable $callback): static;
