@@ -16,6 +16,7 @@ use ValueError;
 /**
  * Base class for all collections in this package.
  *
+ * @implements IteratorAggregate<mixed, mixed>
  */
 abstract class Collection implements Countable, IteratorAggregate, Stringable
 {
@@ -24,7 +25,7 @@ abstract class Collection implements Countable, IteratorAggregate, Stringable
     /**
      * Array of items in the collection.
      *
-     * @var array
+     * @var mixed[]
      */
     protected array $items = [];
 
@@ -42,7 +43,7 @@ abstract class Collection implements Countable, IteratorAggregate, Stringable
     /**
      * Constructor.
      *
-     * @param null|string|iterable $types Optional value type constraint for collection items.
+     * @param null|string|iterable<string> $types Optional value type constraint for collection items.
      * @throws TypeError If a type is not specified as a string.
      * @throws ValueError If a type name is invalid.
      */
@@ -59,11 +60,11 @@ abstract class Collection implements Countable, IteratorAggregate, Stringable
     /**
      * Import values from a source iterable into the Collection.
      *
-     * @param iterable $src A source iterable.
+     * @param iterable<mixed> $source A source iterable.
      * @return $this The calling object.
      * @throws TypeError If any of the values have a disallowed type.
      */
-    abstract public function import(iterable $src): static;
+    abstract public function import(iterable $source): static;
 
     /**
      * Remove all items from the Collection.
@@ -170,7 +171,7 @@ abstract class Collection implements Countable, IteratorAggregate, Stringable
     /**
      * Get iterator for foreach loops.
      *
-     * @return Traversable The iterator.
+     * @return Traversable<mixed> The iterator.
      */
     #[Override]
     abstract public function getIterator(): Traversable;
@@ -208,7 +209,7 @@ abstract class Collection implements Countable, IteratorAggregate, Stringable
     /**
      * Convert the Collection to an array.
      *
-     * @return array The array.
+     * @return mixed[] The array.
      */
     public function toArray(): array
     {

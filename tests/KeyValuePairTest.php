@@ -147,6 +147,8 @@ class KeyValuePairTest extends TestCase
     public function testConstructorWithResourceKey(): void
     {
         $resource = fopen('php://memory', 'r');
+        $this->assertIsResource($resource);
+
         $pair = new KeyValuePair($resource, 'stream');
 
         $this->assertSame($resource, $pair->key);

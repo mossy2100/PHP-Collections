@@ -62,6 +62,8 @@ use ValueError;
  * - '?DateTime' - Equivalent to 'DateTime|null'
  *
  * ### Unsupported pseudo-types: void, never, false, true, self, static.
+ *
+ * @implements IteratorAggregate<int, string>
  */
 class TypeSet implements Countable, Stringable, IteratorAggregate
 {
@@ -86,7 +88,7 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
      * - string = A type name, or multiple types using union or nullable type syntax, e.g. 'string', 'int|null', '?int'
      * - iterable = Array or other collection of type names, e.g. ['string', 'int']
      *
-     * @param null|string|iterable $types The types to add to the TypeSet (default null).
+     * @param null|string|iterable<string> $types The types to add to the TypeSet (default null).
      * @throws TypeError If a type is not specified as a string.
      * @throws ValueError If a type name is invalid.
      */
@@ -352,7 +354,7 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
     /**
      * Add types to the TypeSet.
      *
-     * @param string|iterable $types The types to add to the TypeSet.
+     * @param string|iterable<string> $types The types to add to the TypeSet.
      * @return $this The modified TypeSet.
      * @throws TypeError If a type is not provided as a string.
      * @throws ValueError If a type name is invalid.
@@ -516,7 +518,7 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
     /**
      * Get iterator for foreach loops.
      *
-     * @return Traversable The iterator.
+     * @return Traversable<string> The iterator.
      */
     public function getIterator(): Traversable
     {

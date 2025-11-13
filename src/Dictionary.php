@@ -8,6 +8,7 @@ use ArgumentCountError;
 use ArrayAccess;
 use Galaxon\Core\Stringify;
 use Galaxon\Core\Types;
+use IteratorAggregate;
 use OutOfBoundsException;
 use Override;
 use Traversable;
@@ -23,6 +24,8 @@ use ValueError;
  * $sales_data = new Dictionary('DateTime', 'float');
  * $country_codes = new Dictionary('string', 'string');
  * $car_make = new Dictionary('string', '?string');
+ *
+ * @implements ArrayAccess<mixed, mixed>
  */
 final class Dictionary extends Collection implements ArrayAccess
 {
@@ -50,9 +53,9 @@ final class Dictionary extends Collection implements ArrayAccess
      *
      * If a source iterable is provided, the Dictionary will be initialized with key-value pairs from the iterable.
      *
-     * @param null|string|iterable|true $key_types Allowed types for keys (default true, for infer).
-     * @param null|string|iterable|true $value_types Allowed types for values (default true, for infer).
-     * @param iterable $source A source iterable to import key-value pairs from (optional).
+     * @param null|string|iterable<string>|true $key_types Allowed key types (default true, for infer).
+     * @param null|string|iterable<string>|true $value_types Allowed value types (default true, for infer).
+     * @param iterable<mixed, mixed> $source A source iterable to import key-value pairs from (optional).
      * @throws ValueError If a type name is invalid.
      * @throws TypeError If a type name is not specified as a string, or any imported keys/values have disallowed types.
      */
@@ -90,8 +93,8 @@ final class Dictionary extends Collection implements ArrayAccess
      * By default, the key and value types will be automatically inferred from the provided iterables.
      * Otherwise, if $infer_types is false, the key and value typesets will both be null (i.e. any types allowed).
      *
-     * @param iterable $keys The keys for the Dictionary.
-     * @param iterable $values The values for the Dictionary.
+     * @param iterable<mixed> $keys The keys for the Dictionary.
+     * @param iterable<mixed> $values The values for the Dictionary.
      * @param bool $infer_types Whether to infer the key and value types (default true).
      * @return self A new Dictionary with the combined keys and values.
      * @throws ValueError If the iterables have different counts or if keys are not unique.
@@ -171,6 +174,8 @@ final class Dictionary extends Collection implements ArrayAccess
 
     /**
      * Get all the keys as an array.
+     *
+     * @return mixed[]
      */
     public function keys(): array
     {
@@ -179,6 +184,8 @@ final class Dictionary extends Collection implements ArrayAccess
 
     /**
      * Get all the values as an array.
+     *
+     * @return mixed[]
      */
     public function values(): array
     {
@@ -232,15 +239,15 @@ final class Dictionary extends Collection implements ArrayAccess
     /**
      * Import key-value pairs from an iterable into the Dictionary.
      *
-     * @param iterable $src The source iterable.
+     * @param iterable<mixed, mixed> $source The source iterable.
      * @return $this The calling object.
      * @throws TypeError If any of the keys or values have a disallowed type.
      */
     #[Override]
-    public function import(iterable $src): static
+    public function import(iterable $source): static
     {
         // Copy the source keys and values into the new dictionary.
-        foreach ($src as $key => $value) {
+        foreach ($source as $key => $value) {
             // Leverage offsetSet() to generate the lookup key and the key-value pair.
             $this[$key] = $value;
         }
@@ -625,7 +632,7 @@ final class Dictionary extends Collection implements ArrayAccess
     /**
      * Get iterator for foreach loops.
      *
-     * @return Traversable
+     * @return Traversable<mixed, mixed>
      */
     #[Override]
     public function getIterator(): Traversable

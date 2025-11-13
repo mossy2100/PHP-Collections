@@ -31,8 +31,8 @@ final class Set extends Collection
      *
      * If a source iterable is provided, the Set will be initialized with values from the iterable.
      *
-     * @param null|string|iterable|true $types Optional type constraint for members (default true, for infer).
-     * @param iterable $source A source iterable to import values from (optional).
+     * @param null|string|iterable<string>|true $types Allowed value types (default true, for infer).
+     * @param iterable<mixed> $source A source iterable to import values from (optional).
      * @throws ValueError If a type name is invalid.
      * @throws TypeError If a type is not specified as a string, or any imported values have disallowed types.
      */
@@ -91,15 +91,15 @@ final class Set extends Collection
      *
      * NB: This is a mutating method.
      *
-     * @param iterable $src The source iterable.
+     * @param iterable<mixed> $source The source iterable.
      * @return $this The calling object.
      * @throws TypeError If any of the values have a disallowed type.
      */
     #[Override]
-    public function import(iterable $src): static
+    public function import(iterable $source): static
     {
         // Copy items from the source iterable into the Sequence.
-        $this->add(...$src);
+        $this->add(...$source);
 
         // Return this for chaining.
         return $this;
@@ -394,7 +394,7 @@ final class Set extends Collection
     /**
      * Get iterator for foreach loops.
      *
-     * @return Traversable The iterator.
+     * @return Traversable<mixed> The iterator.
      */
     #[Override]
     public function getIterator(): Traversable

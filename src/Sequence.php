@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Galaxon\Collections;
 
-use ArithmeticError;
 use ArrayAccess;
 use ArrayIterator;
 use Galaxon\Core\Types;
+use IteratorAggregate;
 use OutOfRangeException;
 use Override;
 use Traversable;
@@ -69,6 +69,8 @@ use ValueError;
  * $countables = new Sequence('Countable', []);
  * $countables->append([1, 2, 3]);         // Arrays are countable
  * $countables->append(new ArrayObject()); // ArrayObject implements Countable
+ *
+ * @implements ArrayAccess<int, mixed>
  */
 final class Sequence extends Collection implements ArrayAccess
 {
@@ -102,9 +104,9 @@ final class Sequence extends Collection implements ArrayAccess
      *
      * If a source iterable is provided, the Sequence will be initialized with values from the iterable.
      *
-     * @param null|string|iterable|true $types Allowed types for values in the Sequence (default true, for infer).
+     * @param null|string|iterable<string>|true $types Allowed value types (default true, for infer).
      * @param mixed $default_value Default value for new items (default null).
-     * @param iterable $source A source iterable to import values from (optional).
+     * @param iterable<mixed> $source A source iterable to import values from (optional).
      * @throws ValueError If a type name is invalid.
      * @throws TypeError If a type is not specified as a string, or any imported values have disallowed types.
      */
@@ -263,7 +265,7 @@ final class Sequence extends Collection implements ArrayAccess
      * Create a new Sequence with the same types and default value as the calling object, and items copied from a
      * source iterable (typically items from the calling Sequence, although this is not enforced).
      *
-     * @param iterable $items The iterable to copy items from.
+     * @param iterable<mixed> $items The iterable to copy items from.
      * @return self The new Sequence.
      */
     private function fromSubset(iterable $items): self
@@ -379,15 +381,15 @@ final class Sequence extends Collection implements ArrayAccess
     /**
      * Import values from an iterable into the Sequence.
      *
-     * @param iterable $src The source iterable.
+     * @param iterable<mixed> $source The source iterable.
      * @return $this The calling object.
      * @throws TypeError If any of the values have a disallowed type.
      */
     #[Override]
-    public function import(iterable $src): static
+    public function import(iterable $source): static
     {
         // Copy items from the source iterable into the Sequence.
-        $this->append(...$src);
+        $this->append(...$source);
 
         // Return this for chaining.
         return $this;
@@ -619,6 +621,7 @@ final class Sequence extends Collection implements ArrayAccess
      */
     public function search(mixed $value): ?int
     {
+        /** @var int|false $result */
         $result = array_search($value, $this->items, true);
         return $result !== false ? $result : null;
     }
@@ -712,9 +715,15 @@ final class Sequence extends Collection implements ArrayAccess
      *
      * @param int $size The size of each chunk.
      * @return self[] An array of Sequences representing the chunks.
+     * @throws ValueError If the chunk size is less than 1.
      */
     public function chunk(int $size): array
     {
+        // Guard against invalid chunk sizes.
+        if ($size <= 0) {
+            throw new ValueError("Chunk size must be at least 1.");
+        }
+
         // Break the array of items into chunks.
         $chunks = array_chunk($this->items, $size);
 
@@ -909,7 +918,7 @@ final class Sequence extends Collection implements ArrayAccess
     public function min(): int|float
     {
         // Check we have items.
-        if ($this->empty()) {
+        if (empty($this->items)) {
             throw new UnderflowException("Cannot find the minimum value of empty Sequence.");
         }
 
@@ -926,7 +935,7 @@ final class Sequence extends Collection implements ArrayAccess
     public function max(): int|float
     {
         // Check we have items.
-        if ($this->empty()) {
+        if (empty($this->items)) {
             throw new UnderflowException("Cannot find the maximum value of empty Sequence.");
         }
 
@@ -1004,6 +1013,7 @@ final class Sequence extends Collection implements ArrayAccess
             $indexes = [$indexes];
         }
 
+        /** @var int[] $indexes */
         return $indexes;
     }
 
@@ -1225,7 +1235,7 @@ final class Sequence extends Collection implements ArrayAccess
     /**
      * Get iterator for foreach loops.
      *
-     * @return Traversable The iterator.
+     * @return Traversable<mixed> The iterator.
      */
     #[Override]
     public function getIterator(): Traversable

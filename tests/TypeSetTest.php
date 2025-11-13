@@ -268,6 +268,8 @@ class TypeSetTest extends TestCase
     {
         $ts = new TypeSet();
         $resource = fopen('php://memory', 'r');
+        $this->assertIsResource($resource);
+
         $ts->addValueType($resource);
         fclose($resource);
 
@@ -432,6 +434,8 @@ class TypeSetTest extends TestCase
         $ts = new TypeSet('resource');
 
         $resource = fopen('php://memory', 'r');
+        $this->assertIsResource($resource);
+
         $this->assertTrue($ts->match($resource));
         fclose($resource);
 
