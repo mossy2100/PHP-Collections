@@ -87,7 +87,7 @@ abstract class Collection implements Countable, IteratorAggregate, Stringable
     /**
      * Checks if the Collection is empty.
      *
-     * @return bool
+     * @return bool True if the Collection has no items, false otherwise.
      */
     public function empty(): bool
     {

@@ -526,7 +526,7 @@ final class Dictionary extends Collection implements ArrayAccess
      * @param callable $callback A callback function that accepts a key and a value, and returns a bool.
      * @return self A new dictionary with the kept key-value pairs.
      * @throws TypeError If the callback's parameter types don't match the dictionary's key and value types.
-     * Note also that the callback could throw other kinds of exceptions, or they could throw a TypeError for some
+     * Note also that the callback could throw other kinds of exceptions, or it could throw a TypeError for some
      * other reason.
      */
     #[Override]

@@ -318,8 +318,8 @@ final class Set extends Collection
      *
      * @param callable $callback A callback function that accepts a value and returns a bool.
      * @return self A new Set with the kept values.
-     * @throws TypeError If the callback's parameter types don't match the dictionary's key and value types.
-     * Note also that the callback could throw other kinds of exceptions, or they could throw a TypeError for some
+     * @throws TypeError If the callback's parameter types don't match the Set's value types.
+     * Note also that the callback could throw other kinds of exceptions, or it could throw a TypeError for some
      * other reason.
      */
     #[Override]

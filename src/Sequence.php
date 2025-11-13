@@ -9,6 +9,7 @@ use ArrayIterator;
 use Galaxon\Core\Types;
 use OutOfRangeException;
 use Override;
+use Stringable;
 use Traversable;
 use TypeError;
 use UnderflowException;
@@ -979,14 +980,22 @@ final class Sequence extends Collection implements ArrayAccess
      * NB: This method is analogous to implode().
      * @see https://www.php.net/manual/en/function.implode.php
      *
-     * It may generate an error or throw an exception if the Sequence contains an object that doesn't implement
-     * __toString(). TODO - test.
-     *
-     * @param string $glue The string to separate the values with.
+     * @param string $glue The string to separate the values with (default empty string).
      * @return string The concatenation of the values in the Sequence.
+     * @throws ValueError If the Sequence contains an object that does not implement Stringable.
      */
     public function join(string $glue = ''): string
     {
+        // Validate all items can be converted to strings.
+        foreach ($this->items as $item) {
+            if (is_object($item) && !$item instanceof Stringable) {
+                throw new ValueError(
+                    'Cannot join Sequence: contains an object of class ' .
+                    get_class($item) . ', which does not implement Stringable.'
+                );
+            }
+        }
+
         return implode($glue, $this->items);
     }
 

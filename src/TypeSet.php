@@ -189,6 +189,7 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
      * Checks if the given value matches the set of types.
      *
      * @param mixed $value The value to check.
+     * @param string $label Optional label to include in error message (e.g., 'key', 'value').
      * @throws TypeError If the type is not allowed by the TypeSet.
      */
     public function check(mixed $value, string $label = ''): void
