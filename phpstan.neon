@@ -6,3 +6,7 @@ parameters:
         -
             message: '#will always evaluate to true#'
             path: tests/*
+        -
+            message: '#Parameter \#\d+ \$\w+ of method [\w\\]+::\w+\(\) expects .* given#'
+            path: tests/*
+    treatPhpDocTypesAsCertain: false
