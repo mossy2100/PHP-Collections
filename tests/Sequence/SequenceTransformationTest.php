@@ -9,6 +9,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use TypeError;
 use UnderflowException;
+use ValueError;
 
 /**
  * Tests for Sequence transformation and utility methods.
@@ -519,10 +520,10 @@ class SequenceTransformationTest extends TestCase
     /**
      * Test min method throws UnderflowException on empty Sequence.
      */
-    public function testMinThrowsUnderflowOnEmpty(): void
+    public function testMinThrowsValueErrorOnEmpty(): void
     {
         // Test: Attempt to find min of empty Sequence
-        $this->expectException(UnderflowException::class);
+        $this->expectException(ValueError::class);
         $this->expectExceptionMessage("Cannot find the minimum value of empty Sequence.");
 
         $seq = new Sequence('int');
@@ -571,10 +572,10 @@ class SequenceTransformationTest extends TestCase
     /**
      * Test max method throws UnderflowException on empty Sequence.
      */
-    public function testMaxThrowsUnderflowOnEmpty(): void
+    public function testMaxThrowsValueErrorOnEmpty(): void
     {
         // Test: Attempt to find max of empty Sequence
-        $this->expectException(UnderflowException::class);
+        $this->expectException(ValueError::class);
         $this->expectExceptionMessage("Cannot find the maximum value of empty Sequence.");
 
         $seq = new Sequence('int');

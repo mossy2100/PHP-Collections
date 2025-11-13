@@ -7,7 +7,6 @@ namespace Galaxon\Collections;
 use ArrayAccess;
 use ArrayIterator;
 use Galaxon\Core\Types;
-use IteratorAggregate;
 use OutOfRangeException;
 use Override;
 use Traversable;
@@ -751,7 +750,9 @@ final class Sequence extends Collection implements ArrayAccess
 
         // Count the occurrences of each distinct value.
         foreach ($this->items as $item) {
-            $value_count[$item] = ($value_count[$item] ?? 0) + 1;
+            /** @var int $tally */
+            $tally = $value_count[$item] ?? 0;
+            $value_count[$item] = $tally + 1;
         }
 
         return $value_count;
@@ -891,6 +892,7 @@ final class Sequence extends Collection implements ArrayAccess
         // non-numbers, and this one will not. It's more consistent with the type-safe philosophy of this
         // library to be strict.
         $prod = static fn(int|float $acc, int|float $item): int|float => $acc * $item;
+        /** @var int|float */
         return $this->reduce($prod, 1);
     }
 
@@ -902,45 +904,56 @@ final class Sequence extends Collection implements ArrayAccess
      */
     public function sum(): int|float
     {
-        // Use a custom reducer to find the product instead of array_product(), because that function will allow
+        // Use a custom reducer to find the sum instead of array_sum(), because that function will allow
         // non-numbers, and this one will not. It's more consistent with the type-safe philosophy of this
         // library to be strict.
         $sum = static fn(int|float $acc, int|float $item): int|float => $acc + $item;
+        /** @var int|float */
         return $this->reduce($sum, 0);
     }
 
     /**
-     * Find the minimum value in the Sequence.
+     * Find the minimum value in a Sequence of numbers.
      *
      * @return int|float The minimum value in the Sequence.
-     * @throws UnderflowException If the Sequence is empty.
+     * @throws ValueError If the Sequence is empty.
+     * @throws TypeError If the Sequence contains non-numeric values.
      */
     public function min(): int|float
     {
         // Check we have items.
         if (empty($this->items)) {
-            throw new UnderflowException("Cannot find the minimum value of empty Sequence.");
+            throw new ValueError("Cannot find the minimum value of empty Sequence.");
         }
 
-        // Find the minimum value.
-        return min($this->items);
+        // Use a custom reducer to find the minimum value instead of min(), because that function will allow
+        // non-numbers, and this one will not. It's more consistent with the type-safe philosophy of this
+        // library to be strict.
+        $min = static fn (int|float $min, int|float $item): int|float => min($item, $min);
+        /** @var int|float */
+        return $this->reduce($min, $this->items[0]);
     }
 
     /**
-     * Find the maximum value in the Sequence.
+     * Find the maximum value in a Sequence of numbers.
      *
      * @return int|float The maximum value in the Sequence.
-     * @throws UnderflowException If the Sequence is empty.
+     * @throws ValueError If the Sequence is empty.
+     * @throws TypeError If the Sequence contains non-numeric values.
      */
     public function max(): int|float
     {
         // Check we have items.
         if (empty($this->items)) {
-            throw new UnderflowException("Cannot find the maximum value of empty Sequence.");
+            throw new ValueError("Cannot find the maximum value of empty Sequence.");
         }
 
-        // Find the maximum value.
-        return max($this->items);
+        // Use a custom reducer to find the maximum value instead of max(), because that function will allow
+        // non-numbers, and this one will not. It's more consistent with the type-safe philosophy of this
+        // library to be strict.
+        $max = static fn (int|float $max, int|float $item): int|float => max($item, $max);
+        /** @var int|float */
+        return $this->reduce($max, $this->items[0]);
     }
 
     /**
@@ -1119,6 +1132,7 @@ final class Sequence extends Collection implements ArrayAccess
         $this->checkIndex($offset);
 
         // Get the item at the specified index.
+        /** @var int $offset */
         return $this->items[$offset];
     }
 
@@ -1159,6 +1173,7 @@ final class Sequence extends Collection implements ArrayAccess
             }
 
             // Set the item value.
+            /** @var int $offset */
             $this->items[$offset] = $value;
         }
     }
@@ -1185,6 +1200,7 @@ final class Sequence extends Collection implements ArrayAccess
         $this->checkIndex($offset);
 
         // Set the item to the default value.
+        /** @var int $offset */
         $this->items[$offset] = $this->getDefaultValue();
     }
 

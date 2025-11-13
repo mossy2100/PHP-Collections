@@ -166,6 +166,7 @@ class DictionaryIterationTest extends TestCase
         // Test skipping items with continue.
         $sum = 0;
         foreach ($dict as $key => $value) {
+            /** @var int $value */
             if ($key === 'b') {
                 continue;
             }
@@ -193,6 +194,8 @@ class DictionaryIterationTest extends TestCase
         $results = [];
         foreach ($dict1 as $key1 => $value1) {
             foreach ($dict2 as $key2 => $value2) {
+                /** @var string $key1 */
+                /** @var string $key2 */
                 $results[] = "$key1-$key2";
             }
         }

@@ -82,6 +82,7 @@ class DictionaryConversionTest extends TestCase
         $dict->add('third', 3);
 
         // Test array entries are in insertion order.
+        /** @var KeyValuePair[] $array */
         $array = $dict->toArray();
 
         $this->assertEquals('first', $array[0]->key);
@@ -143,9 +144,17 @@ class DictionaryConversionTest extends TestCase
         $sequence = $dict->toSequence();
 
         // Test order is preserved.
-        $this->assertEquals('first', $sequence[0]->key);
-        $this->assertEquals('second', $sequence[1]->key);
-        $this->assertEquals('third', $sequence[2]->key);
+        /** @var KeyValuePair $pair */
+        $pair = $sequence[0];
+        $this->assertEquals('first', $pair->key);
+
+        /** @var KeyValuePair $pair */
+        $pair = $sequence[1];
+        $this->assertEquals('second', $pair->key);
+
+        /** @var KeyValuePair $pair */
+        $pair = $sequence[2];
+        $this->assertEquals('third', $pair->key);
     }
 
     /**

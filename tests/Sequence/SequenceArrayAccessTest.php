@@ -195,6 +195,7 @@ class SequenceArrayAccessTest extends TestCase
 
         $sum = 0;
         foreach ($seq as $value) {
+            /** @var int $value */
             $sum += $value;
         }
 
