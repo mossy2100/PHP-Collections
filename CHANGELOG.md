@@ -52,7 +52,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Requirements
 - PHP 8.4 or higher
 - galaxon/core package
-- ext-ctype
-- ext-mbstring
 
 [1.0.0]: https://github.com/mossy2100/PHP-Collections/releases/tag/v1.0.0

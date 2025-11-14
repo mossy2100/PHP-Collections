@@ -11,8 +11,6 @@
     ],
     "require": {
         "php": "^8.4",
-        "ext-ctype": "*",
-        "ext-mbstring": "*",
         "galaxon/core": "@dev"
     },
     "require-dev": {
