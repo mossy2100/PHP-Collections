@@ -35,7 +35,7 @@
         "check": "vendor/bin/phpcs",
         "analyse": "vendor/bin/phpstan analyse -l 9",
         "test": "vendor/bin/phpunit",
-        "test:coverage": "php -d xdebug.mode=coverage -r \"require 'vendor/bin/phpunit';\" -- --configuration phpunit.xml --do-not-cache-result --coverage-clover build/logs/clover.xml --coverage-html build/coverage",
+        "test-coverage": "php -d xdebug.mode=coverage vendor/bin/phpunit --coverage-html build/coverage --coverage-clover build/logs/clover.xml --do-not-cache-result",
         "quality": [
             "@fix",
             "@check",

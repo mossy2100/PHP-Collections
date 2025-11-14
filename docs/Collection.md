@@ -59,7 +59,7 @@ public function __construct(null|string|iterable $types = null)
 Create a new Collection with optional type constraints.
 
 **Parameters:**
-- `$types` - Type constraints (null for any type, string for single/union types, iterable for array of types)
+- `$types` - Type constraints (null for any type, string for single/union/nullable types, iterable for array of types)
 
 **Throws:**
 - `TypeError` - If a type is not specified as a string

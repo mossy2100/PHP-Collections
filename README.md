@@ -1,28 +1,28 @@
 # Galaxon Collections
 
-A comprehensive, type-safe collection library for PHP 8.4+ that extends PHP's array capabilities with runtime type validation, immutable operations, and support for any type as keys.
+A type-safe collection library for PHP 8.4+ that extends PHP's array capabilities with runtime type validation, immutable operations, and support for any type as keys.
 
 ## Why Galaxon Collections?
 
 PHP's native arrays are powerful but have limitations:
-- **Keys restricted to strings and integers** - Can't use objects, arrays, or resources as keys
-- **No type safety** - Arrays accept any mix of types without validation
-- **Type coercion issues** - Keys like `1`, `'1'`, `true`, and `1.0` all become the same key
-- **Limited operations** - Basic array functions lack chaining, immutability, and advanced transformations
+- **Keys restricted to strings and integers** - Can't use booleans, floats, arrays, or objects as keys.
+- **No type safety** - Arrays accept any mix of types without validation.
+- **Type coercion issues** - Keys like `1`, `'1'`, `true`, and `1.0` all become the same key.
+- **Limited operations** - Built-in array functions lack chaining, immutability, and advanced transformations. Errors and exceptions are inconsistent.
 
 Galaxon Collections solves these problems with:
 
-✅ **Any type as keys** - Use objects, arrays, resources, booleans, floats, null as Dictionary keys
+✅ **Any type as keys** - Use objects, arrays, booleans, floats, null as Dictionary keys.
 
-✅ **Runtime type validation** - Optional type constraints with compile-time-like checking
+✅ **Runtime type validation** - Optional type constraints with compile-time-like checking.
 
-✅ **Rich API** - Fluent interfaces, method chaining, functional programming support
+✅ **Rich API** - Fluent interfaces, method chaining, functional programming support.
 
-✅ **Immutable operations** - Transformations return new collections without modifying originals
+✅ **Immutable operations** - Transformations return new collections without modifying originals.
 
-✅ **Type inference** - Automatically detect types from your data
+✅ **Type inference** - Automatically detect types from your data.
 
-✅ **Mathematical correctness** - Proper type safety for operations like sum() and product()
+✅ **Mathematical correctness** - Proper type safety for operations like sum() and product().
 
 ## Features
 
@@ -45,6 +45,7 @@ $seq = new Sequence(source: [1, 2, 3]);
 ### Unrestricted Keys
 ```php
 // PHP arrays: keys must be string|int
+$array = [];
 $array[new DateTime()] = 'event';  // ❌ Fatal error
 $array[[1, 2]] = 'coords';         // ❌ Illegal offset
 
@@ -182,7 +183,7 @@ var_dump($set->contains(2));  // true
 var_dump($set->contains(5));  // false
 ```
 
-## Collection Classes
+## Classes Documentation
 
 ### Base Class
 
@@ -417,21 +418,6 @@ $array = $collection->toArray();
 - Read operations have no type checking overhead
 - Type inference scans values once during construction
 
-### Best Practices
-```php
-// ✅ Good: Specify types explicitly when known
-$numbers = new Sequence('int');
-
-// ✅ Good: Use type inference for dynamic data
-$seq = new Sequence(source: $dynamicArray);
-
-// ⚠️ Acceptable: No constraints for truly mixed data
-$mixed = new Sequence();
-
-// ❌ Avoid: Excessive type constraints on simple scripts
-// (Use when type safety matters for your use case)
-```
-
 ## Testing
 
 The library includes comprehensive test coverage:
@@ -439,40 +425,27 @@ The library includes comprehensive test coverage:
 ```bash
 # Run all tests
 vendor/bin/phpunit
+# OR
+composer test
+
+# Run all tests for a specific collection type
+vendor/bin/phpunit tests/Dictionary
 
 # Run specific test class
 vendor/bin/phpunit tests/Sequence/SequenceTransformationTest.php
 
-# Run with coverage
-vendor/bin/phpunit --coverage-html build/coverage
+# Run with coverage (generates HTML report and clover.xml)
+composer test-coverage
 ```
 
 **Test Coverage:**
-- 250+ tests across all classes
-- 100% coverage on TypeSet and KeyValuePair
-- Comprehensive coverage on Sequence, Dictionary, and Set
+- 500+ tests across all classes
+- 100% code coverage
 - Edge cases, error conditions, and type safety
-
-## Documentation
-
-Detailed documentation for each class:
-
-- **[Collection](docs/Collection.md)** - Abstract base class for all collections
-- **[Sequence](docs/Sequence.md)** - Type-safe ordered lists
-- **[Dictionary](docs/Dictionary.md)** - Key-value pairs with unrestricted types
-- **[Set](docs/Set.md)** - Unique value collections
-- **[TypeSet](docs/TypeSet.md)** - Runtime type validation
-- **[KeyValuePair](docs/KeyValuePair.md)** - Immutable key-value pairs
-
-## Requirements
-
-- **PHP**: 8.4 or higher
-- **Dependencies**:
-  - `galaxon/core` - Core utility functions
 
 ## License
 
-MIT License - see LICENSE file for details
+MIT License - see [LICENSE](LICENSE) for details
 
 ## Contributing
 
@@ -484,10 +457,12 @@ Contributions are welcome! Please:
 4. Ensure all tests pass
 5. Submit a pull request
 
+For questions or suggestions, please [open an issue](https://github.com/mossy2100/PHP-Collections/issues).
+
 ## Support
 
 - **Issues**: https://github.com/mossy2100/PHP-Collections/issues
-- **Documentation**: See `docs/` directory
+- **Documentation**: See [docs/](docs/) directory for detailed class documentation
 - **Examples**: See test files for comprehensive usage examples
 
 ## Changelog

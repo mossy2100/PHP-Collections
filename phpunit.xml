@@ -16,12 +16,6 @@
         </testsuite>
     </testsuites>
 
-    <coverage includeUncoveredFiles="true">
-        <report>
-            <html outputDirectory="build/coverage"/>
-        </report>
-    </coverage>
-
     <source>
         <include>
             <directory>src</directory>

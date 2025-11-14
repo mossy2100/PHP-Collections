@@ -7,6 +7,7 @@ namespace Galaxon\Collections\Tests\Sequence;
 use Galaxon\Collections\Sequence;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 use TypeError;
 use UnderflowException;
 use ValueError;
@@ -222,6 +223,20 @@ class SequenceTransformationTest extends TestCase
         $this->assertCount(3, $chunks);
         $this->assertCount(3, $chunks[0]);
         $this->assertCount(2, $chunks[2]); // Last chunk has remainder
+    }
+
+    /**
+     * Test chunk method throws an exception when the size argument is invalid.
+     */
+    public function testChunkThrowsOnInvalidSize(): void
+    {
+        // Test: Split with uneven division
+        $seq = new Sequence('int');
+        $seq->append(1, 2, 3, 4, 5, 6, 7, 8);
+
+        // Check for exception.
+        $this->expectException(ValueError::class);
+        $chunks = $seq->chunk(0);
     }
 
     /**
@@ -671,5 +686,48 @@ class SequenceTransformationTest extends TestCase
 
         // Test: Verify joined with separator
         $this->assertSame('apple, banana, cherry', $seq->join(', '));
+    }
+
+    /**
+     * Test join method with objects that implement __toString().
+     */
+    public function testJoinWithStringableObjects(): void
+    {
+        // Test: Join with objects that can be converted to strings
+        $obj1 = new class {
+            public function __toString(): string
+            {
+                return 'first';
+            }
+        };
+        $obj2 = new class {
+            public function __toString(): string
+            {
+                return 'second';
+            }
+        };
+
+        $seq = new Sequence('object');
+        $seq->append($obj1, $obj2);
+
+        // Test: Verify objects are converted to strings
+        $this->assertSame('first, second', $seq->join(', '));
+    }
+
+    /**
+     * Test join method with objects that don't implement __toString().
+     */
+    public function testJoinWithNonStringableObjects(): void
+    {
+        // Test: Join with objects that can't be converted to strings
+        $seq = new Sequence('object');
+        $seq->append(new stdClass(), new stdClass());
+
+        // Test: Verify ValueError is thrown for non-stringable objects
+        $this->expectException(ValueError::class);
+        $this->expectExceptionMessage(
+            'Cannot join Sequence: contains an object of class stdClass, which does not implement Stringable.'
+        );
+        $seq->join(', ');
     }
 }
