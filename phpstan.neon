@@ -5,8 +5,10 @@ parameters:
     ignoreErrors:
         -
             message: '#will always evaluate to true#'
-            path: tests/*
+            paths:
+                - tests/*
         -
-            message: '#Parameter \#\d+ \$\w+ of method [\w\\]+::\w+\(\) expects .* given#'
-            path: tests/*
+            message: '#Parameter .* expects#'
+            paths:
+                - tests/*
     treatPhpDocTypesAsCertain: false

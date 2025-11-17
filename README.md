@@ -2,6 +2,16 @@
 
 A type-safe collection library for PHP 8.4+ that extends PHP's array capabilities with runtime type validation, immutable operations, and support for any type as keys.
 
+**[License](LICENSE)** | **[Changelog](CHANGELOG.md)** | **[Documentation](docs/)** | **[Coverage Report](https://html-preview.github.io/?url=https://github.com/mossy2100/PHP-Collections/blob/main/build/coverage/index.html)**
+
+![PHP 8.4](docs/logo_php8_4.png)
+
+## Development and Quality Assurance / AI Disclosure
+
+[Claude Chat](https://claude.ai) and [Claude Code](https://www.claude.com/product/claude-code) were used in the development of this package. The core classes were designed, coded, and commented primarily by the author, with Claude providing substantial assistance with code review, suggesting improvements, debugging, and generating tests and documentation. All code was thoroughly reviewed by the author, and validated using industry-standard tools including [PHP_Codesniffer](https://github.com/PHPCSStandards/PHP_CodeSniffer/), [PHPStan](https://phpstan.org/) (to level 9), and [PHPUnit](https://phpunit.de/index.html) to ensure full compliance with [PSR-12](https://www.php-fig.org/psr/psr-12/) coding standards and comprehensive unit testing with 100% code coverage. This collaborative approach resulted in a high-quality, thoroughly-tested, and well-documented package delivered in significantly less time than traditional development methods.
+
+![Code Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)
+
 ## Why Galaxon Collections?
 
 PHP's native arrays are powerful but have limitations:
@@ -23,6 +33,15 @@ Galaxon Collections solves these problems with:
 ✅ **Type inference** - Automatically detect types from your data.
 
 ✅ **Mathematical correctness** - Proper type safety for operations like sum() and product().
+
+## Alternatives
+
+Before using this package, you may want to check out these PHP extensions:
+
+- [Standard PHP Library](https://www.php.net/manual/en/book.spl.php)
+- [Data Structures](https://www.php.net/manual/en/book.ds.php)
+
+These are official PHP extensions that provide efficient data structure implementations and will probably be well-supported going forward. However, if you need runtime type safety and generics-like behavior, or simply prefer a more functional style of programming, Galaxon Collections provides features that these extensions lack, including type constraints, type inference, and type-safe operations.
 
 ## Features
 
@@ -425,8 +444,6 @@ The library includes comprehensive test coverage:
 ```bash
 # Run all tests
 vendor/bin/phpunit
-# OR
-composer test
 
 # Run all tests for a specific collection type
 vendor/bin/phpunit tests/Dictionary
@@ -435,7 +452,7 @@ vendor/bin/phpunit tests/Dictionary
 vendor/bin/phpunit tests/Sequence/SequenceTransformationTest.php
 
 # Run with coverage (generates HTML report and clover.xml)
-composer test-coverage
+composer test
 ```
 
 **Test Coverage:**
