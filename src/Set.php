@@ -232,11 +232,11 @@ final class Set extends Collection
      *
      * The order of the items is also not considered, because with Sets the order doesn't matter.
      *
-     * @param Collection $other The other Set.
+     * @param mixed $other The other Set.
      * @return bool True if the Sets are equal, false otherwise.
      */
     #[Override]
-    public function equals(Collection $other): bool
+    public function equals(mixed $other): bool
     {
         // Check type and item count are equal.
         if (!$other instanceof self || count($this->items) !== count($other->items)) {

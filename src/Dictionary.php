@@ -358,11 +358,11 @@ final class Dictionary extends Collection implements ArrayAccess
      * Therefore, if the first Dictionary only permits 'int' values whereas the second permits both 'int' and 'string',
      * the two will still compare as equal if the other conditions are met.
      *
-     * @param Collection $other The other Dictionary.
+     * @param mixed $other The other Dictionary.
      * @return bool True if the Dictionaries are equal, false otherwise.
      */
     #[Override]
-    public function equals(Collection $other): bool
+    public function equals(mixed $other): bool
     {
         // Check type and item count are equal.
         if (!$other instanceof self || count($this->items) !== count($other->items)) {

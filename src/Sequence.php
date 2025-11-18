@@ -516,11 +516,11 @@ final class Sequence extends Collection implements ArrayAccess
      * Therefore, if the first Sequence only permits 'int' values whereas the second permits both 'int' and 'string',
      * the two will still compare as equal if the other conditions are met.
      *
-     * @param Collection $other The other Sequence.
+     * @param mixed $other The other Sequence.
      * @return bool True if the Sequences are equal, false otherwise.
      */
     #[Override]
-    public function equals(Collection $other): bool
+    public function equals(mixed $other): bool
     {
         // Check type and item count are equal.
         if (!$other instanceof self || count($this->items) !== count($other->items)) {

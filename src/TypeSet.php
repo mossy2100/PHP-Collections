@@ -8,7 +8,6 @@ use ArrayIterator;
 use Countable;
 use Galaxon\Core\Types;
 use IteratorAggregate;
-use RuntimeException;
 use Stringable;
 use Traversable;
 use TypeError;
