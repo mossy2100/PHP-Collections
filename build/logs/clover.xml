@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1763442620">
-  <project timestamp="1763442620" name="Clover Coverage">
+<coverage generated="1763779755">
+  <project timestamp="1763779755" name="Clover Coverage">
     <package name="Galaxon\Collections">
       <file name="C:\Users\shaun\Projects\PHP\Galaxon\Collections\src\Collection.php">
         <class name="Galaxon\Collections\Collection" namespace="Galaxon\Collections">

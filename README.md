@@ -1,4 +1,4 @@
-# Galaxon Collections
+# Galaxon PHP Collections
 
 A type-safe collection library for PHP 8.4+ that extends PHP's array capabilities with runtime type validation, immutable operations, and support for any type as keys.
 
