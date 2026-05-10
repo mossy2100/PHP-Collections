@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.3] - 2026-05-11
+
+### Fixed
+
+- **`Sequence::chooseRand()`** — now returns a `list<mixed>` (values only) instead of an associative array with original indexes as keys. This makes it consistent with `removeRand()` and prevents internal array indexes from leaking into the return value.
+
+### Documentation
+
+- Updated `Sequence.md`: corrected return type description and example for `chooseRand()`.
+
+---
+
 ## [1.0.2] - 2026-04-09
 
 ### Changed

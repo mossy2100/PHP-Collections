@@ -926,14 +926,14 @@ echo $set->count(); // 3
 public function chooseRand(int $count = 1): array
 ```
 
-Randomly choose one or more items from the Sequence (non-mutating). Returns an associative array with indexes as keys and values. Throws `DomainException` if count is negative, `LengthException` if empty or count exceeds length.
+Randomly choose one or more items from the Sequence (non-mutating). Returns a list of the chosen values in random order. Throws `DomainException` if count is negative, `LengthException` if empty or count exceeds length.
 
 **Example:**
 ```php
 $seq = Sequence::range(1, 10);
 $chosen = $seq->chooseRand(3);
 
-// Example result: [2 => 3, 7 => 8, 4 => 5]
+// Example result: [3, 8, 5]
 echo count($chosen); // 3
 ```
 

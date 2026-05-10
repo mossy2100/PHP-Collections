@@ -969,18 +969,16 @@ final class Sequence extends Collection implements ArrayAccess
     /**
      * Randomly choose one or more items from the Sequence.
      *
-     * Both indexes and values are returned, as an array.
-     *
      * NB: This method is non-mutating.
      *
      * @param int $count The number of items to choose (default: 1).
-     * @return array<int, mixed> An array containing the chosen items (indexes and values) in random order.
+     * @return list<mixed> An array containing the chosen items in random order.
      * @throws LengthException If the Sequence is empty or doesn't have enough items.
      * @throws DomainException If the count is non-positive.
      * @example
      * $seq = Sequence::range(1, 10);
      * $items = $seq->chooseRand(3);
-     * // Returns: [2 => 3, 7 => 8, 5 => 6] (indexes and values in random order)
+     * // Returns: [3, 8, 6] (values in random order)
      *
      */
     public function chooseRand(int $count = 1): array
@@ -988,10 +986,10 @@ final class Sequence extends Collection implements ArrayAccess
         // Randomly choose one or more indexes.
         $indexes = $this->chooseRandIndexes($count);
 
-        // Convert the indexes into index-value pairs.
+        // Convert the indexes into values.
         $result = [];
         foreach ($indexes as $i) {
-            $result[$i] = $this->items[$i];
+            $result[] = $this->items[$i];
         }
         return $result;
     }
@@ -1019,7 +1017,6 @@ final class Sequence extends Collection implements ArrayAccess
         foreach ($indexes as $i) {
             // Remember the value.
             $removed[] = $items[$i];
-
             // Unset the value at this index.
             unset($items[$i]);
         }

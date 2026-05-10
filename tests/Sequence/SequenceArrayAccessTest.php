@@ -235,9 +235,8 @@ class SequenceArrayAccessTest extends TestCase
         // Test: Verify one item chosen
         $this->assertCount(1, $chosen);
         // Test: Verify chosen item is from sequence
-        $key = array_key_first($chosen);
-        $this->assertIsInt($key);
-        $this->assertTrue($seq->contains($chosen[$key]));
+        $this->assertIsInt($chosen[0]);
+        $this->assertTrue($seq->contains($chosen[0]));
         // Test: Original sequence unchanged
         $this->assertCount(5, $seq);
     }
