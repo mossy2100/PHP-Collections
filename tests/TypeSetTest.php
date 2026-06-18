@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Galaxon\Collections\Tests;
+namespace OceanMoon\Collections\Tests;
 
 use ArrayObject;
 use DateTime;
 use DomainException;
-use Galaxon\Collections\TypeSet;
 use InvalidArgumentException;
 use LogicException;
+use OceanMoon\Collections\TypeSet;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use stdClass;
@@ -436,7 +436,7 @@ class TypeSetTest extends TestCase
      */
     public function testMatchParentClass(): void
     {
-        $ts = new TypeSet('Galaxon\Collections\Tests\ParentClass');
+        $ts = new TypeSet('OceanMoon\Collections\Tests\ParentClass');
 
         // Child class should match parent class constraint
         $child = new ChildClass();
@@ -452,7 +452,7 @@ class TypeSetTest extends TestCase
      */
     public function testMatchTrait(): void
     {
-        $ts = new TypeSet('Galaxon\Collections\Tests\TestTrait');
+        $ts = new TypeSet('OceanMoon\Collections\Tests\TestTrait');
 
         // Class using the trait should match
         $obj = new ClassWithTrait();

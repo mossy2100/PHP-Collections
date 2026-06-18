@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Galaxon\Collections;
+namespace OceanMoon\Collections;
 
 use Countable;
 use DomainException;
-use Galaxon\Core\Stringify;
-use Galaxon\Core\Traits\Comparison\Equatable;
 use InvalidArgumentException;
 use IteratorAggregate;
+use OceanMoon\Core\Stringify;
+use OceanMoon\Core\Traits\Comparison\Equatable;
 use Override;
 use Stringable;
 use Traversable;

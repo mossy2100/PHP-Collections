@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Galaxon\Collections\Tests\Dictionary;
+namespace OceanMoon\Collections\Tests\Dictionary;
 
-use Galaxon\Collections\Dictionary;
 use InvalidArgumentException;
 use LengthException;
+use OceanMoon\Collections\Dictionary;
 use OutOfBoundsException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;

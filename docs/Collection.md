@@ -1,6 +1,6 @@
 # Collection
 
-The abstract base class for all collection types in the Galaxon Collections library.
+The abstract base class for all collection types in the OceanMoon Collections library.
 
 ---
 
@@ -121,7 +121,7 @@ Check if the Collection contains a specific value. Uses strict equality (value a
 abstract public function equal(mixed $other): bool
 ```
 
-Check if two Collections are equal. The definition of "equal" varies by collection type. This method comes from the [Equatable](https://github.com/mossy2100/Galaxon-PHP-Core/blob/main/docs/Traits/Comparison/Equatable.md) trait.
+Check if two Collections are equal. The definition of "equal" varies by collection type. This method comes from the [Equatable](https://github.com/mossy2100/PHP-Core/blob/main/docs/Traits/Comparison/Equatable.md) trait.
 
 **Implementations:**
 - **Sequence:** Same type, count, values, and order
@@ -332,7 +332,7 @@ The exact iteration behavior depends on the concrete collection type. See the do
 To create your own collection type, extend the Collection class and implement the abstract methods:
 
 ```php
-use Galaxon\Collections\Collection;
+use OceanMoon\Collections\Collection;
 
 class MyCustomCollection extends Collection
 {
@@ -377,4 +377,4 @@ class MyCustomCollection extends Collection
 - **[Pair](Pair.md)** - Key-value pair container used by Dictionary
 - **[Set](Set.md)** - Unique values implementation
 - **[TypeSet](TypeSet.md)** - Type constraint management
-- **[Equatable](https://github.com/mossy2100/Galaxon-PHP-Core/blob/main/docs/Traits/Comparison/Equatable.md)** - Trait for implementing `equal()`
+- **[Equatable](https://github.com/mossy2100/PHP-Core/blob/main/docs/Traits/Comparison/Equatable.md)** - Trait for implementing `equal()`

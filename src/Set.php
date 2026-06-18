@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Galaxon\Collections;
+namespace OceanMoon\Collections;
 
 use DomainException;
-use Galaxon\Core\Stringify;
-use Galaxon\Core\Types;
 use InvalidArgumentException;
+use OceanMoon\Core\Stringify;
+use OceanMoon\Core\Types;
 use Override;
 use Traversable;
 use UnexpectedValueException;

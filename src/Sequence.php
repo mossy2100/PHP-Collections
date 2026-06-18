@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Galaxon\Collections;
+namespace OceanMoon\Collections;
 
 use ArrayAccess;
 use ArrayIterator;
 use DomainException;
-use Galaxon\Core\Numbers;
-use Galaxon\Core\Strings;
 use InvalidArgumentException;
 use LengthException;
 use LogicException;
+use OceanMoon\Core\Numbers;
+use OceanMoon\Core\Strings;
 use OutOfRangeException;
 use Override;
 use Traversable;

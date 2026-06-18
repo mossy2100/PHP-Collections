@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Galaxon\Collections;
+namespace OceanMoon\Collections;
 
 /**
  * Super-simple class to encapsulate a key-value pair, both of which can be any type.

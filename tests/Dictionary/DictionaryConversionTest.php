@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Galaxon\Collections\Tests\Dictionary;
+namespace OceanMoon\Collections\Tests\Dictionary;
 
-use Galaxon\Collections\Dictionary;
-use Galaxon\Collections\Pair;
-use Galaxon\Collections\Sequence;
+use OceanMoon\Collections\Dictionary;
+use OceanMoon\Collections\Pair;
+use OceanMoon\Collections\Sequence;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 

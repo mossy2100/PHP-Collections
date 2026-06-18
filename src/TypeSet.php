@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Galaxon\Collections;
+namespace OceanMoon\Collections;
 
 use ArrayIterator;
 use Countable;
 use DomainException;
-use Galaxon\Core\Numbers;
-use Galaxon\Core\Types;
 use InvalidArgumentException;
 use IteratorAggregate;
 use LogicException;
+use OceanMoon\Core\Numbers;
+use OceanMoon\Core\Types;
 use stdClass;
 use Stringable;
 use Traversable;

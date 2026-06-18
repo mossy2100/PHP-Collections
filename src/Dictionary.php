@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Galaxon\Collections;
+namespace OceanMoon\Collections;
 
 use ArgumentCountError;
 use ArrayAccess;
 use DomainException;
-use Galaxon\Core\Stringify;
-use Galaxon\Core\Types;
 use InvalidArgumentException;
 use LengthException;
+use OceanMoon\Core\Stringify;
+use OceanMoon\Core\Types;
 use OutOfBoundsException;
 use Override;
 use Traversable;

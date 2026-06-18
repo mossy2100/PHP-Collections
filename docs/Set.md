@@ -648,4 +648,4 @@ $set->add(1, 'two', 3.14, true, null, []); // All types allowed
 - **[Dictionary](Dictionary.md)** - Key-value collection
 - **[Sequence](Sequence.md)** - Ordered list collection
 - **[TypeSet](TypeSet.md)** - Type constraint management
-- **[Equatable](https://github.com/mossy2100/Galaxon-PHP-Core/blob/main/docs/Traits/Comparison/Equatable.md)** - Trait for implementing `equal()`
+- **[Equatable](https://github.com/mossy2100/PHP-Core/blob/main/docs/Traits/Comparison/Equatable.md)** - Trait for implementing `equal()`

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Galaxon\Collections\Tests\Sequence;
+namespace OceanMoon\Collections\Tests\Sequence;
 
-use Galaxon\Collections\Sequence;
 use LengthException;
+use OceanMoon\Collections\Sequence;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 

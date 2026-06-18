@@ -1,5 +1,5 @@
 {
-    "name": "galaxon/collections",
+    "name": "oceanmoon/collections",
     "description": "Type-safe PHP collections: Sequence (ordered list), Dictionary (any-type keys), Set (unique values), with runtime type validation.",
     "type": "library",
     "license": "MIT",
@@ -18,24 +18,24 @@
     "authors": [
         {
             "name": "Shaun Moss",
-            "email": "shaun@astromultimedia.com"
+            "email": "shaun@oceanmoon.software"
         }
     ],
-    "homepage": "https://github.com/mossy2100/Galaxon-PHP-Collections",
+    "homepage": "https://github.com/mossy2100/PHP-Collections",
     "support": {
-        "issues": "https://github.com/mossy2100/Galaxon-PHP-Collections/issues",
-        "source": "https://github.com/mossy2100/Galaxon-PHP-Collections"
+        "issues": "https://github.com/mossy2100/PHP-Collections/issues",
+        "source": "https://github.com/mossy2100/PHP-Collections"
     },
     "require": {
         "php": "^8.4",
-        "galaxon/core": "^1.6"
+        "oceanmoon/core": "^2.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^10.0 || ^11.0 || ^12.0",
         "squizlabs/php_codesniffer": "^4.0",
         "phpstan/phpstan": "^2.1",
         "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
-        "galaxon/coding-standard": "^1.0"
+        "oceanmoon/coding-standard": "^2.0"
     },
     "config": {
         "allow-plugins": {
@@ -44,12 +44,12 @@
     },
     "autoload": {
         "psr-4": {
-            "Galaxon\\Collections\\": "src/"
+            "OceanMoon\\Collections\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Galaxon\\Collections\\Tests\\": "tests/"
+            "OceanMoon\\Collections\\Tests\\": "tests/"
         }
     },
     "scripts": {

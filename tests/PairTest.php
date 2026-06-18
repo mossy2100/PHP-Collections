@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Galaxon\Collections\Tests;
+namespace OceanMoon\Collections\Tests;
 
 use DateTime;
-use Galaxon\Collections\Pair;
+use OceanMoon\Collections\Pair;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 

@@ -1086,4 +1086,4 @@ echo "Median: $median";   // 88.5
 - **[Dictionary](Dictionary.md)** - Key-value collection
 - **[Set](Set.md)** - Unique value collection
 - **[TypeSet](TypeSet.md)** - Type constraint management
-- **[Equatable](https://github.com/mossy2100/Galaxon-PHP-Core/blob/main/docs/Traits/Comparison/Equatable.md)** - Trait for implementing `equal()`
+- **[Equatable](https://github.com/mossy2100/PHP-Core/blob/main/docs/Traits/Comparison/Equatable.md)** - Trait for implementing `equal()`

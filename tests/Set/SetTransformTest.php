@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Galaxon\Collections\Tests\Set;
+namespace OceanMoon\Collections\Tests\Set;
 
-use Galaxon\Collections\Set;
+use OceanMoon\Collections\Set;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use UnexpectedValueException;
