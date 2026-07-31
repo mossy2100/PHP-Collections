@@ -23,7 +23,7 @@ abstract class Collection implements Countable, IteratorAggregate, Stringable
 {
     use Equatable;
 
-    // region Properties
+    #region Properties
 
     /**
      * Array of items in the collection.
@@ -39,9 +39,9 @@ abstract class Collection implements Countable, IteratorAggregate, Stringable
      */
     protected(set) TypeSet $valueTypes;
 
-    // endregion
+    #endregion
 
-    // region Constructor
+    #region Constructor
 
     /**
      * Constructor.
@@ -56,9 +56,9 @@ abstract class Collection implements Countable, IteratorAggregate, Stringable
         $this->valueTypes = new TypeSet($types);
     }
 
-    // endregion
+    #endregion
 
-    // region Modification methods
+    #region Modification methods
 
     /**
      * Import values from a source iterable into the Collection.
@@ -83,9 +83,9 @@ abstract class Collection implements Countable, IteratorAggregate, Stringable
         return $this;
     }
 
-    // endregion
+    #endregion
 
-    // region Inspection methods
+    #region Inspection methods
 
     /**
      * Checks if the Collection is empty.
@@ -139,9 +139,9 @@ abstract class Collection implements Countable, IteratorAggregate, Stringable
         return array_any($this->items, $fn);
     }
 
-    // endregion
+    #endregion
 
-    // region Transformation methods
+    #region Transformation methods
 
     /**
      * Filter a Collection using a callback function.
@@ -158,9 +158,9 @@ abstract class Collection implements Countable, IteratorAggregate, Stringable
      */
     abstract public function filter(callable $callback): static;
 
-    // endregion
+    #endregion
 
-    // region Conversion methods
+    #region Conversion methods
 
     /**
      * Convert the Collection to a string.
@@ -183,9 +183,9 @@ abstract class Collection implements Countable, IteratorAggregate, Stringable
         return array_values($this->items);
     }
 
-    // endregion
+    #endregion
 
-    // region IteratorAggregate implementation
+    #region IteratorAggregate implementation
 
     /**
      * Get iterator for foreach loops.
@@ -195,9 +195,9 @@ abstract class Collection implements Countable, IteratorAggregate, Stringable
     #[Override]
     abstract public function getIterator(): Traversable;
 
-    // endregion
+    #endregion
 
-    // region Countable methods
+    #region Countable methods
 
     /**
      * Get the number of items in the Collection.
@@ -210,5 +210,5 @@ abstract class Collection implements Countable, IteratorAggregate, Stringable
         return count($this->items);
     }
 
-    // endregion
+    #endregion
 }

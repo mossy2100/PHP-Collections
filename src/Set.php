@@ -18,7 +18,7 @@ use UnexpectedValueException;
  */
 final class Set extends Collection
 {
-    // region Constructor
+    #region Constructor
 
     /**
      * Constructor.
@@ -56,9 +56,9 @@ final class Set extends Collection
         }
     }
 
-    // endregion
+    #endregion
 
-    // region Modification methods
+    #region Modification methods
 
     /**
      * Add one or more items to the Set.
@@ -127,9 +127,9 @@ final class Set extends Collection
         return false;
     }
 
-    // endregion
+    #endregion
 
-    // region Set operations
+    #region Set operations
     // These are non-mutating and return new sets.
 
     /**
@@ -200,9 +200,9 @@ final class Set extends Collection
         return $result;
     }
 
-    // endregion
+    #endregion
 
-    // region Inspection methods
+    #region Inspection methods
     // These are non-mutating and return bools.
 
     /**
@@ -219,9 +219,9 @@ final class Set extends Collection
         return array_key_exists(Types::getUniqueString($value), $this->items);
     }
 
-    // endregion
+    #endregion
 
-    // region Comparison methods
+    #region Comparison methods
 
     /**
      * Check if the Set is equal to another Collection.
@@ -307,9 +307,9 @@ final class Set extends Collection
         return array_all($this->items, static fn ($item) => !$other->contains($item));
     }
 
-    // endregion
+    #endregion
 
-    // region Conversion methods
+    #region Conversion methods
 
     /**
      * Generate a string representation of the Set.
@@ -342,9 +342,9 @@ final class Set extends Collection
         return $seq;
     }
 
-    // endregion
+    #endregion
 
-    // region Parent class methods
+    #region Parent class methods
 
     /**
      * Filter a Set using a callback function.
@@ -387,9 +387,9 @@ final class Set extends Collection
         return $result;
     }
 
-    // endregion
+    #endregion
 
-    // region IteratorAggregate implementation
+    #region IteratorAggregate implementation
 
     /**
      * Get iterator for foreach loops.
@@ -407,5 +407,5 @@ final class Set extends Collection
         }
     }
 
-    // endregion
+    #endregion
 }

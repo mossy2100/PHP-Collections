@@ -68,7 +68,7 @@ use Traversable;
  */
 class TypeSet implements Countable, Stringable, IteratorAggregate
 {
-    // region Properties
+    #region Properties
 
     /**
      * Items in the set.
@@ -77,9 +77,9 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
      */
     private(set) array $types = [];
 
-    // endregion
+    #endregion
 
-    // region Constructor
+    #region Constructor
 
     /**
      * Constructor.
@@ -101,9 +101,9 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
         }
     }
 
-    // endregion
+    #endregion
 
-    // region Modification methods
+    #region Modification methods
 
     /**
      * Add types to the TypeSet.
@@ -158,9 +158,9 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
         return $this->addType(get_debug_type($value));
     }
 
-    // endregion
+    #endregion
 
-    // region Inspection methods
+    #region Inspection methods
 
     /**
      * Check if a value matches one of the types in the TypeSet.
@@ -312,9 +312,9 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
         return $this->contains('null') || $this->anyOk();
     }
 
-    // endregion
+    #endregion
 
-    // region Validation methods
+    #region Validation methods
 
     /**
      * Checks if the given value matches the set of types.
@@ -332,9 +332,9 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
         }
     }
 
-    // endregion
+    #endregion
 
-    // region Extraction methods
+    #region Extraction methods
 
     /**
      * Get the default value for this type set.
@@ -375,9 +375,9 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
         throw new LogicException('Cannot determine a default value for this TypeSet.');
     }
 
-    // endregion
+    #endregion
 
-    // region Countable methods
+    #region Countable methods
 
     /**
      * Get the number of types in the set.
@@ -389,9 +389,9 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
         return count($this->types);
     }
 
-    // endregion
+    #endregion
 
-    // region Conversion methods
+    #region Conversion methods
 
     /**
      * Get a string representation of the TypeSet. Uses set notation.
@@ -403,9 +403,9 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
         return '{' . implode(', ', $this->types) . '}';
     }
 
-    // endregion
+    #endregion
 
-    // region IteratorAggregate implementation
+    #region IteratorAggregate implementation
 
     /**
      * Get iterator for foreach loops.
@@ -417,9 +417,9 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
         return new ArrayIterator($this->types);
     }
 
-    // endregion
+    #endregion
 
-    // region Helper methods
+    #region Helper methods
 
     /**
      * Normalize a type name by trimming whitespace and backslashes from the start and end.
@@ -538,5 +538,5 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
         return $this;
     }
 
-    // endregion
+    #endregion
 }

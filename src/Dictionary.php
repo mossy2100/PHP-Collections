@@ -30,7 +30,7 @@ use UnexpectedValueException;
  */
 final class Dictionary extends Collection implements ArrayAccess
 {
-    // region Properties
+    #region Properties
 
     /**
      * Allowed types for keys in this collection.
@@ -39,9 +39,9 @@ final class Dictionary extends Collection implements ArrayAccess
      */
     protected(set) TypeSet $keyTypes;
 
-    // endregion
+    #endregion
 
-    // region Property hooks
+    #region Property hooks
 
     /**
      * Get all the keys as an array.
@@ -75,9 +75,9 @@ final class Dictionary extends Collection implements ArrayAccess
         }
     }
 
-    // endregion
+    #endregion
 
-    // region Constructor
+    #region Constructor
 
     /**
      * Constructor.
@@ -125,9 +125,9 @@ final class Dictionary extends Collection implements ArrayAccess
         }
     }
 
-    // endregion
+    #endregion
 
-    // region Factory methods
+    #region Factory methods
 
     /**
      * Create a new Dictionary by combining separate iterables of keys and values.
@@ -185,9 +185,9 @@ final class Dictionary extends Collection implements ArrayAccess
         return $dict;
     }
 
-    // endregion
+    #endregion
 
-    // region Modification methods
+    #region Modification methods
 
     /**
      * Add a key-value pair to the dictionary.
@@ -303,9 +303,9 @@ final class Dictionary extends Collection implements ArrayAccess
         return $nRemoved;
     }
 
-    // endregion
+    #endregion
 
-    // region Inspection methods
+    #region Inspection methods
 
     /**
      * Check if the Dictionary contains a value.
@@ -341,9 +341,9 @@ final class Dictionary extends Collection implements ArrayAccess
         return $this->offsetExists($key);
     }
 
-    // endregion
+    #endregion
 
-    // region Comparison methods
+    #region Comparison methods
 
     /**
      * Check if the Dictionary is equal to another Collection.
@@ -392,9 +392,9 @@ final class Dictionary extends Collection implements ArrayAccess
         return true;
     }
 
-    // endregion
+    #endregion
 
-    // region Transformation methods
+    #region Transformation methods
 
     /**
      * Filter a Dictionary using a callback function.
@@ -565,9 +565,9 @@ final class Dictionary extends Collection implements ArrayAccess
         return $result;
     }
 
-    // endregion
+    #endregion
 
-    // region Sorting methods
+    #region Sorting methods
 
     /**
      * Sort the Dictionary by a custom callback function.
@@ -608,9 +608,9 @@ final class Dictionary extends Collection implements ArrayAccess
         return $this->sort($fn);
     }
 
-    // endregion
+    #endregion
 
-    // region Conversion methods
+    #region Conversion methods
 
     /**
      * Convert the Dictionary to a Sequence of Pairs.
@@ -622,9 +622,9 @@ final class Dictionary extends Collection implements ArrayAccess
         return new Sequence(source: $this->items);
     }
 
-    // endregion
+    #endregion
 
-    // region ArrayAccess implementation
+    #region ArrayAccess implementation
 
     /**
      * Check if a given key exists in the dictionary.
@@ -717,9 +717,9 @@ final class Dictionary extends Collection implements ArrayAccess
         unset($this->items[$index]);
     }
 
-    // endregion
+    #endregion
 
-    // region IteratorAggregate implementation
+    #region IteratorAggregate implementation
 
     /**
      * Get iterator for foreach loops.
@@ -736,9 +736,9 @@ final class Dictionary extends Collection implements ArrayAccess
         }
     }
 
-    // endregion
+    #endregion
 
-    // region Helper methods
+    #region Helper methods
 
     /**
      * Validate an key (a.k.a. offset) argument.
@@ -764,5 +764,5 @@ final class Dictionary extends Collection implements ArrayAccess
         return $index;
     }
 
-    // endregion
+    #endregion
 }

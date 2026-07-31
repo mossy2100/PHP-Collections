@@ -73,7 +73,7 @@ use Traversable;
  */
 final class Sequence extends Collection implements ArrayAccess
 {
-    // region Constructor
+    #region Constructor
 
     /**
      * Create a new Sequence, with optional type restriction and value source.
@@ -116,9 +116,9 @@ final class Sequence extends Collection implements ArrayAccess
         }
     }
 
-    // endregion
+    #endregion
 
-    // region Factory methods
+    #region Factory methods
 
     /**
      * Generate a new Sequence of numbers spanning a given range, using a given step size.
@@ -183,9 +183,9 @@ final class Sequence extends Collection implements ArrayAccess
         return $seq;
     }
 
-    // endregion
+    #endregion
 
-    // region Modification methods
+    #region Modification methods
 
     /**
      * Add one or more items to the end of the Sequence.
@@ -391,9 +391,9 @@ final class Sequence extends Collection implements ArrayAccess
         return array_pop($this->items);
     }
 
-    // endregion
+    #endregion
 
-    // region Inspection methods
+    #region Inspection methods
 
     /**
      * Check if the Sequence contains a value.
@@ -424,9 +424,9 @@ final class Sequence extends Collection implements ArrayAccess
         return $this->offsetExists($index);
     }
 
-    // endregion
+    #endregion
 
-    // region Comparison methods
+    #region Comparison methods
 
     /**
      * Check if the Sequence is equal to another Collection.
@@ -457,9 +457,9 @@ final class Sequence extends Collection implements ArrayAccess
         return array_all($this->items, $eq);
     }
 
-    // endregion
+    #endregion
 
-    // region Extraction methods
+    #region Extraction methods
 
     /**
      * Get the first item from the Sequence.
@@ -581,9 +581,9 @@ final class Sequence extends Collection implements ArrayAccess
         return $this->fromSubset($result);
     }
 
-    // endregion
+    #endregion
 
-    // region Transformation methods
+    #region Transformation methods
 
     /**
      * Split the Sequence into chunks of a given size.
@@ -699,9 +699,9 @@ final class Sequence extends Collection implements ArrayAccess
         return $this->fromSubset($items);
     }
 
-    // endregion
+    #endregion
 
-    // region Aggregation methods
+    #region Aggregation methods
 
     /**
      * Counts the occurrences of each distinct value in a Sequence.
@@ -857,9 +857,9 @@ final class Sequence extends Collection implements ArrayAccess
         return implode($glue, array_map(static fn ($item) => Strings::toString($item), $this->items));
     }
 
-    // endregion
+    #endregion
 
-    // region Sorting methods
+    #region Sorting methods
 
     /**
      * Return a new Sequence with the items sorted in ascending order.
@@ -922,9 +922,9 @@ final class Sequence extends Collection implements ArrayAccess
         return $this->fromSubset($items);
     }
 
-    // endregion
+    #endregion
 
-    // region Conversion methods
+    #region Conversion methods
 
     /**
      * Convert the Sequence to a Dictionary. The Sequence's indexes will be keys in the new Dictionary.
@@ -962,9 +962,9 @@ final class Sequence extends Collection implements ArrayAccess
         return $set;
     }
 
-    // endregion
+    #endregion
 
-    // region Random methods
+    #region Random methods
 
     /**
      * Randomly choose one or more items from the Sequence.
@@ -1028,9 +1028,9 @@ final class Sequence extends Collection implements ArrayAccess
         return $removed;
     }
 
-    // endregion
+    #endregion
 
-    // region ArrayAccess implementation
+    #region ArrayAccess implementation
 
     /**
      * Check if a given index is valid.
@@ -1139,9 +1139,9 @@ final class Sequence extends Collection implements ArrayAccess
         $this->items[$offset] = $this->valueTypes->getDefaultValue();
     }
 
-    // endregion
+    #endregion
 
-    // region IteratorAggregate implementation
+    #region IteratorAggregate implementation
 
     /**
      * Get iterator for foreach loops.
@@ -1154,9 +1154,9 @@ final class Sequence extends Collection implements ArrayAccess
         return new ArrayIterator($this->items);
     }
 
-    // endregion
+    #endregion
 
-    // region Helper methods
+    #region Helper methods
 
     /**
      * Validate an index (a.k.a. offset) argument.
@@ -1235,5 +1235,5 @@ final class Sequence extends Collection implements ArrayAccess
         return $indexes;
     }
 
-    // endregion
+    #endregion
 }

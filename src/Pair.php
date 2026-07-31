@@ -13,7 +13,7 @@ namespace OceanMoon\Collections;
  */
 readonly class Pair
 {
-    // region Constructor
+    #region Constructor
 
     /**
      * Create a new Pair.
@@ -25,5 +25,5 @@ readonly class Pair
     {
     }
 
-    // endregion
+    #endregion
 }

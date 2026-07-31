@@ -38,7 +38,7 @@ class ClassWithTrait
 #[CoversClass(TypeSet::class)]
 class TypeSetTest extends TestCase
 {
-    // region Constructor tests
+    #region Constructor tests
 
     /**
      * Test constructor with no arguments creates empty TypeSet.
@@ -118,9 +118,9 @@ class TypeSetTest extends TestCase
         new TypeSet('invalid-type-name');
     }
 
-    // endregion
+    #endregion
 
-    // region add() method tests
+    #region add() method tests
 
     /**
      * Test add() with single type.
@@ -230,9 +230,9 @@ class TypeSetTest extends TestCase
         $ts->add([123]); // Array with integer instead of string
     }
 
-    // endregion
+    #endregion
 
-    // region addValueType() method tests
+    #region addValueType() method tests
 
     /**
      * Test addValueType() with various basic types.
@@ -278,9 +278,9 @@ class TypeSetTest extends TestCase
         $this->assertCount(1, $ts);
     }
 
-    // endregion
+    #endregion
 
-    // region match() method tests
+    #region match() method tests
 
     /**
      * Test match() with basic types.
@@ -480,9 +480,9 @@ class TypeSetTest extends TestCase
         $this->assertFalse($ts->match([1, 2, 3])); // Arrays are countable but not objects
     }
 
-    // endregion
+    #endregion
 
-    // region check() method tests
+    #region check() method tests
 
     /**
      * Test check() passes for valid type.
@@ -522,9 +522,9 @@ class TypeSetTest extends TestCase
         }
     }
 
-    // endregion
+    #endregion
 
-    // region getDefaultValue() method tests
+    #region getDefaultValue() method tests
 
     /**
      * Test getDefaultValue() for null.
@@ -694,9 +694,9 @@ class TypeSetTest extends TestCase
         $this->assertFalse($default); // bool has priority over int
     }
 
-    // endregion
+    #endregion
 
-    // region contains(), containsAll(), containsAny(), containsOnly() tests
+    #region contains(), containsAll(), containsAny(), containsOnly() tests
 
     /**
      * Test contains() method.
@@ -747,9 +747,9 @@ class TypeSetTest extends TestCase
         $this->assertFalse($ts->containsOnly('int', 'string', 'bool')); // Extra type
     }
 
-    // endregion
+    #endregion
 
-    // region empty(), anyOk(), nullOk() tests
+    #region empty(), anyOk(), nullOk() tests
 
     /**
      * Test empty() method.
@@ -833,9 +833,9 @@ class TypeSetTest extends TestCase
         $this->assertFalse($ts->nullOk());
     }
 
-    // endregion
+    #endregion
 
-    // region count(), __toString(), getIterator() tests
+    #region count(), __toString(), getIterator() tests
 
     /**
      * Test count() method.
@@ -887,5 +887,5 @@ class TypeSetTest extends TestCase
         $this->assertContains('bool', $types);
     }
 
-    // endregion
+    #endregion
 }
