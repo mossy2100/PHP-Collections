@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OceanMoon\Collections;
+namespace Mossy2100\Collections;
 
 use ArrayIterator;
 use Countable;
@@ -10,8 +10,8 @@ use DomainException;
 use InvalidArgumentException;
 use IteratorAggregate;
 use LogicException;
-use OceanMoon\Core\Numbers;
-use OceanMoon\Core\Types;
+use Mossy2100\Core\Numbers;
+use Mossy2100\Core\Types;
 use stdClass;
 use Stringable;
 use Traversable;

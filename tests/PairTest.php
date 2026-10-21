@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace OceanMoon\Collections\Tests;
+namespace Mossy2100\Collections\Tests;
 
 use DateTime;
-use OceanMoon\Collections\Pair;
+use Mossy2100\Collections\Pair;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 

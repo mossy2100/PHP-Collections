@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace OceanMoon\Collections;
+namespace Mossy2100\Collections;
 
 use DomainException;
 use InvalidArgumentException;
-use OceanMoon\Core\Stringify;
-use OceanMoon\Core\Types;
+use Mossy2100\Core\Stringify;
+use Mossy2100\Core\Types;
 use Override;
 use Traversable;
 use UnexpectedValueException;

@@ -1,6 +1,6 @@
 # Collection
 
-The abstract base class for all collection types in the OceanMoon Collections library.
+The abstract base class for all collection types in the Mossy2100 Collections library.
 
 ---
 
@@ -332,7 +332,7 @@ The exact iteration behavior depends on the concrete collection type. See the do
 To create your own collection type, extend the Collection class and implement the abstract methods:
 
 ```php
-use OceanMoon\Collections\Collection;
+use Mossy2100\Collections\Collection;
 
 class MyCustomCollection extends Collection
 {

@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace OceanMoon\Collections;
+namespace Mossy2100\Collections;
 
 use Countable;
 use DomainException;
 use InvalidArgumentException;
 use IteratorAggregate;
-use OceanMoon\Core\Stringify;
-use OceanMoon\Core\Traits\Comparison\Equatable;
+use Mossy2100\Core\Stringify;
+use Mossy2100\Core\Traits\Comparison\Equatable;
 use Override;
 use Stringable;
 use Traversable;

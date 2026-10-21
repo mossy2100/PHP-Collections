@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Changed
+
+- **Renamed the package from `oceanmoon/collections` to `mossy2100/collections`, and the namespace from
+  `OceanMoon\Collections` to `Mossy2100\Collections` (breaking),** matching the author's GitHub and Packagist name.
+  Update `composer.json` and any `use` statements. It depends on `mossy2100/core`.
+
+---
+
 ## [2.0.0] - 2026-06-18
 
 ### Changed

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace OceanMoon\Collections\Tests\Sequence;
+namespace Mossy2100\Collections\Tests\Sequence;
 
-use OceanMoon\Collections\Dictionary;
-use OceanMoon\Collections\Sequence;
-use OceanMoon\Collections\Set;
+use Mossy2100\Collections\Dictionary;
+use Mossy2100\Collections\Sequence;
+use Mossy2100\Collections\Set;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 

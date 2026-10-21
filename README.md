@@ -1,4 +1,4 @@
-# OceanMoon PHP Collections
+# Mossy2100 PHP Collections
 
 Type-safe collection classes for PHP 8.4+.
 
@@ -27,7 +27,7 @@ A type-safe collection library featuring runtime type validation, immutable oper
 
 ---
 
-## Why OceanMoon Collections?
+## Why Mossy2100 Collections?
 
 PHP's native arrays are powerful but have limitations:
 - **Keys restricted to strings and integers** - Can't use booleans, floats, arrays, or objects as keys.
@@ -35,7 +35,7 @@ PHP's native arrays are powerful but have limitations:
 - **Type coercion issues** - Keys like `1`, `'1'`, `true`, and `1.0` all become the same key.
 - **Limited operations** - Built-in array functions lack chaining, immutability, and advanced transformations. Errors and exceptions are inconsistent.
 
-OceanMoon Collections solves these problems with:
+Mossy2100 Collections solves these problems with:
 
 ✅ **Any type as keys** - Use objects, arrays, booleans, floats, null as Dictionary keys.
 
@@ -58,7 +58,7 @@ Before using this package, you may want to check out these PHP extensions:
 - [Standard PHP Library](https://www.php.net/manual/en/book.spl.php)
 - [Data Structures](https://www.php.net/manual/en/book.ds.php)
 
-These are official PHP extensions that provide efficient data structure implementations and will probably be well-supported going forward. However, if you need runtime type safety and generics-like behavior, or simply prefer a more functional style of programming, OceanMoon Collections provides features that these extensions lack, including type constraints, type inference, and type-safe operations.
+These are official PHP extensions that provide efficient data structure implementations and will probably be well-supported going forward. However, if you need runtime type safety and generics-like behavior, or simply prefer a more functional style of programming, Mossy2100 Collections provides features that these extensions lack, including type constraints, type inference, and type-safe operations.
 
 ---
 
@@ -131,7 +131,7 @@ $set1->disjoint($set2);  // false
 ## Installation
 
 ```bash
-composer require oceanmoon/collections
+composer require mossy2100/collections
 ```
 
 ---
@@ -139,7 +139,7 @@ composer require oceanmoon/collections
 ## Requirements
 
 - PHP ^8.4
-- oceanmoon/core
+- mossy2100/core
 
 ---
 
@@ -148,7 +148,7 @@ composer require oceanmoon/collections
 ### Sequence - Type-safe lists
 
 ```php
-use OceanMoon\Collections\Sequence;
+use Mossy2100\Collections\Sequence;
 
 // Create with type inference
 $seq = new Sequence(source: [1, 2, 3, 4, 5]);
@@ -182,7 +182,7 @@ echo $seq->max();      // 8
 ### Dictionary - Key-value pairs with any type
 
 ```php
-use OceanMoon\Collections\Dictionary;
+use Mossy2100\Collections\Dictionary;
 
 // Create with type inference
 $dict = new Dictionary(source: ['a' => 1, 'b' => 2]);
@@ -212,7 +212,7 @@ foreach ($dict as $key => $value) {
 ### Set - Unique values
 
 ```php
-use OceanMoon\Collections\Set;
+use Mossy2100\Collections\Set;
 
 // Duplicates automatically removed
 $set = new Set(source: [1, 2, 2, 3, 3, 3]);

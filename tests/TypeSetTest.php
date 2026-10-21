@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace OceanMoon\Collections\Tests;
+namespace Mossy2100\Collections\Tests;
 
 use ArrayObject;
 use DateTime;
 use DomainException;
 use InvalidArgumentException;
 use LogicException;
-use OceanMoon\Collections\Tests\Fixtures\ChildClass;
-use OceanMoon\Collections\Tests\Fixtures\ClassWithTrait;
-use OceanMoon\Collections\Tests\Fixtures\ParentClass;
-use OceanMoon\Collections\TypeSet;
+use Mossy2100\Collections\Tests\Fixtures\ChildClass;
+use Mossy2100\Collections\Tests\Fixtures\ClassWithTrait;
+use Mossy2100\Collections\Tests\Fixtures\ParentClass;
+use Mossy2100\Collections\TypeSet;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use stdClass;
@@ -421,7 +421,7 @@ class TypeSetTest extends TestCase
      */
     public function testMatchParentClass(): void
     {
-        $ts = new TypeSet('OceanMoon\Collections\Tests\Fixtures\ParentClass');
+        $ts = new TypeSet('Mossy2100\Collections\Tests\Fixtures\ParentClass');
 
         // Child class should match parent class constraint
         $child = new ChildClass();
@@ -437,7 +437,7 @@ class TypeSetTest extends TestCase
      */
     public function testMatchTrait(): void
     {
-        $ts = new TypeSet('OceanMoon\Collections\Tests\Fixtures\TestTrait');
+        $ts = new TypeSet('Mossy2100\Collections\Tests\Fixtures\TestTrait');
 
         // Class using the trait should match
         $obj = new ClassWithTrait();

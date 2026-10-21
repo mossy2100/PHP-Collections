@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OceanMoon\Collections;
+namespace Mossy2100\Collections;
 
 use ArrayAccess;
 use ArrayIterator;
@@ -10,8 +10,8 @@ use DomainException;
 use InvalidArgumentException;
 use LengthException;
 use LogicException;
-use OceanMoon\Core\Numbers;
-use OceanMoon\Core\Strings;
+use Mossy2100\Core\Numbers;
+use Mossy2100\Core\Strings;
 use OutOfRangeException;
 use Override;
 use Traversable;

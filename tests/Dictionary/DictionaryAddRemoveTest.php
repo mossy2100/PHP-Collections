@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace OceanMoon\Collections\Tests\Dictionary;
+namespace Mossy2100\Collections\Tests\Dictionary;
 
 use ArgumentCountError;
 use InvalidArgumentException;
-use OceanMoon\Collections\Dictionary;
-use OceanMoon\Collections\Pair;
+use Mossy2100\Collections\Dictionary;
+use Mossy2100\Collections\Pair;
 use OutOfBoundsException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
