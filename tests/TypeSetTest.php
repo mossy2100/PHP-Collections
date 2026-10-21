@@ -9,28 +9,13 @@ use DateTime;
 use DomainException;
 use InvalidArgumentException;
 use LogicException;
+use OceanMoon\Collections\Tests\Fixtures\ChildClass;
+use OceanMoon\Collections\Tests\Fixtures\ClassWithTrait;
+use OceanMoon\Collections\Tests\Fixtures\ParentClass;
 use OceanMoon\Collections\TypeSet;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use stdClass;
-
-// Test fixtures for inheritance and trait testing
-class ParentClass
-{
-}
-
-class ChildClass extends ParentClass
-{
-}
-
-trait TestTrait
-{
-}
-
-class ClassWithTrait
-{
-    use TestTrait;
-}
 
 /**
  * Tests for TypeSet class.
@@ -436,7 +421,7 @@ class TypeSetTest extends TestCase
      */
     public function testMatchParentClass(): void
     {
-        $ts = new TypeSet('OceanMoon\Collections\Tests\ParentClass');
+        $ts = new TypeSet('OceanMoon\Collections\Tests\Fixtures\ParentClass');
 
         // Child class should match parent class constraint
         $child = new ChildClass();
@@ -452,7 +437,7 @@ class TypeSetTest extends TestCase
      */
     public function testMatchTrait(): void
     {
-        $ts = new TypeSet('OceanMoon\Collections\Tests\TestTrait');
+        $ts = new TypeSet('OceanMoon\Collections\Tests\Fixtures\TestTrait');
 
         // Class using the trait should match
         $obj = new ClassWithTrait();
