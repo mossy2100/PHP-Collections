@@ -187,6 +187,47 @@ class SequenceTransformationTest extends TestCase
     }
 
     /**
+     * Test merge combines the type constraints of both sequences.
+     */
+    public function testMergeCombinesTypes(): void
+    {
+        $seq1 = new Sequence('int', [1]);
+        $seq2 = new Sequence('string', ['a']);
+
+        $merged = $seq1->merge($seq2);
+
+        $this->assertSame([1, 'a'], $merged->toArray());
+        $this->assertTrue($merged->valueTypes->containsOnly('int', 'string'));
+    }
+
+    /**
+     * Test merge with an unconstrained Sequence allows any type, whichever side it's on.
+     */
+    public function testMergeWithUnconstrainedSequence(): void
+    {
+        $typed = new Sequence('int', [1]);
+        $any = new Sequence(null, ['a']);
+
+        $this->assertTrue($typed->merge($any)->valueTypes->anyOk());
+        $this->assertTrue($any->merge($typed)->valueTypes->anyOk());
+    }
+
+    /**
+     * Test merge doesn't modify either sequence.
+     */
+    public function testMergeIsNonMutating(): void
+    {
+        $seq1 = new Sequence('int', [1]);
+        $seq2 = new Sequence('string', ['a']);
+
+        $seq1->merge($seq2);
+
+        $this->assertSame([1], $seq1->toArray());
+        $this->assertTrue($seq1->valueTypes->containsOnly('int'));
+        $this->assertSame(['a'], $seq2->toArray());
+    }
+
+    /**
      * Test reverse method.
      */
     public function testReverse(): void

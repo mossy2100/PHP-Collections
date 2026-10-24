@@ -615,7 +615,8 @@ echo $strings[0]; // 'Number 1'
 public function merge(self $other): self
 ```
 
-Return a new Sequence with items from both Sequences.
+Return a new Sequence with items from both Sequences. The result allows any value that either Sequence allows (see
+[TypeSet::union()](TypeSet.md#union)).
 
 **Example:**
 ```php

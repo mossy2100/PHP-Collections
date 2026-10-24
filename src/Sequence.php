@@ -707,16 +707,18 @@ final class Sequence extends Collection implements ArrayAccess
     /**
      * Merge two sequences.
      *
+     * The result allows any value that either Sequence allows. See TypeSet::union().
+     *
      * @param Sequence $other The Sequence to merge with.
      * @return self A new Sequence containing the merged items.
      */
     public function merge(self $other): self
     {
-        // Merge the two sequences.
-        $items = array_merge($this->items, $other->items);
-
-        // Construct the result. The other Sequence's items may not be allowed by this one's types, so check them.
-        return new self($this->valueTypes, $items);
+        // Construct the result, allowing any value that either Sequence allows. The items from both are allowed by
+        // the combined types, so they don't need checking.
+        $result = new self($this->valueTypes->union($other->valueTypes));
+        $result->items = array_merge($this->items, $other->items);
+        return $result;
     }
 
     /**

@@ -62,6 +62,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `'\DateTime'`. Previously `containsOnly('int', 'int')` returned true for `{int, string}`.
 - **Type inference handles anonymous-class objects.** `TypeSet::addValueType()`, and so every constructor or `map()`
   that infers types, uses the parent class or `object` instead of throwing `DomainException`.
+- **`Sequence::merge()`** combines the types of both Sequences, like `Set::union()` and `Dictionary::merge()`.
+  Previously it threw `InvalidArgumentException` if the other Sequence had values this one didn't allow.
 - **`Set::union()` and `Dictionary::merge()`** no longer restrict the result's types when one side allows any type.
   Previously, merging an unconstrained collection with an `int` one gave an `int`-only result that still held the
   other values and rejected new ones.
