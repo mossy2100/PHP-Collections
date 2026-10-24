@@ -732,6 +732,17 @@ class TypeSetTest extends TestCase
         $this->assertFalse($ts->containsOnly('int', 'string', 'bool')); // Extra type
     }
 
+    /**
+     * Test containsOnly() ignores duplicate arguments, including different spellings of the same type.
+     */
+    public function testContainsOnlyWithDuplicates(): void
+    {
+        $this->assertFalse(new TypeSet('int|string')->containsOnly('int', 'int'));
+        $this->assertTrue(new TypeSet('int')->containsOnly('int', 'int'));
+        $this->assertTrue(new TypeSet('DateTime')->containsOnly('DateTime', '\\DateTime'));
+        $this->assertTrue(new TypeSet('int|string')->containsOnly(' int', 'string', 'int'));
+    }
+
     #endregion
 
     #region empty(), anyOk(), nullOk() tests

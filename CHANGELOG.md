@@ -46,6 +46,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`Sequence::range()`** no longer throws when the range ends at `PHP_INT_MAX` or `PHP_INT_MIN`.
 - **`Sequence::chooseRand()` and `removeRand()`** return the items in random order, as documented. Previously they
   came back in their original order.
+- **`TypeSet::containsOnly()`** ignores duplicate arguments, including different spellings like `'DateTime'` and
+  `'\DateTime'`. Previously `containsOnly('int', 'int')` returned true for `{int, string}`.
 - **`Set::union()` and `Dictionary::merge()`** no longer restrict the result's types when one side allows any type.
   Previously, merging an unconstrained collection with an `int` one gave an `int`-only result that still held the
   other values and rejected new ones.

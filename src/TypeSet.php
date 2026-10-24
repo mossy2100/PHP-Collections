@@ -304,6 +304,8 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
      */
     public function containsOnly(string ...$types): bool
     {
+        // Normalize and remove duplicates first, so the count comparison is valid.
+        $types = array_unique(array_map(self::normalizeTypeName(...), $types));
         return count($types) === count($this->types) && $this->containsAll(...$types);
     }
 
