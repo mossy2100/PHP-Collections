@@ -953,7 +953,7 @@ echo $set->count(); // 3
 public function chooseRand(int $count = 1): array
 ```
 
-Randomly choose one or more items from the Sequence (non-mutating). Returns a list of the chosen values in random order. Throws `DomainException` if count is negative, `LengthException` if empty or count exceeds length.
+Randomly choose one or more items from the Sequence (non-mutating). Returns a list of the chosen values in random order. Throws `DomainException` if count is less than 1, `LengthException` if empty or count exceeds length.
 
 **Example:**
 ```php
@@ -970,7 +970,7 @@ echo count($chosen); // 3
 public function removeRand(int $count = 1): array
 ```
 
-Randomly remove one or more items from the Sequence (mutating). Returns a list of removed values. Throws `DomainException` if count is negative, `LengthException` if empty or count exceeds length.
+Randomly remove one or more items from the Sequence (mutating). Returns a list of the removed values in random order. Throws `DomainException` if count is less than 1, `LengthException` if empty or count exceeds length.
 
 **Example:**
 ```php

@@ -1287,6 +1287,9 @@ final class Sequence extends Collection implements ArrayAccess
             $indexes = [$indexes];
         }
 
+        // array_rand() returns the indexes in their original order, so shuffle them.
+        shuffle($indexes);
+
         /** @var list<int> $indexes */
         return $indexes;
     }

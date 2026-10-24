@@ -331,6 +331,63 @@ class SequenceArrayAccessTest extends TestCase
     }
 
     /**
+     * Test chooseRand returns the items in random order, not index order.
+     */
+    public function testChooseRandReturnsRandomOrder(): void
+    {
+        $seq = new Sequence('int', range(1, 10));
+
+        // Over 100 draws of 5 items, at least one should not be ascending (each is with probability 1/120).
+        $allAscending = true;
+        for ($i = 0; $i < 100; $i++) {
+            $chosen = $seq->chooseRand(5);
+            $sorted = $chosen;
+            sort($sorted);
+            if ($chosen !== $sorted) {
+                $allAscending = false;
+                break;
+            }
+        }
+        $this->assertFalse($allAscending);
+    }
+
+    /**
+     * Test chooseRand with the full count returns every item.
+     */
+    public function testChooseRandAllItems(): void
+    {
+        $seq = new Sequence('int', range(1, 10));
+
+        $chosen = $seq->chooseRand(10);
+        sort($chosen);
+        $this->assertSame(range(1, 10), $chosen);
+    }
+
+    /**
+     * Test removeRand returns the items in random order, and removes exactly those items.
+     */
+    public function testRemoveRandReturnsRandomOrder(): void
+    {
+        $allAscending = true;
+        for ($i = 0; $i < 100; $i++) {
+            $seq = new Sequence('int', range(1, 10));
+            $removed = $seq->removeRand(5);
+
+            // Test the removed and remaining items together make up the original items.
+            $all = array_merge($removed, $seq->toArray());
+            sort($all);
+            $this->assertSame(range(1, 10), $all);
+
+            $sorted = $removed;
+            sort($sorted);
+            if ($removed !== $sorted) {
+                $allAscending = false;
+            }
+        }
+        $this->assertFalse($allAscending);
+    }
+
+    /**
      * Test toArray conversion.
      */
     public function testToArray(): void
