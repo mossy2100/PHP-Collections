@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Mossy2100\Collections;
 
-use ArgumentCountError;
 use ArrayAccess;
+use BadMethodCallException;
 use DomainException;
 use InvalidArgumentException;
 use LengthException;
@@ -199,7 +199,7 @@ final class Dictionary extends Collection implements ArrayAccess
      * @return $this The modified Dictionary.
      * @throws InvalidArgumentException If the one-param form is used, and the argument is not a Pair; or if the key
      * or value has a disallowed type.
-     * @throws ArgumentCountError If the wrong number of parameters is supplied.
+     * @throws BadMethodCallException If more than 2 arguments are supplied.
      */
     public function add(mixed $keyOrPair, mixed $value = null): self
     {
@@ -216,7 +216,7 @@ final class Dictionary extends Collection implements ArrayAccess
         } elseif ($nArgs === 2) {
             $key = $keyOrPair;
         } else {
-            throw new ArgumentCountError("The add() method takes 1 or 2 parameters, got $nArgs.");
+            throw new BadMethodCallException("Invalid argument count: $nArgs. Must be 1 or 2.");
         }
 
         // Check the types are valid.

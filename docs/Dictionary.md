@@ -223,7 +223,7 @@ Add a key-value pair. Returns `$this` for chaining.
 
 **Throws:**
 - `InvalidArgumentException` - If the key or value has a disallowed type
-- `ArgumentCountError` - If the wrong number of parameters is supplied
+- `BadMethodCallException` - If more than 2 arguments are supplied
 
 **Examples:**
 ```php

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Mossy2100\Collections\Tests\Dictionary;
 
-use ArgumentCountError;
+use BadMethodCallException;
 use InvalidArgumentException;
 use Mossy2100\Collections\Dictionary;
 use Mossy2100\Collections\Pair;
@@ -65,14 +65,15 @@ class DictionaryAddRemoveTest extends TestCase
     }
 
     /**
-     * Test adding with three parameters throws ArgumentCountError.
+     * Test adding with three parameters throws BadMethodCallException.
      */
     public function testAddWithThreeParameters(): void
     {
         $dict = new Dictionary();
 
-        // Test adding with three parameters throws ArgumentCountError.
-        $this->expectException(ArgumentCountError::class);
+        // Test adding with three parameters throws BadMethodCallException.
+        $this->expectException(BadMethodCallException::class);
+        $this->expectExceptionMessage('Invalid argument count: 3. Must be 1 or 2.');
         $dict->add('key', 'value', 'extra');
     }
 

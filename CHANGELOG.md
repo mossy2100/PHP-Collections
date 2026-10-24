@@ -37,6 +37,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`TypeSet` lowercases PHP's reserved type names and rejects unsupported ones (breaking).** `'Int'` now means `int`,
   instead of a class named `Int` that never matched. `void`, `never`, `false`, `true`, `self`, `static` and `parent`
   now throw `DomainException`, instead of being accepted as class names.
+- **`Dictionary::add()` throws `BadMethodCallException` for more than 2 arguments (breaking),** instead of
+  `ArgumentCountError`, following the package's exception conventions.
 - **Adding several items is now all-or-nothing.** If any item has a disallowed type, `Sequence::append()`,
   `prepend()` and `import()`, `Set::add()` and `import()`, and `Dictionary::import()` throw without adding anything.
   Previously the items before the bad one were added.
