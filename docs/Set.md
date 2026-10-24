@@ -643,7 +643,7 @@ echo $visitors->count(); // 2 (unique visitors)
 // Strict type checking
 $set = new Set('int');
 $set->add(1, 2, 3);
-// $set->add('4'); // TypeError: Expected int, got string
+// $set->add('4'); // InvalidArgumentException: Invalid value type: string. Must be int.
 
 // Union types
 $set = new Set('int|string');
@@ -657,7 +657,7 @@ $set->add(1, 2, null, 3); // Works
 $set = new Set('DateTime');
 $set->add(new DateTime('2024-01-01'));
 $set->add(new DateTime('2024-01-02'));
-// $set->add('2024-01-03'); // TypeError: Expected DateTime, got string
+// $set->add('2024-01-03'); // InvalidArgumentException: Invalid value type: string. Must be DateTime.
 
 // No constraints
 $set = new Set();

@@ -534,7 +534,7 @@ function processValue(mixed $value, TypeSet $allowedTypes): void
 $types = new TypeSet('int|string');
 processValue(42, $types);      // OK
 processValue('hello', $types); // OK
-processValue(3.14, $types);    // TypeError
+processValue(3.14, $types);    // InvalidArgumentException: Invalid value type: float. Must be int|string.
 ```
 
 ### Building type constraints from data
