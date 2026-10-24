@@ -11,11 +11,13 @@ use PHPUnit\Framework\TestCase;
 use stdClass;
 
 /**
- * Tests for Sequence equality comparison.
+ * Tests for Sequence comparison methods.
  */
 #[CoversClass(Sequence::class)]
-class SequenceEqualityTest extends TestCase
+class SequenceComparisonTest extends TestCase
 {
+    #region Method equal() tests.
+
     /**
      * Test equal sequences return true.
      */
@@ -212,4 +214,6 @@ class SequenceEqualityTest extends TestCase
 
         $this->assertFalse($seq1->equal($seq2));
     }
+
+    #endregion
 }

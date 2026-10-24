@@ -10,55 +10,12 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Tests for Set comparison and inspection methods.
+ * Tests for Set comparison methods.
  */
 #[CoversClass(Set::class)]
 class SetComparisonTest extends TestCase
 {
-    /**
-     * Test contains returns true for existing item.
-     */
-    public function testContainsExistingItem(): void
-    {
-        $set = new Set('int');
-        $set->add(1, 2, 3);
-
-        $this->assertTrue($set->contains(2));
-    }
-
-    /**
-     * Test contains returns false for non-existing item.
-     */
-    public function testContainsNonExistingItem(): void
-    {
-        $set = new Set('int');
-        $set->add(1, 2, 3);
-
-        $this->assertFalse($set->contains(99));
-    }
-
-    /**
-     * Test contains uses strict equality.
-     */
-    public function testContainsUsesStrictEquality(): void
-    {
-        $set = new Set();
-        $set->add(1, '1');
-
-        $this->assertTrue($set->contains(1));
-        $this->assertTrue($set->contains('1'));
-        $this->assertFalse($set->contains(2));
-    }
-
-    /**
-     * Test contains on empty set.
-     */
-    public function testContainsOnEmptySet(): void
-    {
-        $set = new Set('int');
-
-        $this->assertFalse($set->contains(1));
-    }
+    #region Method equal() tests.
 
     /**
      * Test equals returns true for equal sets.
@@ -156,6 +113,10 @@ class SetComparisonTest extends TestCase
         $this->assertTrue($set1->equal($set2));
     }
 
+    #endregion
+
+    #region Method subset() tests.
+
     /**
      * Test subset returns true when all items are in other set.
      */
@@ -211,6 +172,10 @@ class SetComparisonTest extends TestCase
         $this->assertTrue($set1->subset($set2));
     }
 
+    #endregion
+
+    #region Method properSubset() tests.
+
     /**
      * Test properSubset returns true for proper subset.
      */
@@ -252,6 +217,10 @@ class SetComparisonTest extends TestCase
 
         $this->assertFalse($set1->properSubset($set2));
     }
+
+    #endregion
+
+    #region Method superset() tests.
 
     /**
      * Test superset returns true when contains all items from other set.
@@ -295,6 +264,10 @@ class SetComparisonTest extends TestCase
         $this->assertTrue($set1->superset($set2));
     }
 
+    #endregion
+
+    #region Method properSuperset() tests.
+
     /**
      * Test properSuperset returns true for proper superset.
      */
@@ -336,6 +309,10 @@ class SetComparisonTest extends TestCase
 
         $this->assertFalse($set1->properSuperset($set2));
     }
+
+    #endregion
+
+    #region Method disjoint() tests.
 
     /**
      * Test disjoint returns true for disjoint sets.
@@ -391,46 +368,5 @@ class SetComparisonTest extends TestCase
         $this->assertTrue($set2->disjoint($set1));
     }
 
-    /**
-     * Test empty returns true for empty set.
-     */
-    public function testEmptyReturnsTrueForEmptySet(): void
-    {
-        $set = new Set('int');
-
-        $this->assertTrue($set->empty());
-    }
-
-    /**
-     * Test empty returns false for non-empty set.
-     */
-    public function testEmptyReturnsFalseForNonEmptySet(): void
-    {
-        $set = new Set('int');
-        $set->add(1);
-
-        $this->assertFalse($set->empty());
-    }
-
-    /**
-     * Test count returns correct number of items.
-     */
-    public function testCountReturnsCorrectCount(): void
-    {
-        $set = new Set('int');
-        $set->add(1, 2, 3, 4, 5);
-
-        $this->assertCount(5, $set);
-        $this->assertEquals(5, $set->count());
-    }
-
-    /**
-     * Test count returns zero for empty set.
-     */
-    public function testCountReturnsZeroForEmptySet(): void
-    {
-        $set = new Set('int');
-
-        $this->assertCount(0, $set);
-    }
+    #endregion
 }

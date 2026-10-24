@@ -10,11 +10,13 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Tests for Set constructor and factory methods.
+ * Tests for Set constructor.
  */
 #[CoversClass(Set::class)]
 class SetConstructorTest extends TestCase
 {
+    #region Method __construct() tests.
+
     /**
      * Test basic constructor with no type constraints.
      */
@@ -260,4 +262,6 @@ class SetConstructorTest extends TestCase
         $this->assertCount(4, $original);
         $this->assertCount(3, $copy);
     }
+
+    #endregion
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mossy2100\Collections\Tests\Set;
 
+use Mossy2100\Collections\Collection;
 use Mossy2100\Collections\Sequence;
 use Mossy2100\Collections\Set;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -13,54 +14,72 @@ use PHPUnit\Framework\TestCase;
  * Tests for Set conversion methods.
  */
 #[CoversClass(Set::class)]
+#[CoversClass(Collection::class)]
 class SetConversionTest extends TestCase
 {
+    #region Method __toString() tests.
+
     /**
-     * Test toArray converts Set to array.
+     * Test __toString returns string representation.
      */
-    public function testToArrayConvertsToArray(): void
+    public function testToStringReturnsString(): void
     {
         $set = new Set('int');
         $set->add(1, 2, 3);
 
-        $array = $set->toArray();
+        $string = (string)$set;
 
-        $this->assertIsArray($array);
-        $this->assertCount(3, $array);
-        $this->assertContains(1, $array);
-        $this->assertContains(2, $array);
-        $this->assertContains(3, $array);
+        $this->assertIsString($string);
+        $this->assertNotEmpty($string);
+        $this->assertStringContainsString('1', $string);
+        $this->assertStringContainsString('2', $string);
+        $this->assertStringContainsString('3', $string);
     }
 
     /**
-     * Test toArray on empty set.
+     * Test __toString on empty set.
      */
-    public function testToArrayOnEmptySet(): void
+    public function testToStringOnEmptySet(): void
     {
         $set = new Set('int');
 
-        $array = $set->toArray();
+        $string = (string)$set;
 
-        $this->assertIsArray($array);
-        $this->assertCount(0, $array);
-        $this->assertEquals([], $array);
+        $this->assertIsString($string);
+        $this->assertEquals('{}', $string);
     }
 
     /**
-     * Test toArray returns independent copy.
+     * Test __toString uses set notation.
      */
-    public function testToArrayReturnsIndependentCopy(): void
+    public function testToStringUsesSetNotation(): void
     {
         $set = new Set('int');
-        $set->add(1, 2, 3);
+        $set->add(1);
 
-        $array = $set->toArray();
-        $array[] = 4;
+        $string = (string)$set;
 
-        // Test set is unchanged.
-        $this->assertCount(3, $set);
-        $this->assertFalse($set->contains(4));
+        $this->assertStringStartsWith('{', $string);
+        $this->assertStringEndsWith('}', $string);
     }
+
+    /**
+     * Test __toString can be implicitly called.
+     */
+    public function testToStringImplicitCall(): void
+    {
+        $set = new Set('int');
+        $set->add(42);
+
+        $output = "Set: $set";
+
+        $this->assertStringContainsString('Set:', $output);
+        $this->assertStringContainsString('42', $output);
+    }
+
+    #endregion
+
+    #region Method toSequence() tests.
 
     /**
      * Test toSequence converts set to sequence.
@@ -135,139 +154,56 @@ class SetConversionTest extends TestCase
         $this->assertTrue($seq->valueTypes->containsOnly('string'));
     }
 
+    #endregion
+
+    #region Method toArray() tests.
+
     /**
-     * Test __toString returns string representation.
+     * Test toArray converts Set to array.
      */
-    public function testToStringReturnsString(): void
+    public function testToArrayConvertsToArray(): void
     {
         $set = new Set('int');
         $set->add(1, 2, 3);
 
-        $string = (string)$set;
-
-        $this->assertIsString($string);
-        $this->assertNotEmpty($string);
-        $this->assertStringContainsString('1', $string);
-        $this->assertStringContainsString('2', $string);
-        $this->assertStringContainsString('3', $string);
-    }
-
-    /**
-     * Test __toString on empty set.
-     */
-    public function testToStringOnEmptySet(): void
-    {
-        $set = new Set('int');
-
-        $string = (string)$set;
-
-        $this->assertIsString($string);
-        $this->assertEquals('{}', $string);
-    }
-
-    /**
-     * Test __toString uses set notation.
-     */
-    public function testToStringUsesSetNotation(): void
-    {
-        $set = new Set('int');
-        $set->add(1);
-
-        $string = (string)$set;
-
-        $this->assertStringStartsWith('{', $string);
-        $this->assertStringEndsWith('}', $string);
-    }
-
-    /**
-     * Test __toString can be implicitly called.
-     */
-    public function testToStringImplicitCall(): void
-    {
-        $set = new Set('int');
-        $set->add(42);
-
-        $output = "Set: $set";
-
-        $this->assertStringContainsString('Set:', $output);
-        $this->assertStringContainsString('42', $output);
-    }
-
-    /**
-     * Test iterator_to_array creates array with sequential keys.
-     */
-    public function testIteratorToArrayCreatesSequentialArray(): void
-    {
-        $set = new Set('string');
-        $set->add('a', 'b', 'c');
-
-        $array = iterator_to_array($set);
+        $array = $set->toArray();
 
         $this->assertIsArray($array);
         $this->assertCount(3, $array);
-        $this->assertArrayHasKey(0, $array);
-        $this->assertArrayHasKey(1, $array);
-        $this->assertArrayHasKey(2, $array);
+        $this->assertContains(1, $array);
+        $this->assertContains(2, $array);
+        $this->assertContains(3, $array);
     }
 
     /**
-     * Test count interface works correctly.
+     * Test toArray on empty set.
      */
-    public function testCountInterface(): void
+    public function testToArrayOnEmptySet(): void
     {
         $set = new Set('int');
 
-        // Test count on empty set.
-        $this->assertCount(0, $set);
+        $array = $set->toArray();
 
-        // Test count after adding items.
-        $set->add(1);
-        $this->assertCount(1, $set);
-
-        $set->add(2, 3);
-        $this->assertCount(3, $set);
-
-        // Test count after removing items.
-        $set->remove(1);
-        $this->assertCount(2, $set);
+        $this->assertIsArray($array);
+        $this->assertCount(0, $array);
+        $this->assertEquals([], $array);
     }
 
     /**
-     * Test foreach iteration.
+     * Test toArray returns independent copy.
      */
-    public function testForeachIteration(): void
+    public function testToArrayReturnsIndependentCopy(): void
     {
         $set = new Set('int');
         $set->add(1, 2, 3);
 
-        $values = [];
-        foreach ($set as $value) {
-            $values[] = $value;
-        }
+        $array = $set->toArray();
+        $array[] = 4;
 
-        $this->assertCount(3, $values);
-        $this->assertContains(1, $values);
-        $this->assertContains(2, $values);
-        $this->assertContains(3, $values);
+        // Test set is unchanged.
+        $this->assertCount(3, $set);
+        $this->assertFalse($set->contains(4));
     }
 
-    /**
-     * Test foreach iteration with keys.
-     */
-    public function testForeachIterationWithKeys(): void
-    {
-        $set = new Set('string');
-        $set->add('a', 'b', 'c');
-
-        $keys = [];
-        $values = [];
-        foreach ($set as $key => $value) {
-            $keys[] = $key;
-            $values[] = $value;
-        }
-
-        // Test sequential numeric keys are generated.
-        $this->assertEquals([0, 1, 2], $keys);
-        $this->assertCount(3, $values);
-    }
+    #endregion
 }

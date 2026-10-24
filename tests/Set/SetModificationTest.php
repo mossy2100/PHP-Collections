@@ -5,16 +5,20 @@ declare(strict_types=1);
 namespace Mossy2100\Collections\Tests\Set;
 
 use InvalidArgumentException;
+use Mossy2100\Collections\Collection;
 use Mossy2100\Collections\Set;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Tests for Set add and remove methods.
+ * Tests for Set modification methods.
  */
 #[CoversClass(Set::class)]
-class SetAddRemoveTest extends TestCase
+#[CoversClass(Collection::class)]
+class SetModificationTest extends TestCase
 {
+    #region Method add() tests.
+
     /**
      * Test add with single item.
      */
@@ -104,6 +108,26 @@ class SetAddRemoveTest extends TestCase
     }
 
     /**
+     * Test add adds nothing if any item has a disallowed type.
+     */
+    public function testAddIsAllOrNothing(): void
+    {
+        $set = new Set('int', [1]);
+
+        try {
+            $set->add(2, 'x', 3);
+            $this->fail('Expected InvalidArgumentException.');
+        } catch (InvalidArgumentException) {
+            // Test the Set is unchanged.
+            $this->assertSame([1], $set->toArray());
+        }
+    }
+
+    #endregion
+
+    #region Method import() tests.
+
+    /**
      * Test import from array.
      */
     public function testImportFromArray(): void
@@ -181,6 +205,10 @@ class SetAddRemoveTest extends TestCase
         $this->assertTrue($set2->contains(1));
     }
 
+    #endregion
+
+    #region Method remove() tests.
+
     /**
      * Test remove existing item returns true.
      */
@@ -253,6 +281,10 @@ class SetAddRemoveTest extends TestCase
         $this->assertFalse($set->contains(1));
     }
 
+    #endregion
+
+    #region Method clear() tests.
+
     /**
      * Test clear removes all items.
      */
@@ -296,19 +328,5 @@ class SetAddRemoveTest extends TestCase
         $this->assertTrue($set->contains(10));
     }
 
-    /**
-     * Test add adds nothing if any item has a disallowed type.
-     */
-    public function testAddIsAllOrNothing(): void
-    {
-        $set = new Set('int', [1]);
-
-        try {
-            $set->add(2, 'x', 3);
-            $this->fail('Expected InvalidArgumentException.');
-        } catch (InvalidArgumentException) {
-            // Test the Set is unchanged.
-            $this->assertSame([1], $set->toArray());
-        }
-    }
+    #endregion
 }

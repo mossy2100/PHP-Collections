@@ -9,11 +9,13 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Tests for Dictionary extraction methods (keys, values).
+ * Tests for Dictionary property hooks.
  */
 #[CoversClass(Dictionary::class)]
-class DictionaryExtractionTest extends TestCase
+class DictionaryPropertyHooksTest extends TestCase
 {
+    #region Property $keys tests.
+
     /**
      * Test keys returns all keys as an array.
      */
@@ -85,6 +87,10 @@ class DictionaryExtractionTest extends TestCase
         $this->assertEquals(['first', 'second', 'third'], $keys);
     }
 
+    #endregion
+
+    #region Property $values tests.
+
     /**
      * Test values returns all values as an array.
      */
@@ -154,6 +160,10 @@ class DictionaryExtractionTest extends TestCase
         $this->assertEquals([10, 20, 30], $values);
     }
 
+    #endregion
+
+    #region Returned array independence tests.
+
     /**
      * Test modifying returned arrays doesn't affect dictionary.
      */
@@ -175,4 +185,6 @@ class DictionaryExtractionTest extends TestCase
         $this->assertCount(2, $dict);
         $this->assertFalse($dict->contains(3));
     }
+
+    #endregion
 }

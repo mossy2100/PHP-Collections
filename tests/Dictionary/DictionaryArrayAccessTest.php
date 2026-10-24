@@ -11,11 +11,92 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Tests for Dictionary ArrayAccess implementation.
+ * Tests for Dictionary ArrayAccess methods.
  */
 #[CoversClass(Dictionary::class)]
 class DictionaryArrayAccessTest extends TestCase
 {
+    #region Method offsetExists() tests.
+
+    /**
+     * Test offsetExists returns true for existing key.
+     */
+    public function testOffsetExistsWithExistingKey(): void
+    {
+        $dict = new Dictionary('string', 'int');
+        $dict['key'] = 123;
+
+        // Test checking for existing key.
+        $exists = isset($dict['key']);
+
+        // Test it returns true.
+        $this->assertTrue($exists);
+    }
+
+    /**
+     * Test offsetExists returns false for non-existent key.
+     */
+    public function testOffsetExistsWithNonExistentKey(): void
+    {
+        $dict = new Dictionary('string', 'int');
+
+        // Test checking for non-existent key.
+        $exists = isset($dict['nonexistent']);
+
+        // Test it returns false.
+        $this->assertFalse($exists);
+    }
+
+    /**
+     * Test offsetExists with null key.
+     */
+    public function testOffsetExistsWithNullKey(): void
+    {
+        $dict = new Dictionary('?string', 'int');
+        $dict[null] = 123;
+
+        // Test checking for null key.
+        $exists = isset($dict[null]);
+
+        // Test it returns true.
+        $this->assertTrue($exists);
+    }
+
+    #endregion
+
+    #region Method offsetGet() tests.
+
+    /**
+     * Test offsetGet retrieves correct value.
+     */
+    public function testOffsetGetRetrievesValue(): void
+    {
+        $dict = new Dictionary('string', 'int');
+        $dict['key'] = 123;
+
+        // Test getting the value.
+        $value = $dict['key'];
+
+        // Test the correct value was retrieved.
+        $this->assertEquals(123, $value);
+    }
+
+    /**
+     * Test offsetGet with non-existent key throws OutOfBoundsException.
+     */
+    public function testOffsetGetNonExistentKey(): void
+    {
+        $dict = new Dictionary('string', 'int');
+
+        // Test getting non-existent key throws OutOfBoundsException.
+        $this->expectException(OutOfBoundsException::class);
+        $value = $dict['nonexistent'];
+    }
+
+    #endregion
+
+    #region Method offsetSet() tests.
+
     /**
      * Test offsetSet with valid key and value.
      */
@@ -99,107 +180,6 @@ class DictionaryArrayAccessTest extends TestCase
     }
 
     /**
-     * Test offsetGet retrieves correct value.
-     */
-    public function testOffsetGetRetrievesValue(): void
-    {
-        $dict = new Dictionary('string', 'int');
-        $dict['key'] = 123;
-
-        // Test getting the value.
-        $value = $dict['key'];
-
-        // Test the correct value was retrieved.
-        $this->assertEquals(123, $value);
-    }
-
-    /**
-     * Test offsetGet with non-existent key throws OutOfBoundsException.
-     */
-    public function testOffsetGetNonExistentKey(): void
-    {
-        $dict = new Dictionary('string', 'int');
-
-        // Test getting non-existent key throws OutOfBoundsException.
-        $this->expectException(OutOfBoundsException::class);
-        $value = $dict['nonexistent'];
-    }
-
-    /**
-     * Test offsetExists returns true for existing key.
-     */
-    public function testOffsetExistsWithExistingKey(): void
-    {
-        $dict = new Dictionary('string', 'int');
-        $dict['key'] = 123;
-
-        // Test checking for existing key.
-        $exists = isset($dict['key']);
-
-        // Test it returns true.
-        $this->assertTrue($exists);
-    }
-
-    /**
-     * Test offsetExists returns false for non-existent key.
-     */
-    public function testOffsetExistsWithNonExistentKey(): void
-    {
-        $dict = new Dictionary('string', 'int');
-
-        // Test checking for non-existent key.
-        $exists = isset($dict['nonexistent']);
-
-        // Test it returns false.
-        $this->assertFalse($exists);
-    }
-
-    /**
-     * Test offsetExists with null key.
-     */
-    public function testOffsetExistsWithNullKey(): void
-    {
-        $dict = new Dictionary('?string', 'int');
-        $dict[null] = 123;
-
-        // Test checking for null key.
-        $exists = isset($dict[null]);
-
-        // Test it returns true.
-        $this->assertTrue($exists);
-    }
-
-    /**
-     * Test offsetUnset removes an item.
-     */
-    public function testOffsetUnsetRemovesItem(): void
-    {
-        $dict = new Dictionary('string', 'int');
-        $dict['a'] = 1;
-        $dict['b'] = 2;
-
-        // Test unsetting an item.
-        unset($dict['a']);
-
-        // Test the item was removed.
-        $this->assertCount(1, $dict);
-        $this->assertFalse(isset($dict['a']));
-        $this->assertEquals(2, $dict['b']);
-    }
-
-    /**
-     * Test offsetUnset with non-existent key throws OutOfBoundsException.
-     */
-    public function testOffsetUnsetNonExistentKey(): void
-    {
-        $dict = new Dictionary('string', 'int');
-
-        // Test unsetting non-existent key throws OutOfBoundsException.
-        $this->expectException(OutOfBoundsException::class);
-        unset($dict['nonexistent']);
-    }
-
-    /**
      * Test using Dictionary with various key types.
      */
     public function testArrayAccessWithVariousKeyTypes(): void
@@ -242,4 +222,40 @@ class DictionaryArrayAccessTest extends TestCase
         $this->assertCount(1, $dict);
         $this->assertEquals(3, $dict[null]);
     }
+
+    #endregion
+
+    #region Method offsetUnset() tests.
+
+    /**
+     * Test offsetUnset removes an item.
+     */
+    public function testOffsetUnsetRemovesItem(): void
+    {
+        $dict = new Dictionary('string', 'int');
+        $dict['a'] = 1;
+        $dict['b'] = 2;
+
+        // Test unsetting an item.
+        unset($dict['a']);
+
+        // Test the item was removed.
+        $this->assertCount(1, $dict);
+        $this->assertFalse(isset($dict['a']));
+        $this->assertEquals(2, $dict['b']);
+    }
+
+    /**
+     * Test offsetUnset with non-existent key throws OutOfBoundsException.
+     */
+    public function testOffsetUnsetNonExistentKey(): void
+    {
+        $dict = new Dictionary('string', 'int');
+
+        // Test unsetting non-existent key throws OutOfBoundsException.
+        $this->expectException(OutOfBoundsException::class);
+        unset($dict['nonexistent']);
+    }
+
+    #endregion
 }

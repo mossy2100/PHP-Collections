@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mossy2100\Collections\Tests\Sequence;
 
+use Mossy2100\Collections\Collection;
 use Mossy2100\Collections\Dictionary;
 use Mossy2100\Collections\Sequence;
 use Mossy2100\Collections\Set;
@@ -14,8 +15,11 @@ use PHPUnit\Framework\TestCase;
  * Tests for Sequence conversion methods.
  */
 #[CoversClass(Sequence::class)]
+#[CoversClass(Collection::class)]
 class SequenceConversionTest extends TestCase
 {
+    #region Method __toString() tests.
+
     /**
      * Test toString method.
      */
@@ -56,6 +60,10 @@ class SequenceConversionTest extends TestCase
         $this->assertSame('[]', (string) new Sequence());
     }
 
+    #endregion
+
+    #region Method toDictionary() tests.
+
     /**
      * Test toDictionary conversion.
      */
@@ -90,6 +98,10 @@ class SequenceConversionTest extends TestCase
         $this->assertSame(10, $dict[0]);
         $this->assertSame(50, $dict[4]);
     }
+
+    #endregion
+
+    #region Method toSet() tests.
 
     /**
      * Test toSet conversion.
@@ -126,6 +138,25 @@ class SequenceConversionTest extends TestCase
         $this->assertTrue($set->contains('d'));
     }
 
+    #endregion
+
+    #region Method toArray() tests.
+
+    /**
+     * Test toArray conversion.
+     */
+    public function testToArray(): void
+    {
+        // Test: Convert Sequence to array
+        $seq = new Sequence('int');
+        $seq->append(1, 2, 3, 4, 5);
+        $array = $seq->toArray();
+
+        // Test: Verify conversion
+        $this->assertIsArray($array);
+        $this->assertSame([1, 2, 3, 4, 5], $array);
+    }
+
     /**
      * Test toArray conversion returns regular PHP array.
      */
@@ -159,36 +190,5 @@ class SequenceConversionTest extends TestCase
         $this->assertSame('z', $array[2]);
     }
 
-    /**
-     * Test countValues method.
-     */
-    public function testCountValues(): void
-    {
-        // Test: Count occurrences of each value
-        $seq = new Sequence('string');
-        $seq->append('a', 'b', 'a', 'c', 'b', 'a');
-        $counts = $seq->countValues();
-
-        // Test: Verify counts are correct
-        $this->assertInstanceOf(Dictionary::class, $counts);
-        $this->assertSame(3, $counts['a']);
-        $this->assertSame(2, $counts['b']);
-        $this->assertSame(1, $counts['c']);
-    }
-
-    /**
-     * Test countValues with unique values.
-     */
-    public function testCountValuesWithUniqueValues(): void
-    {
-        // Test: Count when all values are unique
-        $seq = new Sequence('int');
-        $seq->append(1, 2, 3, 4, 5);
-        $counts = $seq->countValues();
-
-        // Test: Verify all counts are 1
-        $this->assertCount(5, $counts);
-        $this->assertSame(1, $counts[1]);
-        $this->assertSame(1, $counts[5]);
-    }
+    #endregion
 }

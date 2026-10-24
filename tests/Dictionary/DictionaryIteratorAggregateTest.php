@@ -10,11 +10,35 @@ use PHPUnit\Framework\TestCase;
 use Traversable;
 
 /**
- * Tests for Dictionary iteration functionality.
+ * Tests for Dictionary iteration.
  */
 #[CoversClass(Dictionary::class)]
-class DictionaryIterationTest extends TestCase
+class DictionaryIteratorAggregateTest extends TestCase
 {
+    #region Method getIterator() tests.
+
+    /**
+     * Test iterator_to_array creates associative array.
+     */
+    public function testIteratorToArrayCreatesAssociativeArray(): void
+    {
+        $dict = new Dictionary('string', 'int');
+        $dict->add('a', 1);
+        $dict->add('b', 2);
+        $dict->add('c', 3);
+
+        // Test converting iterator to array.
+        $array = iterator_to_array($dict);
+
+        // Test associative array is created.
+        $this->assertIsArray($array);
+        $this->assertEquals([
+            'a' => 1,
+            'b' => 2,
+            'c' => 3,
+        ], $array);
+    }
+
     /**
      * Test iterating over dictionary with foreach.
      */
@@ -267,4 +291,6 @@ class DictionaryIterationTest extends TestCase
         $this->assertEquals($keys1, $keys2);
         $this->assertEquals(['a', 'b'], $keys1);
     }
+
+    #endregion
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mossy2100\Collections\Tests\Dictionary;
 
+use Mossy2100\Collections\Collection;
 use Mossy2100\Collections\Dictionary;
 use Mossy2100\Collections\Pair;
 use Mossy2100\Collections\Sequence;
@@ -14,8 +15,152 @@ use PHPUnit\Framework\TestCase;
  * Tests for Dictionary conversion methods.
  */
 #[CoversClass(Dictionary::class)]
+#[CoversClass(Collection::class)]
 class DictionaryConversionTest extends TestCase
 {
+    #region Method __toString() tests.
+
+    /**
+     * Test __toString returns string representation.
+     */
+    public function testToStringReturnsString(): void
+    {
+        $dict = new Dictionary('string', 'int');
+        $dict->add('a', 1);
+        $dict->add('b', 2);
+
+        // Test the string shows the key-value pairs.
+        $this->assertSame("{'a' => 1, 'b' => 2}", (string) $dict);
+    }
+
+    /**
+     * Test __toString with keys and values of various types.
+     */
+    public function testToStringWithMixedTypes(): void
+    {
+        $dict = new Dictionary();
+        $dict[1] = 'one';
+        $dict[[1, 2]] = 2.0;
+        $dict[null] = true;
+
+        // Test each key and value is formatted with Stringify.
+        $this->assertSame("{1 => 'one', [1, 2] => 2.0, null => true}", (string) $dict);
+    }
+
+    /**
+     * Test __toString on empty dictionary.
+     */
+    public function testToStringOnEmptyDictionary(): void
+    {
+        $dict = new Dictionary();
+
+        // Test converting empty dictionary to string.
+        $this->assertSame('{}', (string) $dict);
+    }
+
+    /**
+     * Test __toString can be implicitly called.
+     */
+    public function testToStringImplicitCall(): void
+    {
+        $dict = new Dictionary('string', 'int');
+        $dict->add('key', 123);
+
+        // Test implicit string conversion.
+        $output = "Dictionary: $dict";
+
+        // Test the string is interpolated.
+        $this->assertSame("Dictionary: {'key' => 123}", $output);
+    }
+
+    #endregion
+
+    #region Method toSequence() tests.
+
+    /**
+     * Test toSequence converts dictionary to Sequence.
+     */
+    public function testToSequenceConvertsToSequence(): void
+    {
+        $dict = new Dictionary('string', 'int');
+        $dict->add('a', 1);
+        $dict->add('b', 2);
+        $dict->add('c', 3);
+
+        // Test converting to Sequence.
+        $sequence = $dict->toSequence();
+
+        // Test Sequence contains Pairs.
+        $this->assertInstanceOf(Sequence::class, $sequence);
+        $this->assertCount(3, $sequence);
+        $this->assertInstanceOf(Pair::class, $sequence[0]);
+        $this->assertInstanceOf(Pair::class, $sequence[1]);
+        $this->assertInstanceOf(Pair::class, $sequence[2]);
+    }
+
+    /**
+     * Test toSequence preserves order.
+     */
+    public function testToSequencePreservesOrder(): void
+    {
+        $dict = new Dictionary('string', 'int');
+        $dict->add('first', 1);
+        $dict->add('second', 2);
+        $dict->add('third', 3);
+
+        // Test converting to Sequence.
+        $sequence = $dict->toSequence();
+
+        // Test order is preserved.
+        /** @var Pair $pair */
+        $pair = $sequence[0];
+        $this->assertEquals('first', $pair->key);
+
+        /** @var Pair $pair */
+        $pair = $sequence[1];
+        $this->assertEquals('second', $pair->key);
+
+        /** @var Pair $pair */
+        $pair = $sequence[2];
+        $this->assertEquals('third', $pair->key);
+    }
+
+    /**
+     * Test toSequence on empty dictionary.
+     */
+    public function testToSequenceOnEmptyDictionary(): void
+    {
+        $dict = new Dictionary();
+
+        // Test converting empty dictionary to Sequence.
+        $sequence = $dict->toSequence();
+
+        // Test empty Sequence is returned.
+        $this->assertInstanceOf(Sequence::class, $sequence);
+        $this->assertCount(0, $sequence);
+    }
+
+    /**
+     * Test toSequence creates independent copy.
+     */
+    public function testToSequenceCreatesIndependentCopy(): void
+    {
+        $dict = new Dictionary('string', 'int');
+        $dict->add('a', 1);
+
+        // Test Sequence and Dictionary are independent.
+        $sequence = $dict->toSequence();
+        $dict->add('b', 2);
+
+        // Test Sequence hasn't changed.
+        $this->assertCount(1, $sequence);
+        $this->assertCount(2, $dict);
+    }
+
+    #endregion
+
+    #region Method toArray() tests.
+
     /**
      * Test toArray converts Dictionary to array of Pair objects.
      */
@@ -108,180 +253,5 @@ class DictionaryConversionTest extends TestCase
         $this->assertArrayNotHasKey('b', $array);
     }
 
-    /**
-     * Test toSequence converts dictionary to Sequence.
-     */
-    public function testToSequenceConvertsToSequence(): void
-    {
-        $dict = new Dictionary('string', 'int');
-        $dict->add('a', 1);
-        $dict->add('b', 2);
-        $dict->add('c', 3);
-
-        // Test converting to Sequence.
-        $sequence = $dict->toSequence();
-
-        // Test Sequence contains Pairs.
-        $this->assertInstanceOf(Sequence::class, $sequence);
-        $this->assertCount(3, $sequence);
-        $this->assertInstanceOf(Pair::class, $sequence[0]);
-        $this->assertInstanceOf(Pair::class, $sequence[1]);
-        $this->assertInstanceOf(Pair::class, $sequence[2]);
-    }
-
-    /**
-     * Test toSequence preserves order.
-     */
-    public function testToSequencePreservesOrder(): void
-    {
-        $dict = new Dictionary('string', 'int');
-        $dict->add('first', 1);
-        $dict->add('second', 2);
-        $dict->add('third', 3);
-
-        // Test converting to Sequence.
-        $sequence = $dict->toSequence();
-
-        // Test order is preserved.
-        /** @var Pair $pair */
-        $pair = $sequence[0];
-        $this->assertEquals('first', $pair->key);
-
-        /** @var Pair $pair */
-        $pair = $sequence[1];
-        $this->assertEquals('second', $pair->key);
-
-        /** @var Pair $pair */
-        $pair = $sequence[2];
-        $this->assertEquals('third', $pair->key);
-    }
-
-    /**
-     * Test toSequence on empty dictionary.
-     */
-    public function testToSequenceOnEmptyDictionary(): void
-    {
-        $dict = new Dictionary();
-
-        // Test converting empty dictionary to Sequence.
-        $sequence = $dict->toSequence();
-
-        // Test empty Sequence is returned.
-        $this->assertInstanceOf(Sequence::class, $sequence);
-        $this->assertCount(0, $sequence);
-    }
-
-    /**
-     * Test toSequence creates independent copy.
-     */
-    public function testToSequenceCreatesIndependentCopy(): void
-    {
-        $dict = new Dictionary('string', 'int');
-        $dict->add('a', 1);
-
-        // Test Sequence and Dictionary are independent.
-        $sequence = $dict->toSequence();
-        $dict->add('b', 2);
-
-        // Test Sequence hasn't changed.
-        $this->assertCount(1, $sequence);
-        $this->assertCount(2, $dict);
-    }
-
-    /**
-     * Test __toString returns string representation.
-     */
-    public function testToStringReturnsString(): void
-    {
-        $dict = new Dictionary('string', 'int');
-        $dict->add('a', 1);
-        $dict->add('b', 2);
-
-        // Test the string shows the key-value pairs.
-        $this->assertSame("{'a' => 1, 'b' => 2}", (string) $dict);
-    }
-
-    /**
-     * Test __toString with keys and values of various types.
-     */
-    public function testToStringWithMixedTypes(): void
-    {
-        $dict = new Dictionary();
-        $dict[1] = 'one';
-        $dict[[1, 2]] = 2.0;
-        $dict[null] = true;
-
-        // Test each key and value is formatted with Stringify.
-        $this->assertSame("{1 => 'one', [1, 2] => 2.0, null => true}", (string) $dict);
-    }
-
-    /**
-     * Test __toString on empty dictionary.
-     */
-    public function testToStringOnEmptyDictionary(): void
-    {
-        $dict = new Dictionary();
-
-        // Test converting empty dictionary to string.
-        $this->assertSame('{}', (string) $dict);
-    }
-
-    /**
-     * Test __toString can be implicitly called.
-     */
-    public function testToStringImplicitCall(): void
-    {
-        $dict = new Dictionary('string', 'int');
-        $dict->add('key', 123);
-
-        // Test implicit string conversion.
-        $output = "Dictionary: $dict";
-
-        // Test the string is interpolated.
-        $this->assertSame("Dictionary: {'key' => 123}", $output);
-    }
-
-    /**
-     * Test iterator_to_array creates associative array.
-     */
-    public function testIteratorToArrayCreatesAssociativeArray(): void
-    {
-        $dict = new Dictionary('string', 'int');
-        $dict->add('a', 1);
-        $dict->add('b', 2);
-        $dict->add('c', 3);
-
-        // Test converting iterator to array.
-        $array = iterator_to_array($dict);
-
-        // Test associative array is created.
-        $this->assertIsArray($array);
-        $this->assertEquals([
-            'a' => 1,
-            'b' => 2,
-            'c' => 3,
-        ], $array);
-    }
-
-    /**
-     * Test count interface works correctly.
-     */
-    public function testCountInterface(): void
-    {
-        $dict = new Dictionary('string', 'int');
-
-        // Test count on empty dictionary.
-        $this->assertCount(0, $dict);
-
-        // Test count after adding items.
-        $dict->add('a', 1);
-        $this->assertCount(1, $dict);
-
-        $dict->add('b', 2);
-        $this->assertCount(2, $dict);
-
-        // Test count after removing items.
-        $dict->removeByKey('a');
-        $this->assertCount(1, $dict);
-    }
+    #endregion
 }

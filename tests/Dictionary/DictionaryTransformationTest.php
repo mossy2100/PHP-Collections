@@ -13,204 +13,12 @@ use RuntimeException;
 use UnexpectedValueException;
 
 /**
- * Tests for Dictionary transformation methods (flip, merge, filter, map).
+ * Tests for Dictionary transformation methods.
  */
 #[CoversClass(Dictionary::class)]
-class DictionaryTransformTest extends TestCase
+class DictionaryTransformationTest extends TestCase
 {
-    /**
-     * Test flip swaps keys and values.
-     */
-    public function testFlipSwapsKeysAndValues(): void
-    {
-        $dict = new Dictionary('string', 'int');
-        $dict->add('a', 1);
-        $dict->add('b', 2);
-        $dict->add('c', 3);
-
-        // Test flipping the dictionary.
-        $flipped = $dict->flip();
-
-        // Check key typeset is as expected.
-        $this->assertTrue($flipped->keyTypes->containsOnly('int'));
-
-        // Check value typeset is as expected.
-        $this->assertTrue($flipped->valueTypes->containsOnly('string'));
-
-        // Test keys and values are swapped.
-        $this->assertCount(3, $flipped);
-        $this->assertEquals('a', $flipped[1]);
-        $this->assertEquals('b', $flipped[2]);
-        $this->assertEquals('c', $flipped[3]);
-
-        // Test original dictionary is unchanged.
-        $this->assertCount(3, $dict);
-        $this->assertEquals(1, $dict['a']);
-    }
-
-    /**
-     * Test flip on empty dictionary.
-     */
-    public function testFlipOnEmptyDictionary(): void
-    {
-        $dict = new Dictionary('string', 'int');
-
-        // Test flipping empty dictionary.
-        $flipped = $dict->flip();
-
-        // Test flipped dictionary is also empty.
-        $this->assertCount(0, $flipped);
-        $this->assertTrue($flipped->empty());
-    }
-
-    /**
-     * Test flip with duplicate values throws RuntimeException.
-     */
-    public function testFlipWithDuplicateValuesThrowsRuntimeException(): void
-    {
-        $dict = new Dictionary('string', 'int');
-        $dict->add('first', 1);
-        $dict->add('second', 2);
-        $dict->add('third', 1);
-
-        // Test flipping with duplicate values throws RuntimeException.
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Cannot flip Dictionary. Values are not unique.');
-        $dict->flip();
-    }
-
-    /**
-     * Test merge combines two dictionaries.
-     */
-    public function testMergeCombinesDictionaries(): void
-    {
-        $dict1 = new Dictionary('string', 'int');
-        $dict1->add('a', 1);
-        $dict1->add('b', 2);
-
-        $dict2 = new Dictionary('string', 'int');
-        $dict2->add('c', 3);
-        $dict2->add('d', 4);
-
-        // Test merging dictionaries.
-        $merged = $dict1->merge($dict2);
-
-        // Test all items from both dictionaries are present.
-        $this->assertCount(4, $merged);
-        $this->assertEquals(1, $merged['a']);
-        $this->assertEquals(2, $merged['b']);
-        $this->assertEquals(3, $merged['c']);
-        $this->assertEquals(4, $merged['d']);
-
-        // Test original dictionaries are unchanged.
-        $this->assertCount(2, $dict1);
-        $this->assertCount(2, $dict2);
-    }
-
-    /**
-     * Test merge with overlapping keys keeps value from second dictionary.
-     */
-    public function testMergeWithOverlappingKeys(): void
-    {
-        $dict1 = new Dictionary('string', 'int');
-        $dict1->add('a', 1);
-        $dict1->add('b', 2);
-
-        $dict2 = new Dictionary('string', 'int');
-        $dict2->add('b', 20);
-        $dict2->add('c', 3);
-
-        // Test merging with overlapping keys.
-        $merged = $dict1->merge($dict2);
-
-        // Test value from second dictionary is kept.
-        $this->assertCount(3, $merged);
-        $this->assertEquals(1, $merged['a']);
-        $this->assertEquals(20, $merged['b']); // Value from dict2
-        $this->assertEquals(3, $merged['c']);
-    }
-
-    /**
-     * Test merge with empty dictionary.
-     */
-    public function testMergeWithEmptyDictionary(): void
-    {
-        $dict1 = new Dictionary('string', 'int');
-        $dict1->add('a', 1);
-
-        $dict2 = new Dictionary('string', 'int');
-
-        // Test merging with empty dictionary.
-        $merged = $dict1->merge($dict2);
-
-        // Test result contains only items from first dictionary.
-        $this->assertCount(1, $merged);
-        $this->assertEquals(1, $merged['a']);
-    }
-
-    /**
-     * Test merge combines type constraints.
-     */
-    public function testMergeCombinesTypeConstraints(): void
-    {
-        $dict1 = new Dictionary('string', 'int');
-        $dict1->add('a', 1);
-
-        $dict2 = new Dictionary('string', 'float');
-        $dict2->add('b', 2.5);
-
-        // Test merging dictionaries with different value types.
-        $merged = $dict1->merge($dict2);
-
-        // Confirm value typeset in merged dictionary contains two types.
-        $this->assertCount(2, $merged->valueTypes);
-        $this->assertTrue($merged->valueTypes->containsAll('int', 'float'));
-
-        // Test both value types are allowed in merged dictionary.
-        $this->assertCount(2, $merged);
-        $this->assertEquals(1, $merged['a']);
-        $this->assertEquals(2.5, $merged['b']);
-    }
-
-    /**
-     * Test merge with an unconstrained Dictionary allows any key and value type, whichever side it's on.
-     */
-    public function testMergeWithUnconstrainedDictionary(): void
-    {
-        $typed = new Dictionary('int', 'int');
-        $typed[1] = 2;
-        $any = new Dictionary(null, null);
-        $any['a'] = 'x';
-
-        $results = [
-            $typed->merge($any),
-            $any->merge($typed),
-        ];
-        foreach ($results as $merged) {
-            $this->assertTrue($merged->keyTypes->anyOk());
-            $this->assertTrue($merged->valueTypes->anyOk());
-            $this->assertSame(2, $merged[1]);
-            $this->assertSame('x', $merged['a']);
-
-            // Test a key and value of other types can be added.
-            $merged[2.5] = true;
-            $this->assertTrue($merged[2.5]);
-        }
-    }
-
-    /**
-     * Test merge with only the value types unconstrained keeps the combined key types.
-     */
-    public function testMergeWithUnconstrainedValuesOnly(): void
-    {
-        $dict1 = new Dictionary('string', 'int');
-        $dict2 = new Dictionary('int', null);
-
-        $merged = $dict1->merge($dict2);
-
-        $this->assertTrue($merged->keyTypes->containsOnly('string', 'int'));
-        $this->assertTrue($merged->valueTypes->anyOk());
-    }
+    #region Method filter() tests.
 
     /**
      * Test filter keeps items that pass test.
@@ -354,6 +162,75 @@ class DictionaryTransformTest extends TestCase
         $this->assertEquals(2, $filtered['b']);
         $this->assertEquals(3, $filtered['c']);
     }
+
+    #endregion
+
+    #region Method flip() tests.
+
+    /**
+     * Test flip swaps keys and values.
+     */
+    public function testFlipSwapsKeysAndValues(): void
+    {
+        $dict = new Dictionary('string', 'int');
+        $dict->add('a', 1);
+        $dict->add('b', 2);
+        $dict->add('c', 3);
+
+        // Test flipping the dictionary.
+        $flipped = $dict->flip();
+
+        // Check key typeset is as expected.
+        $this->assertTrue($flipped->keyTypes->containsOnly('int'));
+
+        // Check value typeset is as expected.
+        $this->assertTrue($flipped->valueTypes->containsOnly('string'));
+
+        // Test keys and values are swapped.
+        $this->assertCount(3, $flipped);
+        $this->assertEquals('a', $flipped[1]);
+        $this->assertEquals('b', $flipped[2]);
+        $this->assertEquals('c', $flipped[3]);
+
+        // Test original dictionary is unchanged.
+        $this->assertCount(3, $dict);
+        $this->assertEquals(1, $dict['a']);
+    }
+
+    /**
+     * Test flip on empty dictionary.
+     */
+    public function testFlipOnEmptyDictionary(): void
+    {
+        $dict = new Dictionary('string', 'int');
+
+        // Test flipping empty dictionary.
+        $flipped = $dict->flip();
+
+        // Test flipped dictionary is also empty.
+        $this->assertCount(0, $flipped);
+        $this->assertTrue($flipped->empty());
+    }
+
+    /**
+     * Test flip with duplicate values throws RuntimeException.
+     */
+    public function testFlipWithDuplicateValuesThrowsRuntimeException(): void
+    {
+        $dict = new Dictionary('string', 'int');
+        $dict->add('first', 1);
+        $dict->add('second', 2);
+        $dict->add('third', 1);
+
+        // Test flipping with duplicate values throws RuntimeException.
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Cannot flip Dictionary. Values are not unique.');
+        $dict->flip();
+    }
+
+    #endregion
+
+    #region Method map() tests.
 
     /**
      * Test map transforms key-value pairs.
@@ -528,4 +405,143 @@ class DictionaryTransformTest extends TestCase
         $this->assertEquals(16, $mapped['BANANA']); // 3 * 2 + 10
         $this->assertEquals(24, $mapped['CHERRY']); // 7 * 2 + 10
     }
+
+    #endregion
+
+    #region Method merge() tests.
+
+    /**
+     * Test merge combines two dictionaries.
+     */
+    public function testMergeCombinesDictionaries(): void
+    {
+        $dict1 = new Dictionary('string', 'int');
+        $dict1->add('a', 1);
+        $dict1->add('b', 2);
+
+        $dict2 = new Dictionary('string', 'int');
+        $dict2->add('c', 3);
+        $dict2->add('d', 4);
+
+        // Test merging dictionaries.
+        $merged = $dict1->merge($dict2);
+
+        // Test all items from both dictionaries are present.
+        $this->assertCount(4, $merged);
+        $this->assertEquals(1, $merged['a']);
+        $this->assertEquals(2, $merged['b']);
+        $this->assertEquals(3, $merged['c']);
+        $this->assertEquals(4, $merged['d']);
+
+        // Test original dictionaries are unchanged.
+        $this->assertCount(2, $dict1);
+        $this->assertCount(2, $dict2);
+    }
+
+    /**
+     * Test merge with overlapping keys keeps value from second dictionary.
+     */
+    public function testMergeWithOverlappingKeys(): void
+    {
+        $dict1 = new Dictionary('string', 'int');
+        $dict1->add('a', 1);
+        $dict1->add('b', 2);
+
+        $dict2 = new Dictionary('string', 'int');
+        $dict2->add('b', 20);
+        $dict2->add('c', 3);
+
+        // Test merging with overlapping keys.
+        $merged = $dict1->merge($dict2);
+
+        // Test value from second dictionary is kept.
+        $this->assertCount(3, $merged);
+        $this->assertEquals(1, $merged['a']);
+        $this->assertEquals(20, $merged['b']); // Value from dict2
+        $this->assertEquals(3, $merged['c']);
+    }
+
+    /**
+     * Test merge with empty dictionary.
+     */
+    public function testMergeWithEmptyDictionary(): void
+    {
+        $dict1 = new Dictionary('string', 'int');
+        $dict1->add('a', 1);
+
+        $dict2 = new Dictionary('string', 'int');
+
+        // Test merging with empty dictionary.
+        $merged = $dict1->merge($dict2);
+
+        // Test result contains only items from first dictionary.
+        $this->assertCount(1, $merged);
+        $this->assertEquals(1, $merged['a']);
+    }
+
+    /**
+     * Test merge combines type constraints.
+     */
+    public function testMergeCombinesTypeConstraints(): void
+    {
+        $dict1 = new Dictionary('string', 'int');
+        $dict1->add('a', 1);
+
+        $dict2 = new Dictionary('string', 'float');
+        $dict2->add('b', 2.5);
+
+        // Test merging dictionaries with different value types.
+        $merged = $dict1->merge($dict2);
+
+        // Confirm value typeset in merged dictionary contains two types.
+        $this->assertCount(2, $merged->valueTypes);
+        $this->assertTrue($merged->valueTypes->containsAll('int', 'float'));
+
+        // Test both value types are allowed in merged dictionary.
+        $this->assertCount(2, $merged);
+        $this->assertEquals(1, $merged['a']);
+        $this->assertEquals(2.5, $merged['b']);
+    }
+
+    /**
+     * Test merge with an unconstrained Dictionary allows any key and value type, whichever side it's on.
+     */
+    public function testMergeWithUnconstrainedDictionary(): void
+    {
+        $typed = new Dictionary('int', 'int');
+        $typed[1] = 2;
+        $any = new Dictionary(null, null);
+        $any['a'] = 'x';
+
+        $results = [
+            $typed->merge($any),
+            $any->merge($typed),
+        ];
+        foreach ($results as $merged) {
+            $this->assertTrue($merged->keyTypes->anyOk());
+            $this->assertTrue($merged->valueTypes->anyOk());
+            $this->assertSame(2, $merged[1]);
+            $this->assertSame('x', $merged['a']);
+
+            // Test a key and value of other types can be added.
+            $merged[2.5] = true;
+            $this->assertTrue($merged[2.5]);
+        }
+    }
+
+    /**
+     * Test merge with only the value types unconstrained keeps the combined key types.
+     */
+    public function testMergeWithUnconstrainedValuesOnly(): void
+    {
+        $dict1 = new Dictionary('string', 'int');
+        $dict2 = new Dictionary('int', null);
+
+        $merged = $dict1->merge($dict2);
+
+        $this->assertTrue($merged->keyTypes->containsOnly('string', 'int'));
+        $this->assertTrue($merged->valueTypes->anyOk());
+    }
+
+    #endregion
 }

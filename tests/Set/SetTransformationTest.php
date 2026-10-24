@@ -13,8 +13,10 @@ use UnexpectedValueException;
  * Tests for Set transformation methods.
  */
 #[CoversClass(Set::class)]
-class SetTransformTest extends TestCase
+class SetTransformationTest extends TestCase
 {
+    #region Method filter() tests.
+
     /**
      * Test filter keeps items that pass test.
      */
@@ -153,80 +155,20 @@ class SetTransformTest extends TestCase
     }
 
     /**
-     * Test all returns true when all items pass test.
+     * Test the message when the filter callback doesn't return a bool.
      */
-    public function testAllReturnsTrueWhenAllPass(): void
+    public function testFilterCallbackReturnTypeMessage(): void
     {
-        $set = new Set('int');
-        $set->add(2, 4, 6, 8);
+        $set = new Set('int', [1]);
 
-        $result = $set->all(static fn ($value) => $value % 2 === 0);
-
-        $this->assertTrue($result);
+        $this->expectException(UnexpectedValueException::class);
+        $this->expectExceptionMessage('Invalid callback return type: int. Must be bool.');
+        $set->filter(static fn ($value) => $value);
     }
 
-    /**
-     * Test all returns false when any item fails test.
-     */
-    public function testAllReturnsFalseWhenAnyFail(): void
-    {
-        $set = new Set('int');
-        $set->add(2, 4, 5, 8);
+    #endregion
 
-        $result = $set->all(static fn ($value) => $value % 2 === 0);
-
-        $this->assertFalse($result);
-    }
-
-    /**
-     * Test all returns true for empty set.
-     */
-    public function testAllReturnsTrueForEmptySet(): void
-    {
-        $set = new Set('int');
-
-        $result = $set->all(static fn ($value) => $value > 100);
-
-        $this->assertTrue($result);
-    }
-
-    /**
-     * Test any returns true when at least one item passes test.
-     */
-    public function testAnyReturnsTrueWhenAnyPass(): void
-    {
-        $set = new Set('int');
-        $set->add(1, 2, 3, 4, 5);
-
-        $result = $set->any(static fn ($value) => $value > 3);
-
-        $this->assertTrue($result);
-    }
-
-    /**
-     * Test any returns false when no items pass test.
-     */
-    public function testAnyReturnsFalseWhenNonePass(): void
-    {
-        $set = new Set('int');
-        $set->add(1, 2, 3);
-
-        $result = $set->any(static fn ($value) => $value > 10);
-
-        $this->assertFalse($result);
-    }
-
-    /**
-     * Test any returns false for empty set.
-     */
-    public function testAnyReturnsFalseForEmptySet(): void
-    {
-        $set = new Set('int');
-
-        $result = $set->any(static fn ($value) => true);
-
-        $this->assertFalse($result);
-    }
+    #region Method map() tests.
 
     /**
      * Test map transforms items.
@@ -288,15 +230,5 @@ class SetTransformTest extends TestCase
         $this->assertCount(0, $mapped);
     }
 
-    /**
-     * Test the message when the filter callback doesn't return a bool.
-     */
-    public function testFilterCallbackReturnTypeMessage(): void
-    {
-        $set = new Set('int', [1]);
-
-        $this->expectException(UnexpectedValueException::class);
-        $this->expectExceptionMessage('Invalid callback return type: int. Must be bool.');
-        $set->filter(static fn ($value) => $value);
-    }
+    #endregion
 }

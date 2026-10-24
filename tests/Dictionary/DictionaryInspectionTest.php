@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mossy2100\Collections\Tests\Dictionary;
 
+use Mossy2100\Collections\Collection;
 use Mossy2100\Collections\Dictionary;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -12,30 +13,10 @@ use PHPUnit\Framework\TestCase;
  * Tests for Dictionary inspection methods.
  */
 #[CoversClass(Dictionary::class)]
+#[CoversClass(Collection::class)]
 class DictionaryInspectionTest extends TestCase
 {
-    /**
-     * Test empty returns true for empty dictionary.
-     */
-    public function testEmptyReturnsTrueForEmptyDictionary(): void
-    {
-        $dict = new Dictionary();
-
-        // Test empty dictionary.
-        $this->assertTrue($dict->empty());
-    }
-
-    /**
-     * Test empty returns false for non-empty dictionary.
-     */
-    public function testEmptyReturnsFalseForNonEmptyDictionary(): void
-    {
-        $dict = new Dictionary('string', 'int');
-        $dict->add('key', 123);
-
-        // Test non-empty dictionary.
-        $this->assertFalse($dict->empty());
-    }
+    #region Method contains() tests.
 
     /**
      * Test contains returns true when value exists.
@@ -93,6 +74,34 @@ class DictionaryInspectionTest extends TestCase
     }
 
     /**
+     * Test contains finds a NAN value.
+     */
+    public function testContainsNanValue(): void
+    {
+        $dict = new Dictionary('string', 'float');
+        $dict['a'] = 1.0;
+        $dict['b'] = NAN;
+
+        $this->assertTrue($dict->contains(NAN));
+    }
+
+    /**
+     * Test contains distinguishes a -0.0 value from 0.0.
+     */
+    public function testContainsDistinguishesNegativeZero(): void
+    {
+        $dict = new Dictionary('string', 'float');
+        $dict['a'] = 0.0;
+
+        $this->assertTrue($dict->contains(0.0));
+        $this->assertFalse($dict->contains(-0.0));
+    }
+
+    #endregion
+
+    #region Method keyExists() tests.
+
+    /**
      * Test keyExists returns true for existing key.
      */
     public function testKeyExistsReturnsTrueForExistingKey(): void
@@ -144,6 +153,37 @@ class DictionaryInspectionTest extends TestCase
         $this->assertFalse($dict->keyExists(2));
     }
 
+    #endregion
+
+    #region Method empty() tests.
+
+    /**
+     * Test empty returns true for empty dictionary.
+     */
+    public function testEmptyReturnsTrueForEmptyDictionary(): void
+    {
+        $dict = new Dictionary();
+
+        // Test empty dictionary.
+        $this->assertTrue($dict->empty());
+    }
+
+    /**
+     * Test empty returns false for non-empty dictionary.
+     */
+    public function testEmptyReturnsFalseForNonEmptyDictionary(): void
+    {
+        $dict = new Dictionary('string', 'int');
+        $dict->add('key', 123);
+
+        // Test non-empty dictionary.
+        $this->assertFalse($dict->empty());
+    }
+
+    #endregion
+
+    #region Method all() tests.
+
     /**
      * Test all returns true when all items pass test.
      */
@@ -188,6 +228,10 @@ class DictionaryInspectionTest extends TestCase
 
         $this->assertTrue($result);
     }
+
+    #endregion
+
+    #region Method any() tests.
 
     /**
      * Test any returns true when at least one item passes test.
@@ -234,97 +278,30 @@ class DictionaryInspectionTest extends TestCase
         $this->assertFalse($result);
     }
 
-    /**
-     * Test equals returns true for identical dictionaries.
-     */
-    public function testEqReturnsTrueForIdenticalDictionaries(): void
-    {
-        $dict1 = new Dictionary('string', 'int');
-        $dict1->add('a', 1);
-        $dict1->add('b', 2);
+    #endregion
 
-        $dict2 = new Dictionary('string', 'int');
-        $dict2->add('a', 1);
-        $dict2->add('b', 2);
-
-        // Test dictionaries are equal.
-        $this->assertTrue($dict1->equal($dict2));
-        $this->assertTrue($dict2->equal($dict1));
-    }
+    #region Method count() tests.
 
     /**
-     * Test equals returns false for dictionaries with different values.
+     * Test count interface works correctly.
      */
-    public function testEqReturnsFalseForDifferentValues(): void
+    public function testCountInterface(): void
     {
-        $dict1 = new Dictionary('string', 'int');
-        $dict1->add('a', 1);
+        $dict = new Dictionary('string', 'int');
 
-        $dict2 = new Dictionary('string', 'int');
-        $dict2->add('a', 2);
+        // Test count on empty dictionary.
+        $this->assertCount(0, $dict);
 
-        // Test dictionaries are not equal.
-        $this->assertFalse($dict1->equal($dict2));
-    }
+        // Test count after adding items.
+        $dict->add('a', 1);
+        $this->assertCount(1, $dict);
 
-    /**
-     * Test equals returns false for dictionaries with different keys.
-     */
-    public function testEqReturnsFalseForDifferentKeys(): void
-    {
-        $dict1 = new Dictionary('string', 'int');
-        $dict1->add('a', 1);
+        $dict->add('b', 2);
+        $this->assertCount(2, $dict);
 
-        $dict2 = new Dictionary('string', 'int');
-        $dict2->add('b', 1);
-
-        // Test dictionaries are not equal.
-        $this->assertFalse($dict1->equal($dict2));
-    }
-
-    /**
-     * Test equals returns false for dictionaries with different counts.
-     */
-    public function testEqReturnsFalseForDifferentCounts(): void
-    {
-        $dict1 = new Dictionary('string', 'int');
-        $dict1->add('a', 1);
-
-        $dict2 = new Dictionary('string', 'int');
-        $dict2->add('a', 1);
-        $dict2->add('b', 2);
-
-        // Test dictionaries are not equal.
-        $this->assertFalse($dict1->equal($dict2));
-    }
-
-    /**
-     * Test equals returns false for different dictionary order.
-     */
-    public function testEqReturnsFalseForDifferentOrder(): void
-    {
-        $dict1 = new Dictionary('string', 'int');
-        $dict1->add('a', 1);
-        $dict1->add('b', 2);
-
-        $dict2 = new Dictionary('string', 'int');
-        $dict2->add('b', 2);
-        $dict2->add('a', 1);
-
-        // Test dictionaries are not equal due to order.
-        $this->assertFalse($dict1->equal($dict2));
-    }
-
-    /**
-     * Test equals on empty dictionaries.
-     */
-    public function testEqOnEmptyDictionaries(): void
-    {
-        $dict1 = new Dictionary();
-        $dict2 = new Dictionary();
-
-        // Test empty dictionaries are equal.
-        $this->assertTrue($dict1->equal($dict2));
+        // Test count after removing items.
+        $dict->removeByKey('a');
+        $this->assertCount(1, $dict);
     }
 
     /**
@@ -348,55 +325,5 @@ class DictionaryInspectionTest extends TestCase
         $this->assertCount(3, $dict);
     }
 
-    /**
-     * Test contains finds a NAN value.
-     */
-    public function testContainsNanValue(): void
-    {
-        $dict = new Dictionary('string', 'float');
-        $dict['a'] = 1.0;
-        $dict['b'] = NAN;
-
-        $this->assertTrue($dict->contains(NAN));
-    }
-
-    /**
-     * Test contains distinguishes a -0.0 value from 0.0.
-     */
-    public function testContainsDistinguishesNegativeZero(): void
-    {
-        $dict = new Dictionary('string', 'float');
-        $dict['a'] = 0.0;
-
-        $this->assertTrue($dict->contains(0.0));
-        $this->assertFalse($dict->contains(-0.0));
-    }
-
-    /**
-     * Test Dictionaries with NAN values compare as equal.
-     */
-    public function testEqualWithNanValues(): void
-    {
-        $dict1 = new Dictionary('string', 'float|array');
-        $dict1['a'] = NAN;
-        $dict1['b'] = [NAN];
-        $dict2 = new Dictionary('string', 'float|array');
-        $dict2['a'] = NAN;
-        $dict2['b'] = [NAN];
-
-        $this->assertTrue($dict1->equal($dict2));
-    }
-
-    /**
-     * Test -0.0 and 0.0 values make Dictionaries unequal.
-     */
-    public function testEqualDistinguishesNegativeZeroValues(): void
-    {
-        $dict1 = new Dictionary('string', 'float');
-        $dict1['a'] = 0.0;
-        $dict2 = new Dictionary('string', 'float');
-        $dict2['a'] = -0.0;
-
-        $this->assertFalse($dict1->equal($dict2));
-    }
+    #endregion
 }

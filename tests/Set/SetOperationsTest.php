@@ -9,11 +9,13 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Tests for Set operations (union, intersect, diff).
+ * Tests for Set set operations.
  */
 #[CoversClass(Set::class)]
 class SetOperationsTest extends TestCase
 {
+    #region Method union() tests.
+
     /**
      * Test union combines items from both sets.
      */
@@ -140,6 +142,10 @@ class SetOperationsTest extends TestCase
         }
     }
 
+    #endregion
+
+    #region Method intersect() tests.
+
     /**
      * Test intersect returns common items.
      */
@@ -242,6 +248,10 @@ class SetOperationsTest extends TestCase
 
         $this->assertTrue($result->valueTypes->containsOnly('int'));
     }
+
+    #endregion
+
+    #region Method diff() tests.
 
     /**
      * Test diff returns items in first set but not in second.
@@ -367,4 +377,6 @@ class SetOperationsTest extends TestCase
         $this->assertCount(1, $diff2);
         $this->assertTrue($diff2->contains(4));
     }
+
+    #endregion
 }

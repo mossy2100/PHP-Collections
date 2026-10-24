@@ -4,20 +4,117 @@ declare(strict_types=1);
 
 namespace Mossy2100\Collections\Tests\Sequence;
 
-use DomainException;
 use InvalidArgumentException;
-use LengthException;
 use Mossy2100\Collections\Sequence;
 use OutOfRangeException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Tests for Sequence ArrayAccess implementation and random methods.
+ * Tests for Sequence ArrayAccess methods.
  */
 #[CoversClass(Sequence::class)]
 class SequenceArrayAccessTest extends TestCase
 {
+    #region Method offsetExists() tests.
+
+    /**
+     * Test offsetExists returns true for valid index.
+     */
+    public function testOffsetExistsReturnsTrueForValidIndex(): void
+    {
+        // Test: Check if index exists
+        $seq = new Sequence('int');
+        $seq->append(1, 2, 3);
+
+        // Test: Verify isset works correctly
+        $this->assertTrue(isset($seq[0]));
+        $this->assertTrue(isset($seq[2]));
+        $this->assertFalse(isset($seq[3]));
+    }
+
+    /**
+     * Test offsetExists throws InvalidArgumentException for non-integer index.
+     */
+    public function testOffsetExistsThrowsInvalidArgumentException(): void
+    {
+        // Test: Attempt to check string index
+        $this->expectException(InvalidArgumentException::class);
+
+        $seq = new Sequence('int');
+        $exists = isset($seq['key']);
+    }
+
+    #endregion
+
+    #region Method offsetGet() tests.
+
+    /**
+     * Test offsetGet retrieves item.
+     */
+    public function testOffsetGetRetrievesItem(): void
+    {
+        // Test: Get item using array syntax
+        $seq = new Sequence('string');
+        $seq->append('apple', 'banana', 'cherry');
+
+        // Test: Verify correct item retrieved
+        $this->assertSame('banana', $seq[1]);
+    }
+
+    /**
+     * Test offsetGet throws OutOfRangeException for invalid index.
+     */
+    public function testOffsetGetThrowsOutOfRange(): void
+    {
+        // Test: Attempt to get item at invalid index
+        $this->expectException(OutOfRangeException::class);
+
+        $seq = new Sequence('int');
+        $seq->append(1, 2, 3);
+        $value = $seq[10];
+    }
+
+    /**
+     * Test the message for an index beyond the end.
+     */
+    public function testOutOfRangeIndexMessage(): void
+    {
+        $seq = new Sequence('int', [1, 2, 3]);
+
+        $this->expectException(OutOfRangeException::class);
+        $this->expectExceptionMessage('Invalid index: 5. Must be in the range 0-2.');
+        $seq[5];
+    }
+
+    /**
+     * Test the message for any index into an empty Sequence.
+     */
+    public function testEmptySequenceIndexMessage(): void
+    {
+        $seq = new Sequence('int');
+
+        $this->expectException(OutOfRangeException::class);
+        $this->expectExceptionMessage('Invalid index: 0. Sequence is empty.');
+        $seq[0];
+    }
+
+    /**
+     * Test the message for an index of the wrong type.
+     */
+    public function testIndexTypeMessage(): void
+    {
+        $seq = new Sequence('int', [1]);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid index type: string. Must be int.');
+        $seq['0'];
+    }
+
+    #endregion
+
+    #region Method offsetSet() tests.
+
     /**
      * Test offsetSet with null appends item.
      */
@@ -103,57 +200,20 @@ class SequenceArrayAccessTest extends TestCase
     }
 
     /**
-     * Test offsetGet retrieves item.
+     * Test the message for a value of a disallowed type.
      */
-    public function testOffsetGetRetrievesItem(): void
+    public function testValueTypeMessage(): void
     {
-        // Test: Get item using array syntax
-        $seq = new Sequence('string');
-        $seq->append('apple', 'banana', 'cherry');
+        $seq = new Sequence('int|float');
 
-        // Test: Verify correct item retrieved
-        $this->assertSame('banana', $seq[1]);
-    }
-
-    /**
-     * Test offsetGet throws OutOfRangeException for invalid index.
-     */
-    public function testOffsetGetThrowsOutOfRange(): void
-    {
-        // Test: Attempt to get item at invalid index
-        $this->expectException(OutOfRangeException::class);
-
-        $seq = new Sequence('int');
-        $seq->append(1, 2, 3);
-        $value = $seq[10];
-    }
-
-    /**
-     * Test offsetExists returns true for valid index.
-     */
-    public function testOffsetExistsReturnsTrueForValidIndex(): void
-    {
-        // Test: Check if index exists
-        $seq = new Sequence('int');
-        $seq->append(1, 2, 3);
-
-        // Test: Verify isset works correctly
-        $this->assertTrue(isset($seq[0]));
-        $this->assertTrue(isset($seq[2]));
-        $this->assertFalse(isset($seq[3]));
-    }
-
-    /**
-     * Test offsetExists throws InvalidArgumentException for non-integer index.
-     */
-    public function testOffsetExistsThrowsInvalidArgumentException(): void
-    {
-        // Test: Attempt to check string index
         $this->expectException(InvalidArgumentException::class);
-
-        $seq = new Sequence('int');
-        $exists = isset($seq['key']);
+        $this->expectExceptionMessage('Invalid value type: string. Must be int|float.');
+        $seq[] = 'x';
     }
+
+    #endregion
+
+    #region Method offsetUnset() tests.
 
     /**
      * Test offsetUnset sets item to null.
@@ -185,268 +245,5 @@ class SequenceArrayAccessTest extends TestCase
         $this->assertSame(0, $seq[1]);
     }
 
-    /**
-     * Test iteration with foreach.
-     */
-    public function testIterationWithForeach(): void
-    {
-        // Test: Iterate using foreach
-        $seq = new Sequence('int');
-        $seq->append(10, 20, 30);
-
-        $sum = 0;
-        foreach ($seq as $value) {
-            /** @var int $value */
-            $sum += $value;
-        }
-
-        // Test: Verify iteration worked
-        $this->assertSame(60, $sum);
-    }
-
-    /**
-     * Test iteration preserves indexes.
-     */
-    public function testIterationPreservesIndexes(): void
-    {
-        // Test: Iterate with index
-        $seq = new Sequence('string');
-        $seq->append('a', 'b', 'c');
-
-        $indexes = [];
-        foreach ($seq as $index => $value) {
-            $indexes[] = $index;
-        }
-
-        // Test: Verify indexes are correct
-        $this->assertSame([0, 1, 2], $indexes);
-    }
-
-    /**
-     * Test chooseRand with single item.
-     */
-    public function testChooseRandSingleItem(): void
-    {
-        // Test: Choose one random item
-        $seq = new Sequence('int');
-        $seq->append(1, 2, 3, 4, 5);
-        $chosen = $seq->chooseRand(1);
-
-        // Test: Verify one item chosen
-        $this->assertCount(1, $chosen);
-        // Test: Verify chosen item is from sequence
-        $this->assertIsInt($chosen[0]);
-        $this->assertTrue($seq->contains($chosen[0]));
-        // Test: Original sequence unchanged
-        $this->assertCount(5, $seq);
-    }
-
-    /**
-     * Test chooseRand with multiple items.
-     */
-    public function testChooseRandMultipleItems(): void
-    {
-        // Test: Choose multiple random items
-        $seq = new Sequence('int');
-        $seq->append(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
-        $chosen = $seq->chooseRand(3);
-
-        // Test: Verify correct number chosen
-        $this->assertCount(3, $chosen);
-        // Test: Verify all chosen items are from sequence
-        foreach ($chosen as $value) {
-            $this->assertTrue($seq->contains($value));
-        }
-    }
-
-    /**
-     * Test chooseRand throws DomainException when count is negative.
-     */
-    public function testChooseRandThrowsDomainExceptionWhenCountNegative(): void
-    {
-        // Test: Attempt to choose with negative count
-        $this->expectException(DomainException::class);
-
-        $seq = new Sequence('int');
-        $seq->append(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
-        $seq->chooseRand(-1);
-    }
-
-    /**
-     * Test chooseRand throws LengthException on empty Sequence.
-     */
-    public function testChooseRandThrowsLengthExceptionOnEmpty(): void
-    {
-        // Test: Attempt to choose from empty Sequence
-        $this->expectException(LengthException::class);
-
-        $seq = new Sequence('int');
-        $seq->chooseRand();
-    }
-
-    /**
-     * Test chooseRand throws LengthException when count too large.
-     */
-    public function testChooseRandThrowsLengthExceptionWhenCountTooLarge(): void
-    {
-        // Test: Attempt to choose more items than available
-        $this->expectException(LengthException::class);
-
-        $seq = new Sequence('int');
-        $seq->append(1, 2, 3);
-        $seq->chooseRand(5);
-    }
-
-    /**
-     * Test removeRand removes item.
-     */
-    public function testRemoveRandRemovesItem(): void
-    {
-        // Test: Remove one random item
-        $seq = new Sequence('int');
-        $seq->append(1, 2, 3, 4, 5);
-        $removed = $seq->removeRand(1);
-
-        // Test: Verify item removed
-        $this->assertCount(1, $removed);
-        $this->assertCount(4, $seq);
-        // Test: Verify removed item no longer in sequence
-        $this->assertFalse($seq->contains($removed[0]));
-    }
-
-    /**
-     * Test removeRand with multiple items.
-     */
-    public function testRemoveRandMultipleItems(): void
-    {
-        // Test: Remove multiple random items
-        $seq = new Sequence('int');
-        $seq->append(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
-        $originalCount = $seq->count();
-        $removed = $seq->removeRand(3);
-
-        // Test: Verify correct number removed
-        $this->assertCount(3, $removed);
-        $this->assertCount($originalCount - 3, $seq);
-    }
-
-    /**
-     * Test chooseRand returns the items in random order, not index order.
-     */
-    public function testChooseRandReturnsRandomOrder(): void
-    {
-        $seq = new Sequence('int', range(1, 10));
-
-        // Over 100 draws of 5 items, at least one should not be ascending (each is with probability 1/120).
-        $allAscending = true;
-        for ($i = 0; $i < 100; $i++) {
-            $chosen = $seq->chooseRand(5);
-            $sorted = $chosen;
-            sort($sorted);
-            if ($chosen !== $sorted) {
-                $allAscending = false;
-                break;
-            }
-        }
-        $this->assertFalse($allAscending);
-    }
-
-    /**
-     * Test chooseRand with the full count returns every item.
-     */
-    public function testChooseRandAllItems(): void
-    {
-        $seq = new Sequence('int', range(1, 10));
-
-        $chosen = $seq->chooseRand(10);
-        sort($chosen);
-        $this->assertSame(range(1, 10), $chosen);
-    }
-
-    /**
-     * Test removeRand returns the items in random order, and removes exactly those items.
-     */
-    public function testRemoveRandReturnsRandomOrder(): void
-    {
-        $allAscending = true;
-        for ($i = 0; $i < 100; $i++) {
-            $seq = new Sequence('int', range(1, 10));
-            $removed = $seq->removeRand(5);
-
-            // Test the removed and remaining items together make up the original items.
-            $all = array_merge($removed, $seq->toArray());
-            sort($all);
-            $this->assertSame(range(1, 10), $all);
-
-            $sorted = $removed;
-            sort($sorted);
-            if ($removed !== $sorted) {
-                $allAscending = false;
-            }
-        }
-        $this->assertFalse($allAscending);
-    }
-
-    /**
-     * Test toArray conversion.
-     */
-    public function testToArray(): void
-    {
-        // Test: Convert Sequence to array
-        $seq = new Sequence('int');
-        $seq->append(1, 2, 3, 4, 5);
-        $array = $seq->toArray();
-
-        // Test: Verify conversion
-        $this->assertIsArray($array);
-        $this->assertSame([1, 2, 3, 4, 5], $array);
-    }
-
-    /**
-     * Test the message for an index beyond the end.
-     */
-    public function testOutOfRangeIndexMessage(): void
-    {
-        $seq = new Sequence('int', [1, 2, 3]);
-
-        $this->expectException(OutOfRangeException::class);
-        $this->expectExceptionMessage('Invalid index: 5. Must be in the range 0-2.');
-        $seq[5];
-    }
-
-    /**
-     * Test the message for any index into an empty Sequence.
-     */
-    public function testEmptySequenceIndexMessage(): void
-    {
-        $seq = new Sequence('int');
-
-        $this->expectException(OutOfRangeException::class);
-        $this->expectExceptionMessage('Invalid index: 0. Sequence is empty.');
-        $seq[0];
-    }
-
-    /**
-     * Test the message for an index of the wrong type.
-     */
-    public function testIndexTypeMessage(): void
-    {
-        $seq = new Sequence('int', [1]);
-
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Invalid index type: string. Must be int.');
-        $seq['0'];
-    }
-
-    /**
-     * Test the message for a value of a disallowed type.
-     */
-    public function testValueTypeMessage(): void
-    {
-        $seq = new Sequence('int|float');
-
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Invalid value type: string. Must be int|float.');
-        $seq[] = 'x';
-    }
+    #endregion
 }

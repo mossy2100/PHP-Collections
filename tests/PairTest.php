@@ -10,11 +10,13 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Tests for Pair class.
+ * Tests for the Pair class.
  */
 #[CoversClass(Pair::class)]
 class PairTest extends TestCase
 {
+    #region Method __construct() tests.
+
     /**
      * Test constructor with scalar key and value.
      */
@@ -205,4 +207,6 @@ class PairTest extends TestCase
         $this->assertTrue($pair4->key);
         $this->assertFalse($pair4->value);
     }
+
+    #endregion
 }
