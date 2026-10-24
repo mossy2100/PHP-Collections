@@ -83,8 +83,8 @@ of those names: `'Number'` is treated as a class name.
 private(set) array $types = []
 ```
 
-The set of type names. Uses PHP 8.4 asymmetric visibility - readable internally, not directly modifiable from outside.
-Use `add()` or `addValueType()` to add types.
+The list of type names. It uses PHP 8.4 asymmetric visibility, so it's publicly readable but only TypeSet can modify it.
+Use `add()`, `addValueType()` or `addValueTypes()` to add types.
 
 ## Constructor
 
