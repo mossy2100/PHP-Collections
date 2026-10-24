@@ -518,4 +518,17 @@ class SequenceConstructorTest extends TestCase
 
         Sequence::range(0, 1e20);
     }
+
+    /**
+     * Test type inference from anonymous-class objects.
+     */
+    public function testConstructorInfersTypeFromAnonymousClass(): void
+    {
+        $seq = new Sequence(source: [
+            new class {
+            },
+        ]);
+
+        $this->assertTrue($seq->valueTypes->containsOnly('object'));
+    }
 }

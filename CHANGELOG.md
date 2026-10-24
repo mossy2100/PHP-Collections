@@ -51,6 +51,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   came back in their original order.
 - **`TypeSet::containsOnly()`** ignores duplicate arguments, including different spellings like `'DateTime'` and
   `'\DateTime'`. Previously `containsOnly('int', 'int')` returned true for `{int, string}`.
+- **Type inference handles anonymous-class objects.** `TypeSet::addValueType()`, and so every constructor or `map()`
+  that infers types, uses the parent class or `object` instead of throwing `DomainException`.
 - **`Set::union()` and `Dictionary::merge()`** no longer restrict the result's types when one side allows any type.
   Previously, merging an unconstrained collection with an `int` one gave an `int`-only result that still held the
   other values and rejected new ones.

@@ -12,6 +12,7 @@ use IteratorAggregate;
 use LogicException;
 use Mossy2100\Core\Numbers;
 use Mossy2100\Core\Types;
+use ReflectionClass;
 use stdClass;
 use Stringable;
 use Traversable;
@@ -177,11 +178,20 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
     /**
      * Get the type name from a value and add it to the TypeSet.
      *
+     * An anonymous class has no name that can be used as a type, so for an instance of one, its parent class is added
+     * if it has one, and otherwise 'object'.
+     *
      * @param mixed $value The value to get the type name from.
      * @return $this The modified TypeSet.
      */
     public function addValueType(mixed $value): self
     {
+        // Use the nearest named type for an instance of an anonymous class.
+        if (is_object($value) && new ReflectionClass($value)->isAnonymous()) {
+            $parent = get_parent_class($value);
+            return $this->addType($parent === false ? 'object' : $parent);
+        }
+
         return $this->addType(get_debug_type($value));
     }
 

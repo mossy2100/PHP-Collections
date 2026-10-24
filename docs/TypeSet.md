@@ -173,6 +173,9 @@ public function addValueType(mixed $value): self
 
 Infer the type from a value and add it to the TypeSet. Returns `$this` for chaining.
 
+An anonymous class has no usable name, so for an instance of one, its parent class is added if it has one, and
+otherwise `object`.
+
 **Examples:**
 ```php
 $ts = new TypeSet();

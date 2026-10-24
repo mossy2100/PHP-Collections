@@ -320,6 +320,34 @@ class TypeSetTest extends TestCase
         $this->assertCount(1, $ts);
     }
 
+    /**
+     * Test addValueType() with an anonymous class adds 'object'.
+     */
+    public function testAddValueTypeAnonymousClass(): void
+    {
+        $obj = new class {
+        };
+        $ts = new TypeSet()->addValueType($obj);
+
+        $this->assertTrue($ts->containsOnly('object'));
+        $this->assertTrue($ts->match($obj));
+    }
+
+    /**
+     * Test addValueType() with an anonymous class that extends a class adds the parent class.
+     */
+    public function testAddValueTypeAnonymousSubclass(): void
+    {
+        $obj = new class extends ParentClass {
+        };
+        $ts = new TypeSet()->addValueType($obj);
+
+        $this->assertTrue($ts->containsOnly(ParentClass::class));
+        $this->assertTrue($ts->match($obj));
+        $this->assertTrue($ts->match(new ChildClass()));
+        $this->assertFalse($ts->match(new stdClass()));
+    }
+
     #endregion
 
     #region match() method tests
