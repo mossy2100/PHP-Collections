@@ -817,7 +817,25 @@ class SequenceTransformationTest extends TestCase
         $seq = new Sequence('object');
         $seq->append(new stdClass(), new stdClass());
 
+        // Stringify includes each object's ID.
         $result = $seq->join(', ');
-        $this->assertSame('stdClass {}, stdClass {}', $result);
+        $this->assertMatchesRegularExpression('/^stdClass #\\d+ \\{\\}, stdClass #\\d+ \\{\\}$/', $result);
+    }
+
+    /**
+     * Test join converts non-string scalars, null and arrays via Stringify.
+     */
+    public function testJoinWithMixedTypes(): void
+    {
+        $seq = new Sequence(source: [
+            1,
+            2.0,
+            true,
+            null,
+            'x',
+            [1, 'a'],
+        ]);
+
+        $this->assertSame("1, 2.0, true, null, x, [1, 'a']", $seq->join(', '));
     }
 }

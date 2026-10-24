@@ -10,12 +10,11 @@ use DomainException;
 use InvalidArgumentException;
 use LengthException;
 use LogicException;
-use Mossy2100\Core\Numbers;
 use Mossy2100\Core\Stringify;
-use Mossy2100\Core\Strings;
 use Mossy2100\Core\Types;
 use OutOfRangeException;
 use Override;
+use Stringable;
 use Traversable;
 use UnexpectedValueException;
 
@@ -148,7 +147,7 @@ final class Sequence extends Collection implements ArrayAccess
     public static function range(int|float $start, int|float $end, int|float $step = 1): self
     {
         // Validate step size. Use loose comparison here to validate either an int or float argument.
-        if (Numbers::isZero($step)) {
+        if ($step == 0) {
             throw new DomainException('Cannot create range with a zero step size.');
         }
         if ($start <= $end && $step < 0) {
@@ -864,7 +863,7 @@ final class Sequence extends Collection implements ArrayAccess
      * Find the concatenation of the values in the Sequence, optionally separated by a given string (the "glue").
      *
      * NB: This method is similar to implode(), except that it doesn't perform an ordinary cast to string, but rather,
-     * makes use of Strings::toString() to get a string representation of any value.
+     * uses Stringify::stringify() to get a string representation of any value that isn't a string or Stringable.
      *
      * So:
      * - strings will be unchanged (as for implode)
@@ -882,7 +881,10 @@ final class Sequence extends Collection implements ArrayAccess
      */
     public function join(string $glue = ''): string
     {
-        return implode($glue, array_map(static fn ($item) => Strings::toString($item), $this->items));
+        $toString = static fn ($item) => is_string($item) || $item instanceof Stringable
+            ? (string) $item
+            : Stringify::stringify($item);
+        return implode($glue, array_map($toString, $this->items));
     }
 
     #endregion

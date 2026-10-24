@@ -773,7 +773,9 @@ echo $seq->average(); // 42
 public function join(string $glue = ''): string
 ```
 
-Concatenate values into a string, optionally separated by glue. Uses `Strings::toString()` (from the Core package) to convert values of any type into readable strings.
+Concatenate values into a string, optionally separated by glue. Strings and `Stringable` objects are cast to string;
+other values are converted with `Stringify::stringify()` from the Core package, so `null`, `true` and `2.0` appear as
+`null`, `true` and `2.0`.
 
 **Examples:**
 ```php
