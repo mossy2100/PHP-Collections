@@ -84,8 +84,8 @@ $seq = new Sequence(source: [1, 2, 3]);
 ```php
 // PHP arrays: keys must be string|int
 $array = [];
-$array[new DateTime()] = 'event';  // ❌ Fatal error
-$array[[1, 2]] = 'coords';         // ❌ Illegal offset
+$array[new DateTime()] = 'event';  // ❌ TypeError: Cannot access offset of type DateTime on array
+$array[[1, 2]] = 'coords';         // ❌ TypeError: Cannot access offset of type array on array
 
 // Dictionary: any type works
 $dict = new Dictionary();
@@ -158,13 +158,13 @@ $seq->append(6, 7, 8);
 $seq->prepend(0);
 
 // Remove items
-$item = $seq->removeByIndex(0);  // Returns removed value
-$count = $seq->removeByValue(3); // Returns count removed
+$item = $seq->removeByIndex(0);  // 0 (the removed value)
+$count = $seq->removeByValue(8); // 1 (the number of items removed)
 
 // Access items
-echo $seq[0];        // 0
-echo $seq->first();  // 0
-echo $seq->last();   // 8
+echo $seq[0];        // 1
+echo $seq->first();  // 1
+echo $seq->last();   // 7
 
 // Transformations
 $evens = $seq->filter(fn($n) => $n % 2 === 0);
@@ -172,11 +172,11 @@ $doubled = $seq->map(fn($n) => $n * 2);
 $sorted = $seq->sort();
 
 // Aggregations
-echo $seq->sum();      // 36
-echo $seq->product();  // 0
-echo $seq->average();  // 4.5
-echo $seq->min();      // 0
-echo $seq->max();      // 8
+echo $seq->sum();      // 28
+echo $seq->product();  // 5040
+echo $seq->average();  // 4
+echo $seq->min();      // 1
+echo $seq->max();      // 7
 ```
 
 ### Dictionary - Key-value pairs with any type
@@ -184,8 +184,8 @@ echo $seq->max();      // 8
 ```php
 use Mossy2100\Collections\Dictionary;
 
-// Create with type inference
-$dict = new Dictionary(source: ['a' => 1, 'b' => 2]);
+// Create without type constraints, so keys and values can be any type
+$dict = new Dictionary(null, null, ['a' => 1, 'b' => 2]);
 
 // Use objects as keys
 $dict[new DateTime('2024-01-01')] = 'New Year';
@@ -204,8 +204,8 @@ if ($dict->keyExists('a')) {
 }
 
 // Iteration
-foreach ($dict as $key => $value) {
-    echo "$key => $value\n";
+foreach ($typed as $key => $value) {
+    echo "$key => $value\n"; // count => 42
 }
 ```
 

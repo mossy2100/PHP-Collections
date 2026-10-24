@@ -784,7 +784,7 @@ echo $seq->average(); // 3
 // Works with floats
 $seq = new Sequence('float');
 $seq->append(1.5, 2.5, 3.5, 4.5);
-echo $seq->average(); // 3.0
+var_dump($seq->average()); // float(3)
 
 // Single item returns that item
 $seq = new Sequence('int');
@@ -1052,7 +1052,7 @@ $numbers->append(1, 2, 3, 4, 5);
 // Safe operations
 $doubled = $numbers->map(fn($x) => $x * 2);
 $sum = $numbers->sum();
-echo "Sum: $sum"; // 15
+echo "Sum: $sum"; // 'Sum: 15'
 
 // This would throw InvalidArgumentException
 // $numbers->append('string');
@@ -1111,12 +1111,15 @@ echo $combined->join('-'); // 'a-b-c-d-e-f'
 $scores = new Sequence('int');
 $scores->append(85, 92, 78, 95, 88, 91);
 
-$average = $scores->sum() / $scores->count();
-$sorted = $scores->sort();
-$median = $sorted[$scores->count() / 2];
+$average = round($scores->average(), 2);
 
-echo "Average: $average"; // 88.17
-echo "Median: $median";   // 88.5
+// With an even count, the median is the mean of the two middle values.
+$sorted = $scores->sort();
+$middle = intdiv($sorted->count(), 2);
+$median = ($sorted[$middle - 1] + $sorted[$middle]) / 2;
+
+echo "Average: $average"; // 'Average: 88.17'
+echo "Median: $median";   // 'Median: 89.5'
 ```
 
 ## See Also

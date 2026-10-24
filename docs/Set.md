@@ -176,11 +176,11 @@ $set = new Set('string');
 $set->add('apple', 'banana', 'cherry');
 
 $removed = $set->remove('banana');
-echo $removed; // true
+var_dump($removed); // true
 echo $set->count(); // 2
 
 $removed = $set->remove('grape');
-echo $removed; // false (wasn't in set)
+var_dump($removed); // false (wasn't in set)
 echo $set->count(); // Still 2
 ```
 
@@ -514,28 +514,6 @@ $seq = $set->toSequence();
 // Result: Sequence with items in set order
 echo $seq->count(); // 3
 echo $seq[0]; // First item from set
-```
-
-### toDictionary()
-
-```php
-public function toDictionary(): Dictionary
-```
-
-Convert the Set to a Dictionary. The keys will be sequential unsigned integers starting from 0, and the values will be the Set items.
-
-**Example:**
-```php
-$set = new Set('string', ['apple', 'banana', 'cherry']);
-$dict = $set->toDictionary();
-
-// Result: Dictionary with:
-// 0 => 'apple'
-// 1 => 'banana'
-// 2 => 'cherry'
-
-echo $dict[0]; // 'apple'
-echo $dict->count(); // 3
 ```
 
 ### toArray()

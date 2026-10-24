@@ -55,11 +55,11 @@ Must be specified in the format returned by `get_debug_type()`:
 Values are matched against parent classes, interfaces, and traits:
 
 ```php
-$ts = new TypeSet('DateTime');
-$ts->match(new DateTimeImmutable()); // true (subclass)
+$ts = new TypeSet('Exception');
+$ts->match(new InvalidArgumentException()); // true (subclass)
 
 $ts = new TypeSet('Countable');
-$ts->match(new ArrayObject());       // true (implements interface)
+$ts->match(new ArrayObject());              // true (implements interface)
 ```
 
 ### Case
@@ -267,9 +267,9 @@ var_dump($ts->match(3.14));    // true
 var_dump($ts->match('42'));    // false (string, not number)
 
 // Class matching (with inheritance)
-$ts = new TypeSet('DateTime');
-var_dump($ts->match(new DateTime()));           // true
-var_dump($ts->match(new DateTimeImmutable()));  // true (subclass)
+$ts = new TypeSet('Exception');
+var_dump($ts->match(new Exception()));                 // true
+var_dump($ts->match(new InvalidArgumentException()));  // true (subclass)
 
 // Interface matching
 $ts = new TypeSet('Countable');
