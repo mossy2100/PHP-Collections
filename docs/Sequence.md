@@ -625,6 +625,14 @@ $seq2 = new Sequence(source: [4, 5, 6]);
 $merged = $seq1->merge($seq2);
 
 echo $merged->count(); // 6
+
+// Sequences with different types
+$ints = new Sequence('int', [1, 2]);
+$strings = new Sequence('string', ['a', 'b']);
+$mixed = $ints->merge($strings);
+
+echo $mixed;             // [1, 2, 'a', 'b']
+echo $mixed->valueTypes; // {int, string}
 ```
 
 ### reverse()
