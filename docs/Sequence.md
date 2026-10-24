@@ -119,7 +119,17 @@ echo $seq[5];  // 99
 public static function range(int|float $start, int|float $end, int|float $step = 1): self
 ```
 
-Generate a Sequence of numbers spanning a given range. Throws `DomainException` for invalid step sizes.
+Generate a Sequence of numbers spanning a given range, like PHP's `range()` for numbers.
+
+- Each value is `$start + $i * $step`, so float steps don't accumulate rounding errors.
+- The sign of `$step` must match the direction of the range.
+- If `$start` equals `$end`, or `$step` is larger than the distance between them, the result is just `[$start]`.
+- If any argument is a float, the values are floats; otherwise, ints.
+
+**Throws:**
+
+- `DomainException` - If an argument is not finite, `$step` is zero, or its sign doesn't match the direction.
+- `LengthException` - If the range would have too many values to fit in an array.
 
 **Examples:**
 ```php
@@ -131,6 +141,9 @@ $seq = Sequence::range(10, 1, -1);    // [10, 9, 8, ..., 1]
 
 // Floats with step
 $seq = Sequence::range(0.0, 1.0, 0.2); // [0.0, 0.2, 0.4, ..., 1.0]
+
+// A single value
+$seq = Sequence::range(5, 5);          // [5]
 ```
 
 ## Modification Methods

@@ -17,6 +17,7 @@ use Override;
 use Stringable;
 use Traversable;
 use UnexpectedValueException;
+use ValueError;
 
 /**
  * A type-specific list implementation.
@@ -125,64 +126,76 @@ final class Sequence extends Collection implements ArrayAccess
     /**
      * Generate a new Sequence of numbers spanning a given range, using a given step size.
      *
-     * A step size of 0 is not allowed, as this would cause an infinite loop.
-     *
-     * This method is analogous to range(), except it does not support strings.
+     * This method is analogous to range(), except it does not support strings, and the sign of the step size must
+     * match the direction of the range.
      * @see https://www.php.net/manual/en/function.range.php
      *
-     * Note: When using floats, be aware of floating-point precision issues.
-     * The final value may not be exactly $end due to rounding errors.
+     * The values are calculated as $start + $i * $step, so rounding errors don't accumulate with float steps.
+     * If $start equals $end, or the step is larger than the distance between them, the result holds just $start.
+     *
+     * If any of the arguments are floats, the result is a Sequence of floats; otherwise, ints.
      *
      * @example
      * Sequence::range(1, 10);          // [1, 2, 3, ..., 10]
      * Sequence::range(0, 1, 0.1);      // [0.0, 0.1, 0.2, ..., 1.0]
      * Sequence::range(10, 1, -1);      // [10, 9, 8, ..., 1]
+     * Sequence::range(5, 5);           // [5]
      *
      * @param int|float $start The start of the range.
      * @param int|float $end The end of the range.
      * @param int|float $step The step size (default 1).
      * @return self The new Sequence.
-     * @throws DomainException If the step size is invalid for the range specified.
+     * @throws DomainException If an argument is not finite, or the step size is invalid for the range specified.
+     * @throws LengthException If the range has too many values to fit in an array.
      */
     public static function range(int|float $start, int|float $end, int|float $step = 1): self
     {
+        // Check the arguments are finite.
+        $args = [
+            'start'     => $start,
+            'end'       => $end,
+            'step size' => $step,
+        ];
+        foreach ($args as $name => $value) {
+            if (!is_finite($value)) {
+                throw new DomainException("Invalid $name: " . Stringify::stringify($value) . '. Must be finite.');
+            }
+        }
+
         // Validate step size. Use loose comparison here to validate either an int or float argument.
         if ($step == 0) {
             throw new DomainException('Cannot create range with a zero step size.');
         }
-        if ($start <= $end && $step < 0) {
+        if ($start < $end && $step < 0) {
             throw new DomainException('Cannot create an increasing range with a negative step size.');
         }
-        if ($start >= $end && $step > 0) {
+        if ($start > $end && $step > 0) {
             throw new DomainException('Cannot create a decreasing range with a positive step size.');
         }
 
         // If any of the arguments are floats, generate a Sequence of floats; otherwise, ints.
         $type = is_float($start) || is_float($end) || is_float($step) ? 'float' : 'int';
 
-        // Construct the new Sequence.
-        $seq = new self($type);
-
-        // Cast $start to float, if necessary, to ensure all generated values are also float.
+        // Cast $start to float, if necessary, so range() returns floats even for an integral float step.
         if ($type === 'float') {
-            $start = (float)$start;
+            $start = (float) $start;
         }
 
-        // Generate the range.
-        if ($step > 0) {
-            // Ascending.
-            for ($i = $start; $i <= $end; $i += $step) {
-                $seq->append($i);
-            }
-        } else {
-            // Descending.
-            for ($i = $start; $i >= $end; $i += $step) {
-                $seq->append($i);
-            }
+        // If the step reaches past $end, the range holds just $start. range() would throw for this case.
+        if (abs($step) > abs($end - $start)) {
+            return new self($type, [$start]);
+        }
+
+        // Generate the range. range() takes the step size without a sign, and gets the direction from $start and $end.
+        try {
+            $items = range($start, $end, abs($step));
+        } catch (ValueError) {
+            // The other cases range() rejects have been checked above, so the range must be too large.
+            throw new LengthException('Cannot create range. It would have too many values.');
         }
 
         // Return the new Sequence.
-        return $seq;
+        return new self($type, $items);
     }
 
     #endregion

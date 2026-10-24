@@ -33,6 +33,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `Sequence::unique()` now always gives the same values as `toSet()`, and is faster on large Sequences.
 - **`Dictionary::removeByValue()` no longer throws for a value of a disallowed type.** It returns 0, like
   `Sequence::removeByValue()`.
+- **`Sequence::range()` throws `DomainException` for a non-finite argument (`INF`, `-INF`, `NAN`),** instead of running
+  out of memory or returning a wrong result. A range too large for an array throws `LengthException`.
+
+### Fixed
+
+- **`Sequence::range()`** now calculates each value as `start + i * step`, so float steps no longer accumulate rounding
+  errors. Previously, many float ranges had the wrong number of values, and `range(0, 1, 0.1)` ended at
+  `0.9999999999999999` instead of `1.0`.
+- **`Sequence::range()`** with `start` equal to `end` returns `[start]`, instead of throwing `DomainException`.
+- **`Sequence::range()`** no longer throws when the range ends at `PHP_INT_MAX` or `PHP_INT_MIN`.
 
 ---
 
