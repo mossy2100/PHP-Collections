@@ -160,6 +160,31 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
 
     #endregion
 
+    #region Set operations
+
+    /**
+     * Get the union of this TypeSet and another, as a new TypeSet.
+     *
+     * The result allows every value that either TypeSet allows. So if either TypeSet allows any type (see anyOk()), so
+     * does the result; otherwise, it contains the types from both.
+     *
+     * Neither TypeSet is modified.
+     *
+     * @param self $other The other TypeSet.
+     * @return self A new TypeSet equal to the union of the two.
+     */
+    public function union(self $other): self
+    {
+        // An empty TypeSet allows any type, so adding types to it would restrict it rather than widen it.
+        if ($this->anyOk() || $other->anyOk()) {
+            return new self();
+        }
+
+        return new self($this)->add($other);
+    }
+
+    #endregion
+
     #region Inspection methods
 
     /**

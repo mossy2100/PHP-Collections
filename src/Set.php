@@ -134,19 +134,15 @@ final class Set extends Collection
 
     /**
      * Return the union of this set and another set.
-     * The resulting set will allow the types allowed by both sets.
+     * The resulting set will allow any value that either set allows. See TypeSet::union().
      *
      * @param self $other The set to union with.
      * @return self A new set equal to the union of the two sets.
      */
     public function union(self $other): self
     {
-        // Construct the new set.
-        // The types for the result Set should include types from both input sets.
-        // In theory, these should be the same (why would you want a union of two sets with different types?),
-        // but it's no trouble to allow for the possibility.
-        $result = new self($this->valueTypes);
-        $result->valueTypes->add($other->valueTypes);
+        // Construct the new set, allowing any value that either set allows.
+        $result = new self($this->valueTypes->union($other->valueTypes));
 
         // Get the items. We can use the union operator because the same items will have the same keys.
         $result->items = $this->items + $other->items;

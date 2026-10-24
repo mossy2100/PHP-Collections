@@ -173,6 +173,46 @@ class DictionaryTransformTest extends TestCase
     }
 
     /**
+     * Test merge with an unconstrained Dictionary allows any key and value type, whichever side it's on.
+     */
+    public function testMergeWithUnconstrainedDictionary(): void
+    {
+        $typed = new Dictionary('int', 'int');
+        $typed[1] = 2;
+        $any = new Dictionary(null, null);
+        $any['a'] = 'x';
+
+        $results = [
+            $typed->merge($any),
+            $any->merge($typed),
+        ];
+        foreach ($results as $merged) {
+            $this->assertTrue($merged->keyTypes->anyOk());
+            $this->assertTrue($merged->valueTypes->anyOk());
+            $this->assertSame(2, $merged[1]);
+            $this->assertSame('x', $merged['a']);
+
+            // Test a key and value of other types can be added.
+            $merged[2.5] = true;
+            $this->assertTrue($merged[2.5]);
+        }
+    }
+
+    /**
+     * Test merge with only the value types unconstrained keeps the combined key types.
+     */
+    public function testMergeWithUnconstrainedValuesOnly(): void
+    {
+        $dict1 = new Dictionary('string', 'int');
+        $dict2 = new Dictionary('int', null);
+
+        $merged = $dict1->merge($dict2);
+
+        $this->assertTrue($merged->keyTypes->containsOnly('string', 'int'));
+        $this->assertTrue($merged->valueTypes->anyOk());
+    }
+
+    /**
      * Test filter keeps items that pass test.
      */
     public function testFilterKeepsMatchingItems(): void

@@ -541,14 +541,16 @@ final class Dictionary extends Collection implements ArrayAccess
      * If the same key exists in both, the second key-value pair (from $other) will be kept and no exception will be
      * thrown. This is the same behaviour as array_merge().
      *
+     * The result allows any key or value that either Dictionary allows. See TypeSet::union().
+     *
      * @param self $other The Dictionary to merge with this Dictionary.
      * @return self The new Dictionary containing pairs from both source Dictionaries.
      */
     public function merge(self $other): self
     {
         // Create a new dictionary with the combined type constraints.
-        $keyTypes = new TypeSet($this->keyTypes)->add($other->keyTypes);
-        $valueTypes = new TypeSet($this->valueTypes)->add($other->valueTypes);
+        $keyTypes = $this->keyTypes->union($other->keyTypes);
+        $valueTypes = $this->valueTypes->union($other->valueTypes);
         $result = new self($keyTypes, $valueTypes);
 
         // Copy pairs from this dictionary.

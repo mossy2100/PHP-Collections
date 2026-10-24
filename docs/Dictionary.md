@@ -558,7 +558,8 @@ $swapped = $dict->map(fn($pair) => new Pair($pair->value, $pair->key));
 public function merge(self $other): self
 ```
 
-Return a new Dictionary with items from both. Duplicate keys keep the value from the second Dictionary.
+Return a new Dictionary with items from both. Duplicate keys keep the value from the second Dictionary. The result
+allows any key or value that either Dictionary allows (see [TypeSet::union()](TypeSet.md#union)).
 
 **Example:**
 ```php

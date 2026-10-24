@@ -181,6 +181,28 @@ foreach ([1, 'two', 3.0, true, null] as $value) {
 echo $ts; // {int, string, float, bool, null}
 ```
 
+## Set Operations
+
+### union()
+
+```php
+public function union(self $other): self
+```
+
+Return a new TypeSet that allows every value either TypeSet allows. If either one allows any type (see
+[anyOk()](#anyok)), so does the result. Otherwise, it contains the types from both. Neither TypeSet is modified.
+
+**Examples:**
+```php
+$a = new TypeSet('int|string');
+$b = new TypeSet('float');
+echo $a->union($b); // {int, string, float}
+
+// An empty TypeSet allows any type, so the union does too.
+$any = new TypeSet();
+var_dump($a->union($any)->anyOk()); // true
+```
+
 ## Inspection Methods
 
 ### match()

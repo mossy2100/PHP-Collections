@@ -207,7 +207,7 @@ echo $set->count(); // 0
 public function union(self $other): self
 ```
 
-Return the union of this set and another set (all items from both sets). Returns a new Set containing items from both sets. The resulting set will allow the types allowed by both sets.
+Return the union of this set and another set (all items from both sets). Returns a new Set containing items from both sets. The resulting set allows any value that either set allows (see [TypeSet::union()](TypeSet.md#union)).
 
 **Examples:**
 ```php

@@ -118,6 +118,29 @@ class SetOperationsTest extends TestCase
     }
 
     /**
+     * Test union with an unconstrained set allows any type, whichever side it's on.
+     */
+    public function testUnionWithUnconstrainedSet(): void
+    {
+        $typed = new Set('int', [1]);
+        $any = new Set(null, ['x']);
+
+        $results = [
+            $typed->union($any),
+            $any->union($typed),
+        ];
+        foreach ($results as $result) {
+            $this->assertTrue($result->valueTypes->anyOk());
+            $this->assertTrue($result->contains(1));
+            $this->assertTrue($result->contains('x'));
+
+            // Test a value of another type can be added.
+            $result->add(2.5);
+            $this->assertTrue($result->contains(2.5));
+        }
+    }
+
+    /**
      * Test intersect returns common items.
      */
     public function testIntersectReturnsCommonItems(): void

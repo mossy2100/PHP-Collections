@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **`Set::map()`** - apply a callback to each item, returning a new Set with inferred types and duplicates removed.
+- **`TypeSet::union()`** - a new TypeSet that allows every value either TypeSet allows.
 
 ### Changed
 
@@ -43,6 +44,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `0.9999999999999999` instead of `1.0`.
 - **`Sequence::range()`** with `start` equal to `end` returns `[start]`, instead of throwing `DomainException`.
 - **`Sequence::range()`** no longer throws when the range ends at `PHP_INT_MAX` or `PHP_INT_MIN`.
+- **`Set::union()` and `Dictionary::merge()`** no longer restrict the result's types when one side allows any type.
+  Previously, merging an unconstrained collection with an `int` one gave an `int`-only result that still held the
+  other values and rejected new ones.
 
 ---
 
