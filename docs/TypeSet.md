@@ -62,6 +62,18 @@ $ts = new TypeSet('Countable');
 $ts->match(new ArrayObject());       // true (implements interface)
 ```
 
+### Case
+
+PHP's reserved type names are case-insensitive, so `'Int'` is stored as `'int'`. This covers `null`, `bool`, `int`,
+`float`, `string`, `array`, `object`, `iterable`, `callable` and `mixed`.
+
+The other names are case-sensitive. `scalar`, `number` and `resource` must be lowercase, because a class could have one
+of those names: `'Number'` is treated as a class name.
+
+### Unsupported Types
+
+`void`, `never`, `false`, `true`, `self`, `static` and `parent` throw a `DomainException`.
+
 ## Properties
 
 ### types

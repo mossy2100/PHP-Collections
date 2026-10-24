@@ -62,12 +62,39 @@ use Traversable;
  * - '?string' - Equivalent to 'string|null'
  * - '?DateTime' - Equivalent to 'DateTime|null'
  *
- * ### Unsupported pseudo-types: void, never, false, true, self, static.
+ * ### Unsupported types
+ * void, never, false, true, self, static and parent are rejected with a DomainException.
+ *
+ * ### Case
+ * PHP's reserved type names (e.g. 'int', 'string', 'mixed') are case-insensitive, so 'Int' is stored as 'int'.
+ * The other names are case-sensitive: 'scalar', 'number' and 'resource' must be lowercase, since a class could have
+ * one of those names.
  *
  * @implements IteratorAggregate<int, string>
  */
 class TypeSet implements Countable, Stringable, IteratorAggregate
 {
+    #region Constants
+
+    /**
+     * PHP's reserved type names that this class supports. They can't be class names, so they're case-insensitive.
+     *
+     * @var list<string>
+     */
+    private const array RESERVED_TYPES = [
+        'null',     'bool',     'int',      'float',    'string',   'array',    'object',   'iterable', 'callable',
+        'mixed',
+    ];
+
+    /**
+     * PHP's reserved type names that this class doesn't support.
+     *
+     * @var list<string>
+     */
+    private const array UNSUPPORTED_TYPES = ['void', 'never', 'false', 'true', 'self', 'static', 'parent'];
+
+    #endregion
+
     #region Properties
 
     /**
@@ -449,7 +476,8 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
     #region Helper methods
 
     /**
-     * Normalize a type name by trimming whitespace and backslashes from the start and end.
+     * Normalize a type name by trimming whitespace and backslashes from the start and end, and lowercasing PHP's
+     * reserved type names.
      *
      * We trim backslashes because class names may be provided with or without a leading backslash, and we want methods
      * like contains() to work with either form.
@@ -459,7 +487,11 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
      */
     private static function normalizeTypeName(string $type): string
     {
-        return trim($type, " \n\r\t\v\0\\");
+        $type = trim($type, " \n\r\t\v\0\\");
+
+        // PHP's reserved type names are case-insensitive.
+        $lower = strtolower($type);
+        return in_array($lower, self::RESERVED_TYPES, true) ? $lower : $type;
     }
 
     /**
@@ -543,13 +575,18 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
      *
      * @param string $type The type to add to the set.
      * @return $this The modified TypeSet.
-     * @throws DomainException If the type name is invalid.
+     * @throws DomainException If the type name is invalid or unsupported.
      * @see TypeSet::isValid()
      */
     private function addType(string $type): self
     {
-        // Trim whitespace and backslash.
+        // Trim whitespace and backslash, and lowercase reserved type names.
         $type = self::normalizeTypeName($type);
+
+        // Reject PHP types that aren't supported. These would otherwise pass as class names.
+        if (in_array(strtolower($type), self::UNSUPPORTED_TYPES, true)) {
+            throw new DomainException("Unsupported type: $type.");
+        }
 
         // Check if the type string is valid. This isn't bulletproof, but it will prevent most incorrect strings.
         if (!self::isValid($type)) {

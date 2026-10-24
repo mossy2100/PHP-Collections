@@ -34,6 +34,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `Sequence::unique()` now always gives the same values as `toSet()`, and is faster on large Sequences.
 - **`Dictionary::removeByValue()` no longer throws for a value of a disallowed type.** It returns 0, like
   `Sequence::removeByValue()`.
+- **`TypeSet` lowercases PHP's reserved type names and rejects unsupported ones (breaking).** `'Int'` now means `int`,
+  instead of a class named `Int` that never matched. `void`, `never`, `false`, `true`, `self`, `static` and `parent`
+  now throw `DomainException`, instead of being accepted as class names.
 - **`Sequence::range()` throws `DomainException` for a non-finite argument (`INF`, `-INF`, `NAN`),** instead of running
   out of memory or returning a wrong result. A range too large for an array throws `LengthException`.
 

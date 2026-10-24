@@ -14,6 +14,7 @@ use Mossy2100\Collections\Tests\Fixtures\ClassWithTrait;
 use Mossy2100\Collections\Tests\Fixtures\ParentClass;
 use Mossy2100\Collections\TypeSet;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
@@ -213,6 +214,62 @@ class TypeSetTest extends TestCase
 
         $this->expectException(InvalidArgumentException::class);
         $ts->add([123]); // Array with integer instead of string
+    }
+
+    /**
+     * Test add() lowercases PHP's reserved type names, which are case-insensitive.
+     */
+    public function testAddNormalizesReservedTypeCase(): void
+    {
+        $ts = new TypeSet('Int|?STRING|Mixed|\\Bool');
+
+        $this->assertTrue($ts->containsOnly('int', 'null', 'string', 'mixed', 'bool'));
+        $this->assertTrue(new TypeSet('Int')->match(1));
+        $this->assertTrue(new TypeSet('int')->contains('INT'));
+    }
+
+    /**
+     * Test add() keeps the case of non-reserved names, which could be class names.
+     */
+    public function testAddKeepsCaseOfNonReservedNames(): void
+    {
+        $ts = new TypeSet('Number|Scalar');
+
+        $this->assertTrue($ts->containsOnly('Number', 'Scalar'));
+        $this->assertFalse($ts->contains('number'));
+        $this->assertFalse($ts->match(1));
+    }
+
+    /**
+     * Data provider for unsupported type names.
+     *
+     * @return array<string, array{string}>
+     */
+    public static function unsupportedTypeProvider(): array
+    {
+        return [
+            'void'   => ['void'],
+            'never'  => ['never'],
+            'false'  => ['false'],
+            'true'   => ['true'],
+            'self'   => ['self'],
+            'static' => ['static'],
+            'parent' => ['parent'],
+            'False'  => ['False'],
+            '?void'  => ['?void'],
+        ];
+    }
+
+    /**
+     * Test add() rejects unsupported type names.
+     */
+    #[DataProvider('unsupportedTypeProvider')]
+    public function testAddThrowsForUnsupportedType(string $type): void
+    {
+        $this->expectException(DomainException::class);
+        $this->expectExceptionMessage('Unsupported type:');
+
+        new TypeSet($type);
     }
 
     #endregion
