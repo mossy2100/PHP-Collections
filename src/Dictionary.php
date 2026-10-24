@@ -233,16 +233,28 @@ final class Dictionary extends Collection implements ArrayAccess
     /**
      * Import key-value pairs from an iterable into the Dictionary.
      *
+     * If any key or value has a disallowed type, no pairs are imported.
+     *
      * @param iterable<mixed, mixed> $source The source iterable.
      * @return $this The calling object.
+     * @throws InvalidArgumentException If any key or value has a disallowed type.
      */
     #[Override]
     public function import(iterable $source): static
     {
-        // Copy the source keys and values into the new dictionary.
+        // Collect the pairs and check their types first, so the Dictionary is unchanged if any are disallowed.
+        // The source may be a generator, which can only be iterated once, and may yield keys of any type.
+        $pairs = [];
         foreach ($source as $key => $value) {
-            // Leverage offsetSet() to generate the index and the pair.
-            $this[$key] = $value;
+            $this->keyTypes->checkValueType($key, 'key');
+            $this->valueTypes->checkValueType($value, 'value');
+            $pairs[] = new Pair($key, $value);
+        }
+
+        // Copy the pairs into the Dictionary.
+        foreach ($pairs as $pair) {
+            // Leverage offsetSet() to generate the index.
+            $this[$pair->key] = $pair->value;
         }
 
         return $this;

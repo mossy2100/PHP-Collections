@@ -205,7 +205,7 @@ final class Sequence extends Collection implements ArrayAccess
     /**
      * Add one or more items to the end of the Sequence.
      *
-     * NB: This is a mutating method.
+     * NB: This is a mutating method. If any item has a disallowed type, no items are added.
      *
      * @param mixed ...$items The items to add to the Sequence.
      * @return $this The Sequence instance.
@@ -218,11 +218,13 @@ final class Sequence extends Collection implements ArrayAccess
      */
     public function append(mixed ...$items): self
     {
+        // Check all the item types first, so the Sequence is unchanged if any are disallowed.
         foreach ($items as $item) {
-            // Check the item type.
             $this->valueTypes->checkValueType($item);
+        }
 
-            // Append an element to the end of the Sequence.
+        // Append the items to the end of the Sequence.
+        foreach ($items as $item) {
             $this->items[] = $item;
         }
 
@@ -233,7 +235,7 @@ final class Sequence extends Collection implements ArrayAccess
     /**
      * Add one or more items to the start of the Sequence.
      *
-     * NB: This is a mutating method.
+     * NB: This is a mutating method. If any item has a disallowed type, no items are added.
      *
      * Note that the list of elements is prepended as a whole, so that the prepended elements stay in the same order.
      * This behaviour parallels array_unshift().
@@ -241,6 +243,7 @@ final class Sequence extends Collection implements ArrayAccess
      *
      * @param mixed ...$items The items to add to the Sequence.
      * @return $this The Sequence instance.
+     * @throws InvalidArgumentException If any of the provided items have a disallowed type.
      *
      * @example
      * $sequence->prepend($item);
@@ -249,16 +252,13 @@ final class Sequence extends Collection implements ArrayAccess
      */
     public function prepend(mixed ...$items): self
     {
-        // Go through the items in reverse order.
-        for ($i = count($items) - 1; $i >= 0; $i--) {
-            $item = $items[$i];
-
-            // Check the item type.
+        // Check all the item types first, so the Sequence is unchanged if any are disallowed.
+        foreach ($items as $item) {
             $this->valueTypes->checkValueType($item);
-
-            // Prepend an element at the start of the Sequence.
-            array_unshift($this->items, $item);
         }
+
+        // Prepend the items as a block, keeping their order. Discard any keys from named arguments.
+        array_unshift($this->items, ...array_values($items));
 
         // Return this for chaining.
         return $this;
@@ -306,6 +306,8 @@ final class Sequence extends Collection implements ArrayAccess
 
     /**
      * Import values from an iterable into the Sequence.
+     *
+     * If any value has a disallowed type, no values are imported.
      *
      * @param iterable<mixed> $source The source iterable.
      * @return $this The calling object.

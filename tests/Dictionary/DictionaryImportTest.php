@@ -8,6 +8,7 @@ use InvalidArgumentException;
 use Mossy2100\Collections\Dictionary;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 
 /**
  * Tests for Dictionary import() method.
@@ -199,11 +200,11 @@ class DictionaryImportTest extends TestCase
     }
 
     /**
-     * Test import stops on first type error.
+     * Test import adds nothing if any value has a disallowed type.
      */
-    public function testImportStopsOnFirstInvalidArgumentException(): void
+    public function testImportIsAllOrNothing(): void
     {
-        // Test: Verify import stops at first invalid type
+        // Test: Verify nothing is imported if any value is invalid
         $dict = new Dictionary('string', 'int');
         $dict->add('a', 1);
 
@@ -215,9 +216,9 @@ class DictionaryImportTest extends TestCase
             ]);
             $this->fail('Expected InvalidArgumentException was not thrown');
         } catch (InvalidArgumentException) {
-            // Test: Verify only valid items before error were imported
-            $this->assertCount(2, $dict); // 'a', 'b'
-            $this->assertSame(2, $dict['b']);
+            // Test: Verify the Dictionary is unchanged
+            $this->assertCount(1, $dict);
+            $this->assertFalse($dict->keyExists('b'));
             $this->assertFalse($dict->keyExists('c'));
             $this->assertFalse($dict->keyExists('d'));
         }
@@ -302,5 +303,44 @@ class DictionaryImportTest extends TestCase
         // Test: Verify order is maintained
         $keys = $dict->keys;
         $this->assertEquals(['first', 'second', 'third'], $keys);
+    }
+
+    /**
+     * Test import adds nothing if any key has a disallowed type.
+     */
+    public function testImportIsAllOrNothingForKeys(): void
+    {
+        $dict = new Dictionary('string', 'int');
+        $dict['a'] = 1;
+        $source = [
+            'b' => 2,
+            5   => 3,
+        ];
+
+        try {
+            $dict->import($source);
+            $this->fail('Expected InvalidArgumentException.');
+        } catch (InvalidArgumentException) {
+            // Test the Dictionary is unchanged.
+            $this->assertSame(['a'], $dict->keys);
+        }
+    }
+
+    /**
+     * Test import from a generator with non-scalar keys.
+     */
+    public function testImportFromGeneratorWithObjectKeys(): void
+    {
+        $key = new stdClass();
+        $generator = (static function () use ($key) {
+            yield $key => 1;
+            yield 'b' => 2;
+        })();
+
+        $dict = new Dictionary(null, 'int');
+        $dict->import($generator);
+
+        $this->assertSame(1, $dict[$key]);
+        $this->assertSame(2, $dict['b']);
     }
 }

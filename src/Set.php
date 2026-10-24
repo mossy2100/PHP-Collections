@@ -63,7 +63,7 @@ final class Set extends Collection
     /**
      * Add one or more items to the Set.
      *
-     * NB: This is a mutating method.
+     * NB: This is a mutating method. If any item has a disallowed type, no items are added.
      *
      * @param mixed ...$items The items to add to the Set.
      * @return $this The modified Set.
@@ -71,11 +71,13 @@ final class Set extends Collection
      */
     public function add(mixed ...$items): self
     {
+        // Check all the item types first, so the Set is unchanged if any are disallowed.
+        foreach ($items as $item) {
+            $this->valueTypes->checkValueType($item);
+        }
+
         // Add each item.
         foreach ($items as $item) {
-            // Check if the item is allowed in the set.
-            $this->valueTypes->checkValueType($item);
-
             // Add the item if new.
             $index = Types::getUniqueString($item);
             if (!array_key_exists($index, $this->items)) {
@@ -90,7 +92,7 @@ final class Set extends Collection
     /**
      * Import values from an iterable into the Set.
      *
-     * NB: This is a mutating method.
+     * NB: This is a mutating method. If any value has a disallowed type, no values are imported.
      *
      * @param iterable<mixed> $source The source iterable.
      * @return $this The calling object.

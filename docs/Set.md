@@ -124,7 +124,8 @@ $set->add(new DateTime('2024-01-02'));
 public function add(mixed ...$items): self
 ```
 
-Add one or more items to the Set. Duplicates are automatically ignored. Returns `$this` for chaining. Throws `TypeError` for invalid item types.
+Add one or more items to the Set. Duplicates are automatically ignored. Returns `$this` for chaining. Throws
+`InvalidArgumentException` for invalid item types, in which case no items are added.
 
 **Examples:**
 ```php
@@ -149,7 +150,8 @@ $set->add(8)->add(9)->add(10);
 public function import(iterable $source): static
 ```
 
-Import values from an iterable into the Set. Duplicates are automatically ignored. Returns `$this` for chaining. Throws `TypeError` for invalid value types.
+Import values from an iterable into the Set. Duplicates are automatically ignored. Returns `$this` for chaining.
+Throws `InvalidArgumentException` for invalid value types, in which case no values are imported.
 
 **Example:**
 ```php

@@ -244,7 +244,8 @@ $dict->add('min', 10)->add('max', 90);
 public function import(iterable $source): static
 ```
 
-Import multiple key-value pairs from an iterable. Returns `$this` for chaining.
+Import multiple key-value pairs from an iterable. Returns `$this` for chaining. Throws `InvalidArgumentException` for
+invalid key or value types, in which case no pairs are imported.
 
 **Throws:** `InvalidArgumentException` - If any keys or values have disallowed types.
 

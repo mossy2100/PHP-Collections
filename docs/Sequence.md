@@ -154,7 +154,8 @@ $seq = Sequence::range(5, 5);          // [5]
 public function append(mixed ...$items): self
 ```
 
-Add one or more items to the end of the Sequence. Returns `$this` for chaining. Throws `InvalidArgumentException` for invalid item types.
+Add one or more items to the end of the Sequence. Returns `$this` for chaining. Throws `InvalidArgumentException` for
+invalid item types, in which case no items are added.
 
 **Examples:**
 ```php
@@ -172,7 +173,8 @@ echo $seq->count(); // 7
 public function prepend(mixed ...$items): self
 ```
 
-Add one or more items to the start of the Sequence. Returns `$this` for chaining.
+Add one or more items to the start of the Sequence, keeping their order. Returns `$this` for chaining. Throws
+`InvalidArgumentException` for invalid item types, in which case no items are added.
 
 Note the list of elements is prepended as a whole, so the prepended elements stay in the same order as they are supplied.
 
@@ -212,7 +214,8 @@ $seq->insert(5, 10); // [1, 2, 0, 0, 0, 10]
 public function import(iterable $source): static
 ```
 
-Import values from an iterable into the Sequence. Returns `$this` for chaining. Throws `InvalidArgumentException` for invalid value types.
+Import values from an iterable into the Sequence. Returns `$this` for chaining. Throws `InvalidArgumentException` for
+invalid value types, in which case no values are imported.
 
 **Example:**
 ```php

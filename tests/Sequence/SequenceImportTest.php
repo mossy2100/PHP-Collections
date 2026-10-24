@@ -159,11 +159,11 @@ class SequenceImportTest extends TestCase
     }
 
     /**
-     * Test import stops on first type error.
+     * Test import adds nothing if any value has a disallowed type.
      */
-    public function testImportStopsOnFirstInvalidArgumentException(): void
+    public function testImportIsAllOrNothing(): void
     {
-        // Test: Verify import stops at first invalid type
+        // Test: Verify nothing is imported if any value is invalid
         $seq = new Sequence('int');
         $seq->append(1, 2);
 
@@ -171,9 +171,8 @@ class SequenceImportTest extends TestCase
             $seq->import([3, 4, 'invalid', 5, 6]);
             $this->fail('Expected InvalidArgumentException was not thrown');
         } catch (InvalidArgumentException) {
-            // Test: Verify only valid items before error were imported
-            $this->assertCount(4, $seq); // 1, 2, 3, 4
-            $this->assertSame(4, $seq[3]);
+            // Test: Verify the Sequence is unchanged
+            $this->assertSame([1, 2], $seq->toArray());
         }
     }
 

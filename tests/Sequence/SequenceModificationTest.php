@@ -326,4 +326,48 @@ class SequenceModificationTest extends TestCase
         $this->assertCount(2, $seq);
         $this->assertFalse($seq->contains(-0.0));
     }
+
+    /**
+     * Test append adds nothing if any item has a disallowed type.
+     */
+    public function testAppendIsAllOrNothing(): void
+    {
+        $seq = new Sequence('int', [1]);
+
+        try {
+            $seq->append(2, 'x', 3);
+            $this->fail('Expected InvalidArgumentException.');
+        } catch (InvalidArgumentException) {
+            // Test the Sequence is unchanged.
+            $this->assertSame([1], $seq->toArray());
+        }
+    }
+
+    /**
+     * Test prepend adds nothing if any item has a disallowed type.
+     */
+    public function testPrependIsAllOrNothing(): void
+    {
+        $seq = new Sequence('int', [1]);
+
+        try {
+            $seq->prepend(2, 'x', 3);
+            $this->fail('Expected InvalidArgumentException.');
+        } catch (InvalidArgumentException) {
+            // Test the Sequence is unchanged.
+            $this->assertSame([1], $seq->toArray());
+        }
+    }
+
+    /**
+     * Test prepend keeps the order of the prepended items.
+     */
+    public function testPrependKeepsOrder(): void
+    {
+        $seq = new Sequence('int', [4]);
+
+        $seq->prepend(1, 2, 3);
+
+        $this->assertSame([1, 2, 3, 4], $seq->toArray());
+    }
 }

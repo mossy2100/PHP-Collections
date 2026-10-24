@@ -295,4 +295,20 @@ class SetAddRemoveTest extends TestCase
         $this->assertCount(1, $set);
         $this->assertTrue($set->contains(10));
     }
+
+    /**
+     * Test add adds nothing if any item has a disallowed type.
+     */
+    public function testAddIsAllOrNothing(): void
+    {
+        $set = new Set('int', [1]);
+
+        try {
+            $set->add(2, 'x', 3);
+            $this->fail('Expected InvalidArgumentException.');
+        } catch (InvalidArgumentException) {
+            // Test the Set is unchanged.
+            $this->assertSame([1], $set->toArray());
+        }
+    }
 }
