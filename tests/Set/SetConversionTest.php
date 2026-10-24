@@ -27,7 +27,7 @@ class SetConversionTest extends TestCase
         $set = new Set('int');
         $set->add(1, 2, 3);
 
-        $string = (string)$set;
+        $string = (string) $set;
 
         $this->assertIsString($string);
         $this->assertNotEmpty($string);
@@ -43,7 +43,7 @@ class SetConversionTest extends TestCase
     {
         $set = new Set('int');
 
-        $string = (string)$set;
+        $string = (string) $set;
 
         $this->assertIsString($string);
         $this->assertEquals('{}', $string);
@@ -57,7 +57,7 @@ class SetConversionTest extends TestCase
         $set = new Set('int');
         $set->add(1);
 
-        $string = (string)$set;
+        $string = (string) $set;
 
         $this->assertStringStartsWith('{', $string);
         $this->assertStringEndsWith('}', $string);

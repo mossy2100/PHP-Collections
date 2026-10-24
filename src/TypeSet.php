@@ -562,7 +562,7 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
      */
     private static function isResourceType(string $type): bool
     {
-        return (bool)preg_match('/^resource \([\w. ]+\)$/', $type);
+        return (bool) preg_match('/^resource \([\w. ]+\)$/', $type);
     }
 
     /**
@@ -579,7 +579,7 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
     private static function isClassType(string $type): bool
     {
         $classNamePart = "[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*";
-        return (bool)preg_match("/^\\\\?($classNamePart)(?:\\\\$classNamePart)*$/", $type);
+        return (bool) preg_match("/^\\\\?($classNamePart)(?:\\\\$classNamePart)*$/", $type);
     }
 
     /**

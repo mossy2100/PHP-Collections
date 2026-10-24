@@ -22,13 +22,13 @@ class TypeSetConversionTest extends TestCase
     public function testToString(): void
     {
         $ts1 = new TypeSet();
-        $this->assertSame('{}', (string)$ts1);
+        $this->assertSame('{}', (string) $ts1);
 
         $ts2 = new TypeSet('int');
-        $this->assertSame('{int}', (string)$ts2);
+        $this->assertSame('{int}', (string) $ts2);
 
         $ts3 = new TypeSet('int|string');
-        $str = (string)$ts3;
+        $str = (string) $ts3;
         // Order might vary, so check both possibilities
         $this->assertTrue($str === '{int, string}' || $str === '{string, int}');
     }

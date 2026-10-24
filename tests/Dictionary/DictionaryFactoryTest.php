@@ -77,10 +77,10 @@ class DictionaryFactoryTest extends TestCase
      */
     public function testCombineWithObjectKeys(): void
     {
-        $obj1 = (object)[
+        $obj1 = (object) [
             'id' => 1,
         ];
-        $obj2 = (object)[
+        $obj2 = (object) [
             'id' => 2,
         ];
         $keys = [$obj1, $obj2];
@@ -168,7 +168,7 @@ class DictionaryFactoryTest extends TestCase
      */
     public function testCombineThrowsOutOfBoundsExceptionForDuplicateObjectKeys(): void
     {
-        $obj = (object)[
+        $obj = (object) [
             'id' => 1,
         ];
         $keys = [$obj, $obj]; // Same object twice

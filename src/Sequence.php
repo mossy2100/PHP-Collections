@@ -29,7 +29,7 @@ use ValueError;
  * generic array (or equivalent) in C# or Java, i.e. `new Sequence('int')` is equivalent to `new List<int>` in C#.
  * Allowed types can be specified as strings (with union types and nullable syntax supported), or an iterable of string
  * values equal to type names. These are two different ways to specify multiple types and can't be combined; so you
- * can't specify, for example, `['int|string', '?float]`. Specifying null for the allowed types (not 'null') means
+ * can't specify, for example, `['int|string', '?float']`. Specifying null for the allowed types (not 'null') means
  * values of any type are allowed. See TypeSet for more details.
  * (NB: Intersection types and DNF syntax are currently NOT supported.)
  *
@@ -44,14 +44,10 @@ use ValueError;
  * - object → new stdClass()
  * For other types (i.e. objects of a specific class, resource, interface, callable), a default value cannot be
  * inferred. Therefore, if you require one, it's recommended you include 'null' in the TypeSet.
- * If a default value is required, but one cannot be inferred, a DomainException will be thrown.
+ * If a default value is required, but one cannot be inferred, a LogicException will be thrown.
  *
  * 4. Array-like access using square brackets [] and iteration using foreach is supported via the ArrayAccess and
- * Iterator interfaces.
- *
- * ## Implementation Notes
- * Several methods use `func_num_args()` to distinguish between "parameter omitted" and "parameter explicitly set to
- * null". This is necessary because PHP doesn't provide a native way to make this distinction with optional parameters.
+ * IteratorAggregate interfaces.
  *
  * @example Basic usage
  * $strings = new Sequence('string');
@@ -64,12 +60,11 @@ use ValueError;
  * $mixed->append(42);
  *
  * @example Object types
- * $dates = new Sequence('DateTime', new DateTime());
+ * $dates = new Sequence('DateTime', [new DateTime()]);
  * $dates->append(new DateTime('tomorrow'));
  *
  * @example Interface types
- * $countables = new Sequence('Countable', []);
- * $countables->append([1, 2, 3]);         // Arrays are countable
+ * $countables = new Sequence('Countable');
  * $countables->append(new ArrayObject()); // ArrayObject implements Countable
  *
  * @implements ArrayAccess<int, mixed>
@@ -1126,7 +1121,7 @@ final class Sequence extends Collection implements ArrayAccess
      *
      * If the index is out of range, the Sequence will be increased in size to accommodate it.
      * Any intermediate positions will be filled with the default value if one can be inferred.
-     * If a default value cannot be inferred, a DomainException will be thrown.
+     * If a default value cannot be inferred, a LogicException will be thrown.
      *
      * @param mixed $offset The zero-based index position to set, or null to append.
      * @param mixed $value The value to set.
