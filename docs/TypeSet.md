@@ -196,6 +196,21 @@ foreach ([1, 'two', 3.0, true, null] as $value) {
 echo $ts; // {int, string, float, bool, null}
 ```
 
+### addValueTypes()
+
+```php
+public function addValueTypes(iterable $values): self
+```
+
+Infer the type of each value, as for [addValueType()](#addvaluetype), and add them to the TypeSet. Returns `$this` for
+chaining.
+
+**Example:**
+```php
+$ts = new TypeSet()->addValueTypes([1, 'two', 3.0, true, null]);
+echo $ts; // {int, string, float, bool, null}
+```
+
 ## Set Operations
 
 ### union()

@@ -39,21 +39,14 @@ final class Set extends Collection
      */
     public function __construct(null|string|iterable|true $types = true, iterable $source = [])
     {
-        // Determine if we should infer the types from the source iterable.
-        $infer = $types === true;
+        // Get the items. The source may be a generator, which can only be iterated once.
+        $items = is_array($source) ? array_values($source) : iterator_to_array($source, false);
 
-        // Instantiate the object and typeset.
-        parent::__construct($infer ? null : $types);
+        // Instantiate the object and typeset, inferring the types from the items if requested.
+        parent::__construct($types === true ? new TypeSet()->addValueTypes($items) : $types);
 
-        foreach ($source as $item) {
-            // Collect types from the source iterable if requested.
-            if ($infer) {
-                $this->valueTypes->addValueType($item);
-            }
-
-            // Add item to the new Set.
-            $this->add($item);
-        }
+        // Add the items to the new Set.
+        $this->add(...$items);
     }
 
     #endregion

@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **`Set::map()`** - apply a callback to each item, returning a new Set with inferred types and duplicates removed.
 - **`TypeSet::union()`** - a new TypeSet that allows every value either TypeSet allows.
+- **`TypeSet::addValueTypes()`** - infer and add the types of several values at once.
 
 ### Changed
 

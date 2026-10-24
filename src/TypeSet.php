@@ -195,6 +195,23 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
         return $this->addType(get_debug_type($value));
     }
 
+    /**
+     * Get the type names from some values and add them to the TypeSet.
+     *
+     * @param iterable<mixed> $values The values to get the type names from.
+     * @return $this The modified TypeSet.
+     * @see TypeSet::addValueType()
+     */
+    public function addValueTypes(iterable $values): self
+    {
+        foreach ($values as $value) {
+            $this->addValueType($value);
+        }
+
+        // Return $this for chaining.
+        return $this;
+    }
+
     #endregion
 
     #region Set operations

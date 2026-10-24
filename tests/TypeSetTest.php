@@ -348,6 +348,39 @@ class TypeSetTest extends TestCase
         $this->assertFalse($ts->match(new stdClass()));
     }
 
+    /**
+     * Test addValueTypes() adds the type of each value, once.
+     */
+    public function testAddValueTypes(): void
+    {
+        $ts = new TypeSet()->addValueTypes([1, 'a', 2, null, 3.5]);
+
+        $this->assertTrue($ts->containsOnly('int', 'string', 'null', 'float'));
+    }
+
+    /**
+     * Test addValueTypes() works with a generator and returns the same TypeSet.
+     */
+    public function testAddValueTypesWithGenerator(): void
+    {
+        $ts = new TypeSet('bool');
+        $generator = (static function () {
+            yield 1;
+            yield new DateTime();
+        })();
+
+        $this->assertSame($ts, $ts->addValueTypes($generator));
+        $this->assertTrue($ts->containsOnly('bool', 'int', 'DateTime'));
+    }
+
+    /**
+     * Test addValueTypes() with no values leaves the TypeSet unchanged.
+     */
+    public function testAddValueTypesWithNoValues(): void
+    {
+        $this->assertTrue(new TypeSet()->addValueTypes([])->empty());
+    }
+
     #endregion
 
     #region match() method tests

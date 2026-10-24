@@ -7,6 +7,7 @@ namespace Mossy2100\Collections;
 use ArrayAccess;
 use BadMethodCallException;
 use DomainException;
+use Generator;
 use InvalidArgumentException;
 use LengthException;
 use Mossy2100\Core\Stringify;
@@ -102,26 +103,22 @@ final class Dictionary extends Collection implements ArrayAccess
         null|string|iterable|true $valueTypes = true,
         iterable $source = []
     ) {
-        // Determine if we should infer types from the source iterable.
-        $inferKeys = $keyTypes === true;
-        $inferValues = $valueTypes === true;
-
-        // Instantiate the object and typesets.
-        parent::__construct($inferValues ? null : $valueTypes);
-        $this->keyTypes = new TypeSet($inferKeys ? null : $keyTypes);
-
-        // Import initial key-value pairs from the source iterable.
+        // Get the keys and values. The source may be a generator, which can only be iterated once, and may yield keys
+        // of any type.
+        $keys = [];
+        $values = [];
         foreach ($source as $key => $value) {
-            // Infer types from the source iterable if requested.
-            if ($inferKeys) {
-                $this->keyTypes->addValueType($key);
-            }
-            if ($inferValues) {
-                $this->valueTypes->addValueType($value);
-            }
+            $keys[] = $key;
+            $values[] = $value;
+        }
 
-            // Add item to the new Dictionary.
-            $this[$key] = $value;
+        // Instantiate the object and typesets, inferring the types from the keys and values if requested.
+        parent::__construct($valueTypes === true ? new TypeSet()->addValueTypes($values) : $valueTypes);
+        $this->keyTypes = $keyTypes === true ? new TypeSet()->addValueTypes($keys) : new TypeSet($keyTypes);
+
+        // Add the key-value pairs to the new Dictionary.
+        foreach ($keys as $i => $key) {
+            $this[$key] = $values[$i];
         }
     }
 
@@ -155,32 +152,19 @@ final class Dictionary extends Collection implements ArrayAccess
             throw new LengthException("Cannot combine due to incorrect values count: $valueCount. Expected $keyCount.");
         }
 
-        // Create a new Dictionary and add items, checking for duplicate keys along the way.
-        $dict = new self();
-        for ($i = 0; $i < $keyCount; $i++) {
-            // Get the key.
-            $key = $keysArray[$i];
-
-            // Check for duplicate keys.
-            if (isset($dict[$key])) {
+        // Pair up the keys and values, checking for duplicate keys.
+        $pairs = [];
+        foreach ($keysArray as $i => $key) {
+            $index = Types::getUniqueString($key);
+            if (isset($pairs[$index])) {
                 throw new OutOfBoundsException('Cannot combine. Keys are not unique.');
             }
-
-            // Get the value.
-            $value = $valuesArray[$i];
-
-            // Infer types if requested.
-            if ($inferTypes) {
-                $dict->keyTypes->addValueType($key);
-                $dict->valueTypes->addValueType($value);
-            }
-
-            // Add the key-value pair to the Dictionary.
-            $dict[$key] = $value;
+            $pairs[$index] = new Pair($key, $valuesArray[$i]);
         }
 
-        // Return the Dictionary.
-        return $dict;
+        // Create the Dictionary, inferring the types if requested.
+        $types = $inferTypes ? true : null;
+        return new self($types, $types, self::yieldPairs($pairs));
     }
 
     #endregion
@@ -512,9 +496,8 @@ final class Dictionary extends Collection implements ArrayAccess
      */
     public function map(callable $fn): self
     {
-        // Initialize the result Dictionary with no type constraints.
-        $result = new self();
-
+        // Get the new pairs.
+        $newPairs = [];
         /** @var Pair $pair */
         foreach ($this->items as $pair) {
             // Call the mapping function.
@@ -528,21 +511,18 @@ final class Dictionary extends Collection implements ArrayAccess
             }
 
             // Check for duplicate keys.
-            if ($result->keyExists($newPair->key)) {
+            $index = Types::getUniqueString($newPair->key);
+            if (isset($newPairs[$index])) {
                 throw new OutOfBoundsException(
                     'Cannot map Dictionary. Callback produced duplicate key: ' . Stringify::abbrev($newPair->key) . '.'
                 );
             }
 
-            // Add the types.
-            $result->keyTypes->addValueType($newPair->key);
-            $result->valueTypes->addValueType($newPair->value);
-
-            // Add the pair to the result.
-            $result->add($newPair);
+            $newPairs[$index] = $newPair;
         }
 
-        return $result;
+        // Create the result, inferring the types from the new pairs.
+        return new self(source: self::yieldPairs($newPairs));
     }
 
     /**
@@ -774,6 +754,21 @@ final class Dictionary extends Collection implements ArrayAccess
     #endregion
 
     #region Helper methods
+
+    /**
+     * Yield the keys and values of some Pairs, for use as a source iterable.
+     *
+     * A generator is needed because the keys can be of any type, so they can't be array keys.
+     *
+     * @param iterable<Pair> $pairs The pairs.
+     * @return Generator<mixed, mixed> The keys and values.
+     */
+    private static function yieldPairs(iterable $pairs): Generator
+    {
+        foreach ($pairs as $pair) {
+            yield $pair->key => $pair->value;
+        }
+    }
 
     /**
      * Validate an key (a.k.a. offset) argument.
