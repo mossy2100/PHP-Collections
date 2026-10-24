@@ -633,6 +633,9 @@ final class Sequence extends Collection implements ArrayAccess
      * @param int $count The number of items to fill.
      * @param mixed $value The value to fill with.
      * @return $this The calling object, for chaining.
+     * @throws OutOfRangeException If the start index is negative.
+     * @throws InvalidArgumentException If the value has a disallowed type.
+     * @throws LogicException If the fill starts beyond the end, and no default value could be determined for the gap.
      */
     public function fill(int $startIndex, int $count, mixed $value): self
     {

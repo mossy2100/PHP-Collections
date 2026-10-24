@@ -101,7 +101,7 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
     /**
      * Items in the set.
      *
-     * @var array<string>
+     * @var list<string>
      */
     private(set) array $types = [];
 
@@ -156,8 +156,8 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
             }
 
             // Trim in case the user did something like 'string | int'.
-            // Even thought _add() will trim the type, we need to do this before checking if the question mark notation
-            // has been used.
+            // Even though addType() will trim the type, we need to do this before checking if the question mark
+            // notation has been used.
             $type = trim($type);
 
             // Check for question mark nullable notation (e.g. '?string').

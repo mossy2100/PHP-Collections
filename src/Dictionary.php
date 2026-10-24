@@ -690,17 +690,16 @@ final class Dictionary extends Collection implements ArrayAccess
      *
      * If a key is in use, the corresponding key-value pair will be replaced.
      * If not, a new key-value pair will be added to the dictionary.
-     * Both the key and value types will be checked, and if either is invalid, a InvalidArgumentException will be
+     * Both the key and value types will be checked, and if either is invalid, an InvalidArgumentException will be
      * thrown.
      *
      * NB: If no offset is specified (e.g. $dict[] = $value), the $offset parameter value will be null.
      * There's no way to know if the offset was not provided (i.e. $dict[]) or was null (i.e. $dict[null]).
      * Thus, if no offset is given, the Dictionary key is taken to be null, if null is an allowed key type.
-     * If not, a InvalidArgumentException will be thrown.
+     * If not, an InvalidArgumentException will be thrown.
      * This behavior means if multiple $dict[] = $value expressions are used, the effect will not be to append
      * multiple values to the dictionary, as with an ordinary PHP array.
      * Rather, it will keep setting the value for the null key.
-     * if this is a problem for users we could disallow null keys, but for now we'll allow them.
      *
      * @param mixed $offset The key to set.
      * @param mixed $value The value to set.
@@ -777,7 +776,7 @@ final class Dictionary extends Collection implements ArrayAccess
     }
 
     /**
-     * Validate an key (a.k.a. offset) argument.
+     * Validate a key (a.k.a. offset) argument.
      *
      * @param mixed $key The key to validate.
      * @return string The key as a corresponding index string.

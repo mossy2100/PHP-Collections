@@ -172,7 +172,7 @@ final class Set extends Collection
      * Return the difference of this set and another set.
      * The resulting set will allow the same types as the $this set.
      *
-     * @param self $other The set to subtract from.
+     * @param self $other The set to subtract.
      * @return self A new set equal to the difference of the two sets.
      */
     public function diff(self $other): self
