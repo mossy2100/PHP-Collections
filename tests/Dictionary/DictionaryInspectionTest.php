@@ -347,4 +347,56 @@ class DictionaryInspectionTest extends TestCase
         $dict->add('c', 3);
         $this->assertCount(3, $dict);
     }
+
+    /**
+     * Test contains finds a NAN value.
+     */
+    public function testContainsNanValue(): void
+    {
+        $dict = new Dictionary('string', 'float');
+        $dict['a'] = 1.0;
+        $dict['b'] = NAN;
+
+        $this->assertTrue($dict->contains(NAN));
+    }
+
+    /**
+     * Test contains distinguishes a -0.0 value from 0.0.
+     */
+    public function testContainsDistinguishesNegativeZero(): void
+    {
+        $dict = new Dictionary('string', 'float');
+        $dict['a'] = 0.0;
+
+        $this->assertTrue($dict->contains(0.0));
+        $this->assertFalse($dict->contains(-0.0));
+    }
+
+    /**
+     * Test Dictionaries with NAN values compare as equal.
+     */
+    public function testEqualWithNanValues(): void
+    {
+        $dict1 = new Dictionary('string', 'float|array');
+        $dict1['a'] = NAN;
+        $dict1['b'] = [NAN];
+        $dict2 = new Dictionary('string', 'float|array');
+        $dict2['a'] = NAN;
+        $dict2['b'] = [NAN];
+
+        $this->assertTrue($dict1->equal($dict2));
+    }
+
+    /**
+     * Test -0.0 and 0.0 values make Dictionaries unequal.
+     */
+    public function testEqualDistinguishesNegativeZeroValues(): void
+    {
+        $dict1 = new Dictionary('string', 'float');
+        $dict1['a'] = 0.0;
+        $dict2 = new Dictionary('string', 'float');
+        $dict2['a'] = -0.0;
+
+        $this->assertFalse($dict1->equal($dict2));
+    }
 }

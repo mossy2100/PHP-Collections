@@ -9,11 +9,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **`Set::map()`** - apply a callback to each item, returning a new Set with inferred types and duplicates removed.
+
 ### Changed
 
 - **Renamed the package from `oceanmoon/collections` to `mossy2100/collections`, and the namespace from
   `OceanMoon\Collections` to `Mossy2100\Collections` (breaking),** matching the author's GitHub and Packagist name.
   Update `composer.json` and any `use` statements. It depends on `mossy2100/core`.
+- **`Dictionary::sort()`, `sortByKey()` and `sortByValue()` are now non-mutating (breaking).** They return a new,
+  sorted Dictionary and leave the original unchanged, matching `Sequence`'s sort methods. Code that relied on
+  in-place sorting must use the return value: `$dict = $dict->sortByKey();`.
+- **`Sequence` and `Dictionary` string conversion is now readable (breaking output change).** A Sequence converts to
+  list notation, e.g. `[1, 'a']`, and a Dictionary to `{'a' => 1, 'b' => 2}`. Previously both dumped their internal
+  properties. `Collection::__toString()` is now abstract, so custom subclasses of `Collection` must implement it.
+- **`Sequence::filter()` now requires the callback to return a bool (breaking),** like `Set` and `Dictionary`. It
+  throws `UnexpectedValueException` otherwise, instead of accepting truthy values.
+- **`Sequence` and `Dictionary` now compare values the same way as `Set` (breaking for special floats).** They use
+  `Types::identical()` from Core: strict equality, except that floats are compared by bit pattern. So `NAN` now
+  matches `NAN`, and `-0.0` no longer matches `0.0`. This affects `Sequence::contains()`, `search()`,
+  `removeByValue()`, `equal()` and `unique()`, and `Dictionary::contains()`, `removeByValue()` and `equal()`.
+  `Sequence::unique()` now always gives the same values as `toSet()`, and is faster on large Sequences.
+- **`Dictionary::removeByValue()` no longer throws for a value of a disallowed type.** It returns 0, like
+  `Sequence::removeByValue()`.
 
 ---
 

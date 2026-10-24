@@ -280,9 +280,8 @@ echo $dict->count(); // 2
 public function removeByValue(mixed $value): int
 ```
 
-Remove all items with a matching value. Returns the count of items removed.
-
-**Throws:** `InvalidArgumentException` - If the value has a disallowed type.
+Remove all items with a matching value, compared as for `contains()`. Returns the count of items removed. A value of a
+disallowed type can't be present, so it returns 0.
 
 **Example:**
 ```php
@@ -315,7 +314,9 @@ echo $dict->count(); // 0
 public function contains(mixed $value): bool
 ```
 
-Check if the Dictionary contains a value (strict equality).
+Check if the Dictionary contains a value. Values are compared with `Types::identical()` from the Core package: strict
+equality (`===`), except that floats are compared by bit pattern. So `NAN` matches `NAN`, and `-0.0` doesn't match
+`0.0`. Keys are compared the same way.
 
 **Example:**
 ```php
@@ -378,7 +379,8 @@ echo count($dict);   // 3 (Countable interface)
 public function equal(mixed $other): bool
 ```
 
-Check if two Dictionaries are equal. Dictionaries are equal if they have the same type, count, keys, values, and order. Type constraints are not considered.
+Check if two Dictionaries are equal. Dictionaries are equal if they have the same type, count, keys, values, and order.
+Keys and values are compared as for `contains()`. Type constraints are not considered.
 
 **Example:**
 ```php
@@ -428,13 +430,14 @@ var_dump($dict->any(fn($pair) => $pair->value > 5)); // false
 public function sort(callable $fn): self
 ```
 
-Sort by custom comparison function (mutating). Returns `$this` for chaining.
+Return a new Dictionary with the pairs sorted by a custom comparison function (non-mutating).
 
 **Example:**
 ```php
 $dict = new Dictionary(source: ['a' => 30, 'b' => 10, 'c' => 20]);
-$dict->sort(fn($a, $b) => $a->value <=> $b->value);
-// Order by value: 10, 20, 30
+$sorted = $dict->sort(fn($a, $b) => $a->value <=> $b->value);
+// $sorted order by value: 10, 20, 30
+// $dict is unchanged
 ```
 
 ### sortByKey()
@@ -443,13 +446,13 @@ $dict->sort(fn($a, $b) => $a->value <=> $b->value);
 public function sortByKey(): self
 ```
 
-Sort by keys using the spaceship operator (mutating). Returns `$this` for chaining.
+Return a new Dictionary with the pairs sorted by key, using the spaceship operator (non-mutating).
 
 **Example:**
 ```php
 $dict = new Dictionary(source: ['z' => 1, 'a' => 2, 'm' => 3]);
-$dict->sortByKey();
-// Order: a, m, z
+$sorted = $dict->sortByKey();
+// $sorted order: a, m, z
 ```
 
 ### sortByValue()
@@ -458,13 +461,13 @@ $dict->sortByKey();
 public function sortByValue(): self
 ```
 
-Sort by values using the spaceship operator (mutating). Returns `$this` for chaining.
+Return a new Dictionary with the pairs sorted by value, using the spaceship operator (non-mutating).
 
 **Example:**
 ```php
 $dict = new Dictionary(source: ['a' => 30, 'b' => 10, 'c' => 20]);
-$dict->sortByValue();
-// Order by value: 10, 20, 30
+$sorted = $dict->sortByValue();
+// $sorted order by value: 10, 20, 30
 ```
 
 ## Transformation Methods
@@ -573,12 +576,16 @@ $merged = $dict1->merge($dict2);
 public function __toString(): string
 ```
 
-Convert to a string representation. Implements the `Stringable` interface.
+Convert to a string showing the key-value pairs. Keys and values are formatted with `Stringify::stringify()` from the
+Core package.
 
 **Example:**
 ```php
 $dict = new Dictionary(source: ['a' => 1, 'b' => 2]);
-echo $dict; // String representation of the Dictionary
+echo $dict; // {'a' => 1, 'b' => 2}
+
+$empty = new Dictionary();
+echo $empty; // {}
 ```
 
 ### toArray()
@@ -682,8 +689,7 @@ $sales = new Dictionary(source: [
 ]);
 
 // Filter and sort
-$highValue = $sales->filter(fn($pair) => $pair->value > 1000);
-$highValue->sortByValue();
+$highValue = $sales->filter(fn($pair) => $pair->value > 1000)->sortByValue();
 
 // Transform to formatted strings
 $formatted = $sales->map(fn($pair) => new Pair(

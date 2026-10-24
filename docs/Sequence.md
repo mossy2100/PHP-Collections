@@ -251,7 +251,7 @@ echo $seq->count(); // 3
 public function removeByValue(mixed $value): int
 ```
 
-Remove all items matching a given value (strict equality). Returns the number of items removed.
+Remove all items matching a given value, compared as for `contains()`. Returns the number of items removed.
 
 **Example:**
 ```php
@@ -321,7 +321,8 @@ echo $seq->empty() ? 'empty' : 'not empty'; // 'not empty'
 public function contains(mixed $value): bool
 ```
 
-Check if the Sequence contains a value (strict equality).
+Check if the Sequence contains a value. Values are compared the same way as in a Set: strict equality (`===`),
+except that floats are compared by bit pattern. So `NAN` matches `NAN`, and `-0.0` doesn't match `0.0`.
 
 **Example:**
 ```php
@@ -391,7 +392,8 @@ var_dump($seq->any(fn($x) => $x > 10));      // false
 public function equal(mixed $other): bool
 ```
 
-Check if equal to another Collection. Collections must be same class, have same count, and same values in same order. Type constraints are ignored.
+Check if equal to another Collection. Collections must be same class, have same count, and same values in same order
+(compared as for `contains()`). Type constraints are ignored.
 
 **Example:**
 ```php
@@ -463,7 +465,7 @@ $slice = $seq->slice(0, -2); // [1, 2, 3, 4, 5, 6, 7, 8]
 public function search(mixed $value): ?int
 ```
 
-Search for a value and return its index, or null if not found (strict equality).
+Search for a value and return its index, or null if not found. Values are compared as for `contains()`.
 
 **Example:**
 ```php
@@ -497,7 +499,12 @@ $result = $seq->find(fn($x) => $x > 10);      // null
 public function unique(): self
 ```
 
-Return a new Sequence containing only unique values.
+Return a new Sequence containing only unique values, keeping the first occurrence of each.
+
+Values are compared the same way as in a Set, so the result has the same values as `toSet()`:
+
+- Values of different types are distinct: `true`, `1`, `1.0` and `'1'` are all kept.
+- `NAN` equals `NAN`, and `-0.0` is distinct from `0.0`.
 
 **Example:**
 ```php
@@ -553,7 +560,9 @@ $seq->fill(0, 5, 7); // [7, 7, 7, 7, 7]
 public function filter(callable $callback): static
 ```
 
-Return a new Sequence containing only items that pass the test.
+Return a new Sequence containing only items that pass the test. The callback must return a bool.
+
+**Throws:** `UnexpectedValueException` - If the callback returns a non-bool value.
 
 **Example:**
 ```php
@@ -857,13 +866,16 @@ echo $sorted[0]; // -1
 public function __toString(): string
 ```
 
-Convert the Sequence to a string representation.
+Convert the Sequence to a string using list notation. Values are formatted with `Stringify::stringify()` from the
+Core package.
 
 **Example:**
 ```php
 $seq = new Sequence('int');
 $seq->append(1, 2, 3);
 echo $seq; // [1, 2, 3]
+
+echo new Sequence(source: ['a', 2.0, null]); // ['a', 2.0, null]
 ```
 
 ### toArray()

@@ -331,4 +331,70 @@ class SequenceInspectionTest extends TestCase
         $this->assertCount(5, $seq);
         $this->assertSame(5, $seq->count());
     }
+
+    /**
+     * Test contains finds NAN.
+     */
+    public function testContainsNan(): void
+    {
+        $seq = new Sequence(source: [1.0, NAN]);
+
+        $this->assertTrue($seq->contains(NAN));
+    }
+
+    /**
+     * Test contains distinguishes -0.0 from 0.0.
+     */
+    public function testContainsDistinguishesNegativeZero(): void
+    {
+        $seq = new Sequence(source: [0.0]);
+
+        $this->assertTrue($seq->contains(0.0));
+        $this->assertFalse($seq->contains(-0.0));
+    }
+
+    /**
+     * Test contains compares floats nested in arrays by bit pattern.
+     */
+    public function testContainsWithNestedFloats(): void
+    {
+        $seq = new Sequence(source: [
+            [1, NAN],
+            [0.0],
+        ]);
+
+        $this->assertTrue($seq->contains([1, NAN]));
+        $this->assertFalse($seq->contains([-0.0]));
+        $this->assertFalse($seq->contains([NAN, 1]));
+    }
+
+    /**
+     * Test contains still distinguishes types.
+     */
+    public function testContainsDistinguishesTypes(): void
+    {
+        $seq = new Sequence(source: [
+            1,
+            '2',
+            [3],
+        ]);
+
+        $this->assertFalse($seq->contains(1.0));
+        $this->assertFalse($seq->contains(2));
+        $this->assertFalse($seq->contains([3.0]));
+        $this->assertTrue($seq->contains([3]));
+    }
+
+    /**
+     * Test search finds NAN and distinguishes -0.0 from 0.0.
+     */
+    public function testSearchWithSpecialFloats(): void
+    {
+        $seq = new Sequence(source: [0.0, NAN, -0.0]);
+
+        $this->assertSame(1, $seq->search(NAN));
+        $this->assertSame(0, $seq->search(0.0));
+        $this->assertSame(2, $seq->search(-0.0));
+        $this->assertNull($seq->search(1.0));
+    }
 }

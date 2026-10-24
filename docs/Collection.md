@@ -108,7 +108,11 @@ Import values from an iterable into the Collection. Returns `$this` for chaining
 abstract public function contains(mixed $value): bool
 ```
 
-Check if the Collection contains a specific value. Uses strict equality (value and type must match).
+Check if the Collection contains a specific value. Values must match on both value and type.
+
+All collections compare values (and Dictionary keys) with `Types::identical()` from the Core package. It's strict
+equality (`===`), except that floats are compared by bit pattern, including floats nested in arrays. So `NAN` matches
+`NAN`, and `-0.0` is distinct from `0.0`.
 
 **Implementations:**
 - **Sequence:** Checks if value exists in the list
@@ -135,6 +139,7 @@ abstract public function filter(callable $callback): static
 ```
 
 Filter the Collection using a callback function. Returns a new Collection with only items where the callback returns `true`.
+The callback must return a bool, or an `UnexpectedValueException` is thrown.
 
 **Implementations:**
 - **Sequence:** Filters values, maintains order
@@ -153,6 +158,28 @@ Get an iterator for `foreach` loops. Implements the `IteratorAggregate` interfac
 - **Sequence:** Iterates values with integer keys
 - **Dictionary:** Iterates keys and values
 - **Set:** Iterates values with auto-generated integer keys
+
+### \_\_toString()
+
+```php
+abstract public function __toString(): string
+```
+
+Convert the Collection to a string representation. Implements the `Stringable` interface.
+
+**Implementations:**
+- **Sequence:** List notation, e.g. `[1, 2, 3]`
+- **Dictionary:** Key-value pairs, e.g. `{'a' => 1, 'b' => 2}`
+- **Set:** Set notation, e.g. `{'a', 'b', 'c'}`
+
+**Examples:**
+```php
+$seq = new Sequence('int', [1, 2, 3]);
+echo $seq; // [1, 2, 3]
+
+$set = new Set('string', ['a', 'b', 'c']);
+echo $set; // {'a', 'b', 'c'}
+```
 
 ---
 
@@ -289,23 +316,6 @@ $array = $seq->toArray();
 var_dump($array); // [1, 2, 3]
 ```
 
-### \_\_toString()
-
-```php
-public function __toString(): string
-```
-
-Convert the Collection to a string representation. Implements the `Stringable` interface.
-
-**Examples:**
-```php
-$seq = new Sequence('int', [1, 2, 3]);
-echo $seq; // [1, 2, 3]
-
-$set = new Set('string', ['a', 'b', 'c']);
-echo $set; // {a, b, c}
-```
-
 ---
 
 ## Iteration
@@ -364,6 +374,12 @@ class MyCustomCollection extends Collection
     {
         // Implementation
         return new ArrayIterator($this->items);
+    }
+
+    public function __toString(): string
+    {
+        // Implementation
+        return '';
     }
 }
 ```

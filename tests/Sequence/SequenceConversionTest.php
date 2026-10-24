@@ -24,11 +24,36 @@ class SequenceConversionTest extends TestCase
         // Test: Convert Sequence to string
         $seq = new Sequence('int');
         $seq->append(1, 2, 3);
-        $str = (string)$seq;
+        $str = (string) $seq;
 
-        // Test: Verify string representation exists
-        $this->assertIsString($str);
-        $this->assertNotEmpty($str);
+        // Test: Verify list notation
+        $this->assertSame('[1, 2, 3]', $str);
+    }
+
+    /**
+     * Test toString with mixed value types.
+     */
+    public function testToStringWithMixedTypes(): void
+    {
+        $seq = new Sequence(source: [
+            1,
+            'a',
+            2.0,
+            true,
+            null,
+            [1, 2],
+        ]);
+
+        // Test: Verify each value is formatted with Stringify
+        $this->assertSame("[1, 'a', 2.0, true, null, [1, 2]]", (string) $seq);
+    }
+
+    /**
+     * Test toString on an empty Sequence.
+     */
+    public function testToStringOnEmptySequence(): void
+    {
+        $this->assertSame('[]', (string) new Sequence());
     }
 
     /**

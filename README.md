@@ -106,7 +106,7 @@ $result = $numbers
     ->map(fn($n) => $n * 2)            // Double them
     ->reverse();                       // Reverse order
 
-echo $result; // [10, 8, 4]
+echo $result; // [8, 4]
 
 // Original unchanged (immutable operations)
 echo $numbers; // [1, 2, 3, 4, 5]

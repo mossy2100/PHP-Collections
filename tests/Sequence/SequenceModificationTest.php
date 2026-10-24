@@ -303,4 +303,27 @@ class SequenceModificationTest extends TestCase
         $seq = new Sequence('int');
         $seq->removeLast();
     }
+
+    /**
+     * Test removeByValue removes NAN values.
+     */
+    public function testRemoveByValueNan(): void
+    {
+        $seq = new Sequence(source: [NAN, 1.0, NAN]);
+
+        $this->assertSame(2, $seq->removeByValue(NAN));
+        $this->assertSame([1.0], $seq->toArray());
+    }
+
+    /**
+     * Test removeByValue distinguishes -0.0 from 0.0.
+     */
+    public function testRemoveByValueNegativeZero(): void
+    {
+        $seq = new Sequence(source: [0.0, -0.0, 0.0]);
+
+        $this->assertSame(1, $seq->removeByValue(-0.0));
+        $this->assertCount(2, $seq);
+        $this->assertFalse($seq->contains(-0.0));
+    }
 }

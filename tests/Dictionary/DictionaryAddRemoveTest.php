@@ -218,6 +218,19 @@ class DictionaryAddRemoveTest extends TestCase
     }
 
     /**
+     * Test removeByValue with a value of a disallowed type returns 0.
+     */
+    public function testRemoveByValueWithDisallowedType(): void
+    {
+        $dict = new Dictionary('string', 'int');
+        $dict->add('a', 1);
+
+        // Test no exception is thrown and nothing is removed.
+        $this->assertSame(0, $dict->removeByValue('1'));
+        $this->assertCount(1, $dict);
+    }
+
+    /**
      * Test clear removes all items.
      */
     public function testClearRemovesAllItems(): void
@@ -251,5 +264,32 @@ class DictionaryAddRemoveTest extends TestCase
         // Test the dictionary is still empty.
         $this->assertCount(0, $dict);
         $this->assertTrue($dict->empty());
+    }
+
+    /**
+     * Test removeByValue removes NAN values.
+     */
+    public function testRemoveByValueNan(): void
+    {
+        $dict = new Dictionary('string', 'float');
+        $dict['a'] = NAN;
+        $dict['b'] = 1.0;
+        $dict['c'] = NAN;
+
+        $this->assertSame(2, $dict->removeByValue(NAN));
+        $this->assertSame(['b'], $dict->keys);
+    }
+
+    /**
+     * Test removeByValue distinguishes -0.0 from 0.0.
+     */
+    public function testRemoveByValueNegativeZero(): void
+    {
+        $dict = new Dictionary('string', 'float');
+        $dict['a'] = 0.0;
+        $dict['b'] = -0.0;
+
+        $this->assertSame(1, $dict->removeByValue(-0.0));
+        $this->assertSame(['a'], $dict->keys);
     }
 }

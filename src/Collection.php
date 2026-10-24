@@ -8,7 +8,6 @@ use Countable;
 use DomainException;
 use InvalidArgumentException;
 use IteratorAggregate;
-use Mossy2100\Core\Stringify;
 use Mossy2100\Core\Traits\Comparison\Equatable;
 use Override;
 use Stringable;
@@ -100,7 +99,8 @@ abstract class Collection implements Countable, IteratorAggregate, Stringable
     /**
      * Check if the Collection contains a value.
      *
-     * Strict equality is used, i.e. the item must match on both value and type.
+     * Values are compared by identity: they must match on both value and type. See the concrete classes for how
+     * floats such as NAN and -0.0 are treated.
      *
      * @param mixed $value The item to check for.
      * @return bool True if the Collection contains the item, false otherwise.
@@ -168,10 +168,7 @@ abstract class Collection implements Countable, IteratorAggregate, Stringable
      * @return string The string.
      */
     #[Override]
-    public function __toString(): string
-    {
-        return Stringify::stringifyObject($this);
-    }
+    abstract public function __toString(): string;
 
     /**
      * Convert the Collection to an array.

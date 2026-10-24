@@ -11,6 +11,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 use TypeError;
+use UnexpectedValueException;
 
 /**
  * Tests for Sequence transformation and utility methods.
@@ -111,6 +112,32 @@ class SequenceTransformationTest extends TestCase
     }
 
     /**
+     * Test filter re-indexes the kept items and preserves types.
+     */
+    public function testFilterReindexesAndPreservesTypes(): void
+    {
+        $seq = new Sequence('int', [1, 2, 3, 4]);
+        $filtered = $seq->filter(static fn ($x) => $x > 2);
+
+        // Test: Verify indexes start from 0 and types are kept
+        $this->assertSame([3, 4], $filtered->toArray());
+        $this->assertSame(3, $filtered[0]);
+        $this->assertTrue($filtered->valueTypes->containsOnly('int'));
+    }
+
+    /**
+     * Test filter throws if the callback doesn't return a bool.
+     */
+    public function testFilterCallbackMustReturnBool(): void
+    {
+        $seq = new Sequence('int', [1, 2, 3]);
+
+        // Test: A truthy int is not accepted
+        $this->expectException(UnexpectedValueException::class);
+        $seq->filter(static fn ($x) => $x - 1);
+    }
+
+    /**
      * Test map method transforms items.
      */
     public function testMapTransformsItems(): void
@@ -190,6 +217,74 @@ class SequenceTransformationTest extends TestCase
         $this->assertCount(5, $unique);
         $this->assertTrue($unique->contains(1));
         $this->assertTrue($unique->contains(5));
+    }
+
+    /**
+     * Test unique keeps the first occurrence of each value, in order.
+     */
+    public function testUniquePreservesOrder(): void
+    {
+        $seq = new Sequence(source: [3, 1, 3, 2, 1]);
+
+        $this->assertSame([3, 1, 2], $seq->unique()->toArray());
+    }
+
+    /**
+     * Test unique distinguishes values of different types.
+     */
+    public function testUniqueDistinguishesTypes(): void
+    {
+        $seq = new Sequence(source: [true, 1, 1.0, '1', 1, true]);
+
+        $this->assertSame([true, 1, 1.0, '1'], $seq->unique()->toArray());
+    }
+
+    /**
+     * Test unique treats NAN as equal to NAN.
+     */
+    public function testUniqueWithNan(): void
+    {
+        $seq = new Sequence(source: [NAN, 1.0, NAN]);
+        $unique = $seq->unique();
+
+        $this->assertCount(2, $unique);
+        $this->assertNan($unique[0]);
+        $this->assertSame(1.0, $unique[1]);
+    }
+
+    /**
+     * Test unique treats -0.0 as distinct from 0.0.
+     */
+    public function testUniqueWithNegativeZero(): void
+    {
+        $seq = new Sequence(source: [0.0, -0.0, 0.0]);
+
+        $this->assertCount(2, $seq->unique());
+    }
+
+    /**
+     * Test unique gives the same values as toSet().
+     */
+    public function testUniqueMatchesToSet(): void
+    {
+        $seq = new Sequence(source: [NAN, NAN, 0.0, -0.0, 1, 1.0, true, 1]);
+
+        $this->assertCount(count($seq->toSet()), $seq->unique());
+    }
+
+    /**
+     * Test unique keeps object identity.
+     */
+    public function testUniqueWithObjects(): void
+    {
+        $a = new stdClass();
+        $b = new stdClass();
+        $seq = new Sequence(source: [$a, $b, $a]);
+        $unique = $seq->unique();
+
+        $this->assertCount(2, $unique);
+        $this->assertSame($a, $unique[0]);
+        $this->assertSame($b, $unique[1]);
     }
 
     /**

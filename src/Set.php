@@ -317,6 +317,7 @@ final class Set extends Collection
      * @return string The string representation of the Set.
      * @throws DomainException If any value cannot be stringified.
      */
+    #[Override]
     public function __toString(): string
     {
         $items = array_map(static fn ($item) => Stringify::stringify($item), $this->items);
@@ -344,7 +345,7 @@ final class Set extends Collection
 
     #endregion
 
-    #region Parent class methods
+    #region Transformation methods
 
     /**
      * Filter a Set using a callback function.
@@ -385,6 +386,26 @@ final class Set extends Collection
         }
 
         return $result;
+    }
+
+    /**
+     * Applies the callback to the items in the Set.
+     *
+     * The result Set's types are inferred from the callback results. Duplicate results are removed, so the result
+     * can have fewer items than the original.
+     *
+     * The original Set is not modified.
+     *
+     * @param callable $fn The callback function to apply to each item.
+     * @return self A new Set containing the results of the callback function.
+     */
+    public function map(callable $fn): self
+    {
+        // Apply the callback to each item.
+        $items = array_map($fn, $this->items);
+
+        // Construct the new Set, inferring types from the callback results.
+        return new self(source: $items);
     }
 
     #endregion

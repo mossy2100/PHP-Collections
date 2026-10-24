@@ -227,4 +227,64 @@ class SetTransformTest extends TestCase
 
         $this->assertFalse($result);
     }
+
+    /**
+     * Test map transforms items.
+     */
+    public function testMapTransformsItems(): void
+    {
+        $set = new Set('int', [1, 2, 3]);
+
+        $mapped = $set->map(static fn ($value) => $value * 10);
+
+        $this->assertSame([10, 20, 30], $mapped->toArray());
+    }
+
+    /**
+     * Test map is non-mutating.
+     */
+    public function testMapIsNonMutating(): void
+    {
+        $set = new Set('int', [1, 2, 3]);
+
+        $mapped = $set->map(static fn ($value) => $value + 1);
+
+        $this->assertNotSame($set, $mapped);
+        $this->assertSame([1, 2, 3], $set->toArray());
+    }
+
+    /**
+     * Test map removes duplicate results.
+     */
+    public function testMapRemovesDuplicates(): void
+    {
+        $set = new Set('int', [1, 2, 3, 4]);
+
+        $mapped = $set->map(static fn ($value) => $value % 2);
+
+        $this->assertSame([1, 0], $mapped->toArray());
+    }
+
+    /**
+     * Test map infers types from the callback results.
+     */
+    public function testMapInfersTypes(): void
+    {
+        $set = new Set('int', [1, 2]);
+
+        $mapped = $set->map(static fn ($value) => "item$value");
+
+        $this->assertTrue($mapped->valueTypes->containsOnly('string'));
+        $this->assertSame(['item1', 'item2'], $mapped->toArray());
+    }
+
+    /**
+     * Test map on an empty Set.
+     */
+    public function testMapOnEmptySet(): void
+    {
+        $mapped = new Set('int')->map(static fn ($value) => $value * 2);
+
+        $this->assertCount(0, $mapped);
+    }
 }

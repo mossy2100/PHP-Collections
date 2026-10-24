@@ -11,10 +11,13 @@ use InvalidArgumentException;
 use LengthException;
 use LogicException;
 use Mossy2100\Core\Numbers;
+use Mossy2100\Core\Stringify;
 use Mossy2100\Core\Strings;
+use Mossy2100\Core\Types;
 use OutOfRangeException;
 use Override;
 use Traversable;
+use UnexpectedValueException;
 
 /**
  * A type-specific list implementation.
@@ -331,7 +334,7 @@ final class Sequence extends Collection implements ArrayAccess
     }
 
     /**
-     * Remove all items matching a given value. Strict equality is used to find matching values.
+     * Remove all items matching a given value. Values are compared as for contains().
      *
      * NB: This is a mutating method.
      *
@@ -346,7 +349,7 @@ final class Sequence extends Collection implements ArrayAccess
         // Filter the Sequence to remove the matching values.
         $this->items = array_values(array_filter(
             $this->items,
-            static fn ($item) => $item !== $value
+            static fn ($item) => !Types::identical($item, $value)
         ));
 
         // Return the number of items removed.
@@ -398,7 +401,9 @@ final class Sequence extends Collection implements ArrayAccess
     /**
      * Check if the Sequence contains a value.
      *
-     * Strict equality is used, i.e. the item must match on both value and type.
+     * The item must match on both value and type. Values are compared with Types::identical(), the same way as in a
+     * Set. That's strict equality (===), except that floats are compared by bit pattern. So NAN matches NAN, and -0.0
+     * doesn't match 0.0. This applies to floats nested in arrays, too.
      *
      * @param mixed $value The item to check for.
      * @return bool True if the Sequence contains the item, false otherwise.
@@ -406,7 +411,7 @@ final class Sequence extends Collection implements ArrayAccess
     #[Override]
     public function contains(mixed $value): bool
     {
-        return in_array($value, $this->items, true);
+        return $this->search($value) !== null;
     }
 
     /**
@@ -434,7 +439,7 @@ final class Sequence extends Collection implements ArrayAccess
      * "Equal" in this case means that the Sequences have the same:
      * - type (i.e. they are both instances of Sequence)
      * - number of items
-     * - item values (strict equality)
+     * - item values (compared as for contains())
      * - order of items
      *
      * Type constraints are not considered, because these are only relevant when adding values to a Sequence.
@@ -453,7 +458,7 @@ final class Sequence extends Collection implements ArrayAccess
         }
 
         // Check values are equal.
-        $eq = fn ($value, $key) => $this->items[$key] === $other->items[$key];
+        $eq = static fn ($value, $key) => Types::identical($value, $other->items[$key]);
         return array_all($this->items, $eq);
     }
 
@@ -526,14 +531,15 @@ final class Sequence extends Collection implements ArrayAccess
      * This method is analogous to array_search() except it returns null if the value is not found.
      * @see https://www.php.net/manual/en/function.array-search.php
      *
+     * Values are compared as for contains().
+     *
      * @param mixed $value The value to search for.
      * @return ?int The index of the first matching value, or null if the value is not found.
      */
     public function search(mixed $value): ?int
     {
-        /** @var int|false $result */
-        $result = array_search($value, $this->items, true);
-        return $result !== false ? $result : null;
+        /** @var ?int */
+        return array_find_key($this->items, static fn ($item) => Types::identical($item, $value));
     }
 
     /**
@@ -562,19 +568,20 @@ final class Sequence extends Collection implements ArrayAccess
      * - false compares as equal to null and the empty string
      * @see https://www.php.net/manual/en/function.array-unique.php
      *
-     * By contrast, this method will return all truly unique items, using strict comparison.
+     * By contrast, this method will return all truly unique items, comparing values the same way as Set.
      * Thus, for example, for a Sequence containing [true, 1, 1.0], all three will be included in the result.
+     * NAN is treated as equal to NAN, and -0.0 as distinct from 0.0, so the result has the same values as toSet().
+     *
+     * The first occurrence of each value is kept, so the original order is preserved.
      *
      * @return self A new Sequence containing the unique values.
      */
     public function unique(): self
     {
-        // Extract the unique values.
+        // Extract the unique values, keyed by a string that uniquely identifies each value.
         $result = [];
         foreach ($this->items as $item) {
-            if (!in_array($item, $result, true)) {
-                $result[] = $item;
-            }
+            $result[Types::getUniqueString($item)] ??= $item;
         }
 
         // Construct the result.
@@ -639,17 +646,38 @@ final class Sequence extends Collection implements ArrayAccess
     /**
      * Return a Sequence with all items matching a certain filter.
      *
-     * This method is analogous to array_filter().
+     * This method is analogous to array_filter(), except the callback must return a bool.
      * @see https://www.php.net/manual/en/function.array-filter.php
+     *
+     * The callback must accept one parameter, for the value, and return a bool.
+     * The parameter type should match or be wider than the Sequence's allowed value types.
+     * It can accept more than one parameter, but any additional parameters must be optional.
      *
      * @param callable $callback The filter function that returns true for items to keep.
      * @return self A new Sequence containing only the matching items.
+     * @throws UnexpectedValueException If the callback returns a value that is not a boolean.
      */
     #[Override]
     public function filter(callable $callback): static
     {
         // Get the matching values.
-        $items = array_filter($this->items, $callback);
+        $items = [];
+        foreach ($this->items as $item) {
+            // See if we want to keep this item.
+            $keep = $callback($item);
+
+            // Validate the result of the callback.
+            if (!is_bool($keep)) {
+                throw new UnexpectedValueException(
+                    'Cannot filter: callback returned ' . Types::getBasicType($keep) . ', expected bool.'
+                );
+            }
+
+            // Add item to the result.
+            if ($keep) {
+                $items[] = $item;
+            }
+        }
 
         // Construct the result.
         return $this->fromSubset($items);
@@ -925,6 +953,19 @@ final class Sequence extends Collection implements ArrayAccess
     #endregion
 
     #region Conversion methods
+
+    /**
+     * Convert the Sequence to a string, using list notation, e.g. [1, 'a', 2.0].
+     *
+     * Values are formatted with Stringify::stringify().
+     *
+     * @return string The string representation of the Sequence.
+     */
+    #[Override]
+    public function __toString(): string
+    {
+        return Stringify::stringify($this->items);
+    }
 
     /**
      * Convert the Sequence to a Dictionary. The Sequence's indexes will be keys in the new Dictionary.

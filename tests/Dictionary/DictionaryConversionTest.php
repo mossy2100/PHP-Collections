@@ -197,12 +197,22 @@ class DictionaryConversionTest extends TestCase
         $dict->add('a', 1);
         $dict->add('b', 2);
 
-        // Test converting to string.
-        $string = (string)$dict;
+        // Test the string shows the key-value pairs.
+        $this->assertSame("{'a' => 1, 'b' => 2}", (string) $dict);
+    }
 
-        // Test a string is returned.
-        $this->assertIsString($string);
-        $this->assertNotEmpty($string);
+    /**
+     * Test __toString with keys and values of various types.
+     */
+    public function testToStringWithMixedTypes(): void
+    {
+        $dict = new Dictionary();
+        $dict[1] = 'one';
+        $dict[[1, 2]] = 2.0;
+        $dict[null] = true;
+
+        // Test each key and value is formatted with Stringify.
+        $this->assertSame("{1 => 'one', [1, 2] => 2.0, null => true}", (string) $dict);
     }
 
     /**
@@ -213,10 +223,7 @@ class DictionaryConversionTest extends TestCase
         $dict = new Dictionary();
 
         // Test converting empty dictionary to string.
-        $string = (string)$dict;
-
-        // Test a string is returned.
-        $this->assertIsString($string);
+        $this->assertSame('{}', (string) $dict);
     }
 
     /**
@@ -230,8 +237,8 @@ class DictionaryConversionTest extends TestCase
         // Test implicit string conversion.
         $output = "Dictionary: $dict";
 
-        // Test string contains expected prefix.
-        $this->assertStringContainsString('Dictionary:', $output);
+        // Test the string is interpolated.
+        $this->assertSame("Dictionary: {'key' => 123}", $output);
     }
 
     /**

@@ -182,4 +182,34 @@ class SequenceEqualityTest extends TestCase
         // Test: Verify type constraints don't affect equality
         $this->assertTrue($seq1->equal($seq2));
     }
+
+    /**
+     * Test Sequences containing NAN compare as equal.
+     */
+    public function testEqualWithNan(): void
+    {
+        $seq1 = new Sequence(source: [
+            1.0,
+            NAN,
+            [NAN],
+        ]);
+        $seq2 = new Sequence(source: [
+            1.0,
+            NAN,
+            [NAN],
+        ]);
+
+        $this->assertTrue($seq1->equal($seq2));
+    }
+
+    /**
+     * Test -0.0 and 0.0 make Sequences unequal.
+     */
+    public function testEqualDistinguishesNegativeZero(): void
+    {
+        $seq1 = new Sequence(source: [0.0]);
+        $seq2 = new Sequence(source: [-0.0]);
+
+        $this->assertFalse($seq1->equal($seq2));
+    }
 }

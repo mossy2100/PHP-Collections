@@ -276,24 +276,22 @@ final class Dictionary extends Collection implements ArrayAccess
     }
 
     /**
-     * Remove one or more items by value.
+     * Remove one or more items by value. Values are compared as for contains().
+     *
+     * A value with a disallowed type can't be present, so it isn't an error; the method will just return 0.
      *
      * @param mixed $value The value to remove.
      * @return int The number of items removed.
-     * @throws InvalidArgumentException If the value has a disallowed type.
      */
     public function removeByValue(mixed $value): int
     {
-        // Check the value type is valid.
-        $this->valueTypes->checkValueType($value, 'value');
-
         // Initialize the counter.
         $nRemoved = 0;
 
         // Remove all items with the given value.
         foreach ($this->items as $index => $pair) {
             /** @var Pair $pair */
-            if ($pair->value === $value) {
+            if (Types::identical($pair->value, $value)) {
                 unset($this->items[$index]);
                 $nRemoved++;
             }
@@ -310,6 +308,9 @@ final class Dictionary extends Collection implements ArrayAccess
     /**
      * Check if the Dictionary contains a value.
      *
+     * Values are compared with Types::identical(), which is strict equality (===), except that floats are compared by
+     * bit pattern. So NAN matches NAN, and -0.0 doesn't match 0.0. Keys are compared the same way.
+     *
      * This method can be slow with large dictionaries; consider caching results or generating a reverse lookup table.
      *
      * @param mixed $value The value to check for.
@@ -320,7 +321,7 @@ final class Dictionary extends Collection implements ArrayAccess
     {
         foreach ($this->items as $pair) {
             /** @var Pair $pair */
-            if ($pair->value === $value) {
+            if (Types::identical($pair->value, $value)) {
                 return true;
             }
         }
@@ -351,8 +352,8 @@ final class Dictionary extends Collection implements ArrayAccess
      * "Equal" in this case means that the Dictionaries have the same:
      * - type (i.e. they are both instances of Dictionary)
      * - number of items (i.e. key-value pairs)
-     * - item keys (strict equality)
-     * - item values (strict equality)
+     * - item keys (compared with Types::identical())
+     * - item values (compared with Types::identical())
      * - order of items
      *
      * Type constraints are not considered, because these are only relevant when adding items to a Dictionary.
@@ -385,7 +386,7 @@ final class Dictionary extends Collection implements ArrayAccess
             $thisPair = $this->items[$index];
             /** @var Pair $otherPair */
             $otherPair = $other->items[$index];
-            if ($thisPair->value !== $otherPair->value) {
+            if (!Types::identical($thisPair->value, $otherPair->value)) {
                 return false;
             }
         }
@@ -570,24 +571,33 @@ final class Dictionary extends Collection implements ArrayAccess
     #region Sorting methods
 
     /**
-     * Sort the Dictionary by a custom callback function.
+     * Return a new Dictionary with the key-value pairs sorted using a custom comparison function.
+     *
+     * This method is analogous to uasort(), except it's non-mutating and returns a new Dictionary.
+     * @see https://www.php.net/manual/en/function.uasort.php
      *
      * @param callable $fn The callback function. This should take two arguments (the key-value pairs to compare) and
      * return an integer equal to -1 (less than), 0 (equal), or 1 (greater than).
-     * @return $this The sorted Dictionary.
+     * @return self A new Dictionary with the pairs sorted.
      */
     public function sort(callable $fn): self
     {
-        uasort($this->items, $fn);
-        return $this;
+        // Create a new Dictionary with the same type constraints and pairs, so the method is non-mutating.
+        $result = new self($this->keyTypes, $this->valueTypes);
+        $result->items = $this->items;
+
+        // Sort the pairs.
+        uasort($result->items, $fn);
+
+        return $result;
     }
 
     /**
-     * Sort the Dictionary by key.
+     * Return a new Dictionary with the key-value pairs sorted by key.
      *
      * The spaceship operator (<=>) is used to compare the keys, so it should be defined for the key types.
      *
-     * @return $this The sorted Dictionary.
+     * @return self A new Dictionary with the pairs sorted by key.
      */
     public function sortByKey(): self
     {
@@ -596,11 +606,11 @@ final class Dictionary extends Collection implements ArrayAccess
     }
 
     /**
-     * Sort the Dictionary by value.
+     * Return a new Dictionary with the key-value pairs sorted by value.
      *
      * The spaceship operator (<=>) is used to compare the values, so it should be defined for the value types.
      *
-     * @return $this The sorted Dictionary.
+     * @return self A new Dictionary with the pairs sorted by value.
      */
     public function sortByValue(): self
     {
@@ -611,6 +621,24 @@ final class Dictionary extends Collection implements ArrayAccess
     #endregion
 
     #region Conversion methods
+
+    /**
+     * Convert the Dictionary to a string, e.g. {'a' => 1, 'b' => [1, 2]}.
+     *
+     * Keys and values are formatted with Stringify::stringify().
+     *
+     * @return string The string representation of the Dictionary.
+     */
+    #[Override]
+    public function __toString(): string
+    {
+        $parts = [];
+        foreach ($this->items as $pair) {
+            /** @var Pair $pair */
+            $parts[] = Stringify::stringify($pair->key) . ' => ' . Stringify::stringify($pair->value);
+        }
+        return '{' . implode(', ', $parts) . '}';
+    }
 
     /**
      * Convert the Dictionary to a Sequence of Pairs.

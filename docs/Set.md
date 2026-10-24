@@ -436,7 +436,7 @@ echo $set->count(); // 3
 public function filter(callable $callback): static
 ```
 
-Filter the Set using a callback function. Returns a new Set with the same type constraints, containing only values where the callback returns `true`. Throws `TypeError` if the callback doesn't return a bool.
+Filter the Set using a callback function. Returns a new Set with the same type constraints, containing only values where the callback returns `true`. Throws `UnexpectedValueException` if the callback doesn't return a bool.
 
 **Examples:**
 ```php
@@ -452,6 +452,26 @@ $large = $set->filter(fn($n) => $n > 3);
 
 // Original unchanged
 echo $set->count(); // 6
+```
+
+### map()
+
+```php
+public function map(callable $fn): self
+```
+
+Return a new Set with the callback applied to each item. Types are inferred from the results, and duplicate results
+are removed.
+
+**Example:**
+```php
+$set = new Set('int', [1, 2, 3, 4]);
+
+$doubled = $set->map(fn($n) => $n * 2);
+// Result: {2, 4, 6, 8}
+
+$parities = $set->map(fn($n) => $n % 2);
+// Result: {1, 0}
 ```
 
 ## Conversion Methods
