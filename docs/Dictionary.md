@@ -6,7 +6,8 @@ A type-safe key-value collection that accepts any PHP type for both keys and val
 
 ## Overview
 
-Dictionary provides a flexible key-value store that overcomes PHP array limitations. While PHP arrays only accept `string` or `int` keys, Dictionary lets you use values of any type.
+Dictionary provides a flexible key-value store that overcomes PHP array limitations. While PHP arrays only accept
+`string` or `int` keys, Dictionary lets you use values of any type.
 
 ### Key Features
 
@@ -32,7 +33,8 @@ $dict[null] = 'empty';                  // Null key
 
 ### items
 
-Inherited from [Collection](Collection.md#items). Internal array storage for the dictionary's Pair objects, keyed by the unique string representation of each Pair's key.
+Inherited from [Collection](Collection.md#items). Internal array storage for the dictionary's Pair objects, keyed by the unique string
+representation of each Pair's key.
 
 ### valueTypes
 
@@ -105,11 +107,13 @@ Create a Dictionary with optional type constraints and initial key-value pairs f
 
 The `$keyTypes` and `$valueTypes` parameters accept:
 - `null` - Any type allowed (no constraints)
-- `string` - A type name, or multiple types using union type or nullable type syntax (e.g., `'int'`, `'int|string'`, `'?int'`)
+- `string` - A type name, or multiple types using union type or nullable type syntax (e.g., `'int'`, `'int|string'`,
+  `'?int'`)
 - `iterable` - Array or other collection of type names (e.g., `['int', 'string']`)
 - `true` (default) - Types will be inferred automatically from the source iterable's keys and values
 
-**Note:** String union syntax and array syntax cannot be combined. Use `'int|string'` OR `['int', 'string']`, not `['int|string', 'float']`.
+**Note:** String union syntax and array syntax cannot be combined. Use `'int|string'` OR `['int', 'string']`, not
+`['int|string', 'float']`.
 
 **Examples:**
 ```php
@@ -527,7 +531,8 @@ $flipped = $dict->flip(); // OutOfBoundsException
 public function map(callable $fn): self
 ```
 
-Transform each key-value pair. The callback receives a `Pair` and must return a new `Pair`. Types are automatically inferred from results.
+Transform each key-value pair. The callback receives a `Pair` and must return a new `Pair`. Types are automatically
+inferred from results.
 
 **Throws:**
 - `UnexpectedValueException` - If the callback doesn't return a Pair

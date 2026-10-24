@@ -4,7 +4,8 @@ A type-safe collection of unique values with optional type constraints.
 
 ## Overview
 
-A Set is a collection that contains only unique values. Unlike Sequence (which allows duplicates and has ordered indexes) or Dictionary (which maps keys to values), a Set simply stores unique values.
+A Set is a collection that contains only unique values. Unlike Sequence (which allows duplicates and has ordered
+indexes) or Dictionary (which maps keys to values), a Set simply stores unique values.
 
 ### Key Features
 
@@ -63,7 +64,8 @@ Create a new Set with optional type constraints and initial values from a source
 
 The `$types` parameter accepts:
 - `null` - Values of any type are allowed
-- `string` - A type name, or multiple types using union type or nullable type syntax (e.g., `'string'`, `'int|null'`, `'?int'`)
+- `string` - A type name, or multiple types using union type or nullable type syntax (e.g., `'string'`, `'int|null'`,
+  `'?int'`)
 - `iterable` - Array or other collection of type names (e.g., `['string', 'int']`)
 - `true` (default) - Types will be inferred automatically from the source iterable's values
 
@@ -150,8 +152,8 @@ $set->add(8)->add(9)->add(10);
 public function import(iterable $source): static
 ```
 
-Import values from an iterable into the Set. Duplicates are automatically ignored. Returns `$this` for chaining.
-Throws `InvalidArgumentException` for invalid value types, in which case no values are imported.
+Import values from an iterable into the Set. Duplicates are automatically ignored. Returns `$this` for chaining. Throws
+`InvalidArgumentException` for invalid value types, in which case no values are imported.
 
 **Example:**
 ```php
@@ -209,7 +211,8 @@ echo $set->count(); // 0
 public function union(self $other): self
 ```
 
-Return the union of this set and another set (all items from both sets). Returns a new Set containing items from both sets. The resulting set allows any value that either set allows (see [TypeSet::union()](TypeSet.md#union)).
+Return the union of this set and another set (all items from both sets). Returns a new Set containing items from both
+sets. The resulting set allows any value that either set allows (see [TypeSet::union()](TypeSet.md#union)).
 
 **Examples:**
 ```php
@@ -231,7 +234,8 @@ echo $union->count(); // 5
 public function intersect(self $other): self
 ```
 
-Return the intersection of this set and another set (only items present in both sets). Returns a new Set. The resulting set will allow the same types as the calling set.
+Return the intersection of this set and another set (only items present in both sets). Returns a new Set. The resulting
+set will allow the same types as the calling set.
 
 **Examples:**
 ```php
@@ -250,7 +254,8 @@ echo $intersection->count(); // 2
 public function diff(self $other): self
 ```
 
-Return the difference of this set and another set (items in this set that are not in the other set). Returns a new Set. The resulting set will allow the same types as the calling set.
+Return the difference of this set and another set (items in this set that are not in the other set). Returns a new Set.
+The resulting set will allow the same types as the calling set.
 
 **Examples:**
 ```php
@@ -307,7 +312,8 @@ var_dump($set->contains(4));   // false (not in set)
 public function equal(mixed $other): bool
 ```
 
-Check if two Sets are equal. Sets are equal if they have the same type (both Sets), same number of items, and same item values. Order doesn't matter. Type constraints are not considered.
+Check if two Sets are equal. Sets are equal if they have the same type (both Sets), same number of items, and same item
+values. Order doesn't matter. Type constraints are not considered.
 
 **Examples:**
 ```php
@@ -349,7 +355,8 @@ var_dump($set1->subset($set1)); // true
 public function properSubset(self $other): bool
 ```
 
-Check if this set is a proper subset of another set (subset but not equal). This means all items in this set are in the other set, AND the other set has at least one additional item.
+Check if this set is a proper subset of another set (subset but not equal). This means all items in this set are in the
+other set, AND the other set has at least one additional item.
 
 **Examples:**
 ```php
@@ -438,7 +445,8 @@ echo $set->count(); // 3
 public function filter(callable $callback): static
 ```
 
-Filter the Set using a callback function. Returns a new Set with the same type constraints, containing only values where the callback returns `true`. Throws `UnexpectedValueException` if the callback doesn't return a bool.
+Filter the Set using a callback function. Returns a new Set with the same type constraints, containing only values where
+the callback returns `true`. Throws `UnexpectedValueException` if the callback doesn't return a bool.
 
 **Examples:**
 ```php
@@ -462,8 +470,8 @@ echo $set->count(); // 6
 public function map(callable $fn): self
 ```
 
-Return a new Set with the callback applied to each item. Types are inferred from the results, and duplicate results
-are removed.
+Return a new Set with the callback applied to each item. Types are inferred from the results, and duplicate results are
+removed.
 
 **Example:**
 ```php

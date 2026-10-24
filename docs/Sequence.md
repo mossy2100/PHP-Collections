@@ -4,7 +4,9 @@ A type-specific list implementation with zero-based sequential integer indexing.
 
 ## Overview
 
-Sequence provides a type-safe, indexed collection similar to arrays in languages like C# (`List<T>`) or Java (`ArrayList<E>`). Unlike PHP arrays, Sequence maintains strict sequential integer indexes starting from 0 and provides optional runtime type validation.
+Sequence provides a type-safe, indexed collection similar to arrays in languages like C# (`List<T>`) or Java
+(`ArrayList<E>`). Unlike PHP arrays, Sequence maintains strict sequential integer indexes starting from 0 and provides
+optional runtime type validation.
 
 ### Key Features
 
@@ -31,7 +33,7 @@ $seq = new Sequence('int|string');
 echo $seq->valueTypes; // {int, string}
 var_dump($seq->valueTypes->contains('int')); // true
 ```
-    
+
 ## Constructor
 
 ### \_\_construct()
@@ -49,13 +51,15 @@ Create a new Sequence with optional type constraints and initial values from a s
 
 The `$types` parameter accepts:
 - `null` - Values of any type are allowed
-- `string` - A type name, or multiple types using union type or nullable type syntax (e.g., `'string'`, `'int|null'`, `'?int'`)
+- `string` - A type name, or multiple types using union type or nullable type syntax (e.g., `'string'`, `'int|null'`,
+  `'?int'`)
 - `iterable` - Array or other collection of type names (e.g., `['string', 'int']`)
 - `true` (default) - Types will be inferred automatically from the source iterable's values
 
 **Automatic Default Values:**
 
-When gaps are created in the Sequence (via `offsetSet()` or `insert()`), they are automatically filled with appropriate default values based on the type constraints:
+When gaps are created in the Sequence (via `offsetSet()` or `insert()`), they are automatically filled with appropriate
+default values based on the type constraints:
 
 - Contains `null` → `null`
 - `bool` → `false`
@@ -65,7 +69,9 @@ When gaps are created in the Sequence (via `offsetSet()` or `insert()`), they ar
 - `array` or `iterable` → `[]` (empty array)
 - `object` → `new stdClass()`
 
-For types where no suitable default can be determined (like `DateTime`), a `LogicException` will be thrown if an attempt is made to generate a default value (e.g., when gap-filling). This is uncommon; to avoid it, include `'null'` in the allowed types.
+For types where no suitable default can be determined (like `DateTime`), a `LogicException` will be thrown if an attempt
+is made to generate a default value (e.g., when gap-filling). This is uncommon; to avoid it, include `'null'` in the
+allowed types.
 
 **Examples:**
 ```php
@@ -176,7 +182,8 @@ public function prepend(mixed ...$items): self
 Add one or more items to the start of the Sequence, keeping their order. Returns `$this` for chaining. Throws
 `InvalidArgumentException` for invalid item types, in which case no items are added.
 
-Note the list of elements is prepended as a whole, so the prepended elements stay in the same order as they are supplied.
+Note the list of elements is prepended as a whole, so the prepended elements stay in the same order as they are
+supplied.
 
 **Example:**
 ```php
@@ -194,7 +201,8 @@ echo $seq[3]; // 'd'
 public function insert(int $index, mixed $item): self
 ```
 
-Insert an item at a specified position. Items after the index are shifted right. Fills gaps with default values if inserting beyond current range. Returns `$this` for chaining. Throws `OutOfRangeException` for negative indexes.
+Insert an item at a specified position. Items after the index are shifted right. Fills gaps with default values if
+inserting beyond current range. Returns `$this` for chaining. Throws `OutOfRangeException` for negative indexes.
 
 **Examples:**
 ```php
@@ -337,8 +345,8 @@ echo $seq->empty() ? 'empty' : 'not empty'; // 'not empty'
 public function contains(mixed $value): bool
 ```
 
-Check if the Sequence contains a value. Values are compared the same way as in a Set: strict equality (`===`),
-except that floats are compared by bit pattern. So `NAN` matches `NAN`, and `-0.0` doesn't match `0.0`.
+Check if the Sequence contains a value. Values are compared the same way as in a Set: strict equality (`===`), except
+that floats are compared by bit pattern. So `NAN` matches `NAN`, and `-0.0` doesn't match `0.0`.
 
 **Example:**
 ```php
@@ -893,8 +901,8 @@ echo $sorted[0]; // -1
 public function __toString(): string
 ```
 
-Convert the Sequence to a string using list notation. Values are formatted with `Stringify::stringify()` from the
-Core package.
+Convert the Sequence to a string using list notation. Values are formatted with `Stringify::stringify()` from the Core
+package.
 
 **Example:**
 ```php
@@ -965,7 +973,8 @@ echo $set->count(); // 3
 public function chooseRand(int $count = 1): array
 ```
 
-Randomly choose one or more items from the Sequence (non-mutating). Returns a list of the chosen values in random order. Throws `DomainException` if count is less than 1, `LengthException` if empty or count exceeds length.
+Randomly choose one or more items from the Sequence (non-mutating). Returns a list of the chosen values in random order.
+Throws `DomainException` if count is less than 1, `LengthException` if empty or count exceeds length.
 
 **Example:**
 ```php
@@ -982,7 +991,8 @@ echo count($chosen); // 3
 public function removeRand(int $count = 1): array
 ```
 
-Randomly remove one or more items from the Sequence (mutating). Returns a list of the removed values in random order. Throws `DomainException` if count is less than 1, `LengthException` if empty or count exceeds length.
+Randomly remove one or more items from the Sequence (mutating). Returns a list of the removed values in random order.
+Throws `DomainException` if count is less than 1, `LengthException` if empty or count exceeds length.
 
 **Example:**
 ```php

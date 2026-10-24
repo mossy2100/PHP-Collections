@@ -6,9 +6,11 @@ The abstract base class for all collection types in the Mossy2100 Collections li
 
 ## Overview
 
-Collection provides the foundation for Sequence, Dictionary, and Set by implementing common functionality and defining the contract that all concrete collections must follow.
+Collection provides the foundation for Sequence, Dictionary, and Set by implementing common functionality and defining
+the contract that all concrete collections must follow.
 
-While you cannot instantiate Collection directly, understanding its API helps you know what methods are available on all collection types and what behavior they share.
+While you cannot instantiate Collection directly, understanding its API helps you know what methods are available on all
+collection types and what behavior they share.
 
 **Implemented Interfaces:**
 
@@ -46,7 +48,8 @@ protected(set) TypeSet $valueTypes
 
 TypeSet managing allowed value types for the collection. Handles runtime type validation.
 
-**Access:** Protected set (can only be set within collection classes), public read (accessible via `$collection->valueTypes`)
+**Access:** Protected set (can only be set within collection classes), public read (accessible via
+`$collection->valueTypes`)
 
 **Example:**
 ```php
@@ -73,7 +76,8 @@ public function __construct(null|string|iterable $types = null)
 Create a new Collection with optional type constraints.
 
 **Parameters:**
-- `$types` (null|string|iterable) - Type constraints (null for any type, string for single/union/nullable types, iterable for array of types)
+- `$types` (null|string|iterable) - Type constraints (null for any type, string for single/union/nullable types,
+  iterable for array of types)
 
 **Throws:**
 - `InvalidArgumentException` - If a type is not specified as a string
@@ -125,7 +129,8 @@ equality (`===`), except that floats are compared by bit pattern, including floa
 abstract public function equal(mixed $other): bool
 ```
 
-Check if two Collections are equal. The definition of "equal" varies by collection type. This method comes from the [Equatable](https://github.com/mossy2100/PHP-Core/blob/main/docs/Traits/Comparison/Equatable.md) trait.
+Check if two Collections are equal. The definition of "equal" varies by collection type. This method comes from the
+[Equatable](https://github.com/mossy2100/PHP-Core/blob/main/docs/Traits/Comparison/Equatable.md) trait.
 
 **Implementations:**
 - **Sequence:** Same type, count, values, and order
@@ -138,8 +143,8 @@ Check if two Collections are equal. The definition of "equal" varies by collecti
 abstract public function filter(callable $callback): static
 ```
 
-Filter the Collection using a callback function. Returns a new Collection with only items where the callback returns `true`.
-The callback must return a bool, or an `UnexpectedValueException` is thrown.
+Filter the Collection using a callback function. Returns a new Collection with only items where the callback returns
+`true`. The callback must return a bool, or an `UnexpectedValueException` is thrown.
 
 **Implementations:**
 - **Sequence:** Filters values, maintains order
@@ -259,7 +264,8 @@ var_dump($dict->all(fn($pair) => $pair->value > 0)); // true
 public function any(callable $fn): bool
 ```
 
-Check if any items in the Collection pass a test function. Returns `true` if at least one item passes, `false` if none pass.
+Check if any items in the Collection pass a test function. Returns `true` if at least one item passes, `false` if none
+pass.
 
 Analogous to PHP's `array_any()`.
 
@@ -333,7 +339,8 @@ foreach ($collection as $key => $value) {
 }
 ```
 
-The exact iteration behavior depends on the concrete collection type. See the documentation for Sequence, Dictionary, and Set for details.
+The exact iteration behavior depends on the concrete collection type. See the documentation for Sequence, Dictionary,
+and Set for details.
 
 ---
 

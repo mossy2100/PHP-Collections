@@ -2,8 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
@@ -20,32 +19,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Renamed the package from `oceanmoon/collections` to `mossy2100/collections`, and the namespace from
   `OceanMoon\Collections` to `Mossy2100\Collections` (breaking),** matching the author's GitHub and Packagist name.
   Update `composer.json` and any `use` statements. It depends on `mossy2100/core`.
-- **`Dictionary::sort()`, `sortByKey()` and `sortByValue()` are now non-mutating (breaking).** They return a new,
-  sorted Dictionary and leave the original unchanged, matching `Sequence`'s sort methods. Code that relied on
-  in-place sorting must use the return value: `$dict = $dict->sortByKey();`.
+- **`Dictionary::sort()`, `sortByKey()` and `sortByValue()` are now non-mutating (breaking).** They return a new, sorted
+  Dictionary and leave the original unchanged, matching `Sequence`'s sort methods. Code that relied on in-place sorting
+  must use the return value: `$dict = $dict->sortByKey();`.
 - **`Sequence` and `Dictionary` string conversion is now readable (breaking output change).** A Sequence converts to
   list notation, e.g. `[1, 'a']`, and a Dictionary to `{'a' => 1, 'b' => 2}`. Previously both dumped their internal
   properties. `Collection::__toString()` is now abstract, so custom subclasses of `Collection` must implement it.
-- **`Sequence::filter()` now requires the callback to return a bool (breaking),** like `Set` and `Dictionary`. It
-  throws `UnexpectedValueException` otherwise, instead of accepting truthy values.
+- **`Sequence::filter()` now requires the callback to return a bool (breaking),** like `Set` and `Dictionary`. It throws
+  `UnexpectedValueException` otherwise, instead of accepting truthy values.
 - **`Sequence` and `Dictionary` now compare values the same way as `Set` (breaking for special floats).** They use
-  `Types::identical()` from Core: strict equality, except that floats are compared by bit pattern. So `NAN` now
-  matches `NAN`, and `-0.0` no longer matches `0.0`. This affects `Sequence::contains()`, `search()`,
-  `removeByValue()`, `equal()` and `unique()`, and `Dictionary::contains()`, `removeByValue()` and `equal()`.
-  `Sequence::unique()` now always gives the same values as `toSet()`, and is faster on large Sequences.
+  `Types::identical()` from Core: strict equality, except that floats are compared by bit pattern. So `NAN` now matches
+  `NAN`, and `-0.0` no longer matches `0.0`. This affects `Sequence::contains()`, `search()`, `removeByValue()`,
+  `equal()` and `unique()`, and `Dictionary::contains()`, `removeByValue()` and `equal()`. `Sequence::unique()` now
+  always gives the same values as `toSet()`, and is faster on large Sequences.
 - **`Dictionary::removeByValue()` no longer throws for a value of a disallowed type.** It returns 0, like
   `Sequence::removeByValue()`.
 - **`TypeSet` lowercases PHP's reserved type names and rejects unsupported ones (breaking).** `'Int'` now means `int`,
-  instead of a class named `Int` that never matched. `void`, `never`, `false`, `true`, `self`, `static` and `parent`
-  now throw `DomainException`, instead of being accepted as class names.
+  instead of a class named `Int` that never matched. `void`, `never`, `false`, `true`, `self`, `static` and `parent` now
+  throw `DomainException`, instead of being accepted as class names.
 - **`Dictionary::add()` throws `BadMethodCallException` for more than 2 arguments (breaking),** instead of
   `ArgumentCountError`, following the package's exception conventions.
-- **Exception messages follow the package's conventions.** For example, a disallowed type now gives
-  "Invalid key type: float. Must be int|string.", and an out-of-range index gives "Invalid index: 5. Must be in the
-  range 0-2." (or "Sequence is empty."). `TypeSet::checkValueType()`'s `$label` now defaults to `'value'`.
-- **Adding several items is now all-or-nothing.** If any item has a disallowed type, `Sequence::append()`,
-  `prepend()` and `import()`, `Set::add()` and `import()`, and `Dictionary::import()` throw without adding anything.
-  Previously the items before the bad one were added.
+- **Exception messages follow the package's conventions.** For example, a disallowed type now gives "Invalid key type:
+  float. Must be int|string.", and an out-of-range index gives "Invalid index: 5. Must be in the range 0-2." (or
+  "Sequence is empty."). `TypeSet::checkValueType()`'s `$label` now defaults to `'value'`.
+- **Adding several items is now all-or-nothing.** If any item has a disallowed type, `Sequence::append()`, `prepend()`
+  and `import()`, `Set::add()` and `import()`, and `Dictionary::import()` throw without adding anything. Previously the
+  items before the bad one were added.
 - **`Sequence::range()` throws `DomainException` for a non-finite argument (`INF`, `-INF`, `NAN`),** instead of running
   out of memory or returning a wrong result. A range too large for an array throws `LengthException`.
 
@@ -56,8 +55,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `0.9999999999999999` instead of `1.0`.
 - **`Sequence::range()`** with `start` equal to `end` returns `[start]`, instead of throwing `DomainException`.
 - **`Sequence::range()`** no longer throws when the range ends at `PHP_INT_MAX` or `PHP_INT_MIN`.
-- **`Sequence::chooseRand()` and `removeRand()`** return the items in random order, as documented. Previously they
-  came back in their original order.
+- **`Sequence::chooseRand()` and `removeRand()`** return the items in random order, as documented. Previously they came
+  back in their original order.
 - **`TypeSet::containsOnly()`** ignores duplicate arguments, including different spellings like `'DateTime'` and
   `'\DateTime'`. Previously `containsOnly('int', 'int')` returned true for `{int, string}`.
 - **Type inference handles anonymous-class objects.** `TypeSet::addValueType()`, and so every constructor or `map()`
@@ -65,8 +64,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`Sequence::merge()`** combines the types of both Sequences, like `Set::union()` and `Dictionary::merge()`.
   Previously it threw `InvalidArgumentException` if the other Sequence had values this one didn't allow.
 - **`Set::union()` and `Dictionary::merge()`** no longer restrict the result's types when one side allows any type.
-  Previously, merging an unconstrained collection with an `int` one gave an `int`-only result that still held the
-  other values and rejected new ones.
+  Previously, merging an unconstrained collection with an `int` one gave an `int`-only result that still held the other
+  values and rejected new ones.
 
 ---
 
@@ -74,8 +73,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **Renamed package** from `galaxon/collections` to `oceanmoon/collections` — update your `composer.json` require accordingly.
-- **Renamed PHP namespaces** from `Galaxon\Collections\*` to `OceanMoon\Collections\*` throughout all source and test files.
+- **Renamed package** from `galaxon/collections` to `oceanmoon/collections` - update your `composer.json` require
+  accordingly.
+- **Renamed PHP namespaces** from `Galaxon\Collections\*` to `OceanMoon\Collections\*` throughout all source and test
+  files.
 - Updated runtime dependency `galaxon/core` → `oceanmoon/core: ^2.0`.
 - Updated dev dependency `galaxon/coding-standard` → `oceanmoon/coding-standard: ^2.0`.
 - `composer.json`: updated author email, homepage, and support URLs to Ocean Moon Software.
@@ -86,7 +87,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- **`Sequence::chooseRand()`** — now returns a `list<mixed>` (values only) instead of an associative array with original indexes as keys. This makes it consistent with `removeRand()` and prevents internal array indexes from leaking into the return value.
+- **`Sequence::chooseRand()`** - now returns a `list<mixed>` (values only) instead of an associative array with original
+  indexes as keys. This makes it consistent with `removeRand()` and prevents internal array indexes from leaking into
+  the return value.
 
 ### Documentation
 
@@ -98,12 +101,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **`composer.json`** — Bumped `galaxon/core` constraint from `^1.0` to `^1.6`. This is a hard requirement: Core's traits were reorganised in v1.6.0 into `Traits/Asserts/` and `Traits/Comparison/` subnamespaces, and `Collection` imports `Galaxon\Core\Traits\Comparison\Equatable` (the new path). Older Core versions would fail to autoload.
-- **`Collection.php`** — Updated `use` statement: `Galaxon\Core\Traits\Equatable` → `Galaxon\Core\Traits\Comparison\Equatable`.
+- **`composer.json`** - Bumped `galaxon/core` constraint from `^1.0` to `^1.6`. This is a hard requirement: Core's
+  traits were reorganised in v1.6.0 into `Traits/Asserts/` and `Traits/Comparison/` subnamespaces, and `Collection`
+  imports `Galaxon\Core\Traits\Comparison\Equatable` (the new path). Older Core versions would fail to autoload.
+- **`Collection.php`** - Updated `use` statement: `Galaxon\Core\Traits\Equatable` →
+  `Galaxon\Core\Traits\Comparison\Equatable`.
 
 ### Documentation
 
-- Updated `Equatable` trait links in `Collection.md`, `Dictionary.md`, `Sequence.md`, and `Set.md` to point at the new `Traits/Comparison/Equatable.md` path.
+- Updated `Equatable` trait links in `Collection.md`, `Dictionary.md`, `Sequence.md`, and `Set.md` to point at the new
+  `Traits/Comparison/Equatable.md` path.
 
 ---
 
@@ -111,7 +118,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **Sequence::join()** — now uses `Strings::toString()` to convert items, supporting all types including non-Stringable objects, booleans, null, enums, and arrays.
+- **Sequence::join()** - now uses `Strings::toString()` to convert items, supporting all types including non-Stringable
+  objects, booleans, null, enums, and arrays.
 - **Exception messages** standardised across all classes to follow "Cannot X" convention:
   - Range step size, chunk size, and count messages updated.
   - Empty Sequence messages now specify the failed operation.
@@ -120,11 +128,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- **Sequence::join()** — no longer throws `DomainException` for non-Stringable objects. All items are now convertible to strings.
+- **Sequence::join()** - no longer throws `DomainException` for non-Stringable objects. All items are now convertible to
+  strings.
 
 ### Documentation
 
-- Fixed incorrect exception types in TypeSet.md (`DomainException`/`RuntimeException` → `LogicException` for `getDefaultValue()`).
+- Fixed incorrect exception types in TypeSet.md (`DomainException`/`RuntimeException` → `LogicException` for
+  `getDefaultValue()`).
 - Standardised Dictionary description across See Also sections ("Key-value collection").
 - Added inherited `items` and `valueTypes` properties to Sequence, Dictionary, and Set docs with links to Collection.md.
 - Removed Contributing section from README (link moved to Support).
@@ -147,7 +157,8 @@ This is the first stable release of Galaxon Collections, ready for publication o
   - `OutOfRangeException` → `LengthException` (empty sequence first/last/min/max)
   - Added `UnexpectedValueException` for callback return type errors
 
-- **Dictionary::filter()** - Callback signature changed from `fn($key, $value)` to `fn($pair)` for consistency with other Dictionary methods
+- **Dictionary::filter()** - Callback signature changed from `fn($key, $value)` to `fn($pair)` for consistency with
+  other Dictionary methods
 
 ### Changed
 

@@ -21,7 +21,12 @@ A type-safe collection library featuring runtime type validation, immutable oper
 
 ## Development and Quality Assurance
 
-[Claude Chat](https://claude.ai) and [Claude Code](https://www.claude.com/product/claude-code) were used in the development of this package. The core classes were designed, coded, and commented primarily by the author, with Claude providing substantial assistance with code review, suggesting improvements, debugging, and generating tests and documentation. All code was thoroughly reviewed by the author, and validated using industry-standard tools including [PHP_Codesniffer](https://github.com/PHPCSStandards/PHP_CodeSniffer/), [PHPStan](https://phpstan.org/) (to level 9), and [PHPUnit](https://phpunit.de/index.html) to ensure full compliance with [PSR-12](https://www.php-fig.org/psr/psr-12/) coding standards and comprehensive unit testing with 100% code coverage. This collaborative approach has produced a well-designed, production-ready package with thorough test coverage and documentation.
+[Claude Chat](https://claude.ai) and [Claude Code](https://www.claude.com/product/claude-code) were used in the development of this package. The core classes were designed, coded, and
+commented primarily by the author, with Claude providing substantial assistance with code review, suggesting
+improvements, debugging, and generating tests and documentation. All code was thoroughly reviewed by the author, and
+validated using industry-standard tools including [PHP_Codesniffer](https://github.com/PHPCSStandards/PHP_CodeSniffer/), [PHPStan](https://phpstan.org/) (to level 9), and [PHPUnit](https://phpunit.de/index.html) to ensure full
+compliance with [PSR-12](https://www.php-fig.org/psr/psr-12/) coding standards and comprehensive unit testing with 100% code coverage. This collaborative
+approach has produced a well-designed, production-ready package with thorough test coverage and documentation.
 
 ![Code Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)
 
@@ -33,7 +38,8 @@ PHP's native arrays are powerful but have limitations:
 - **Keys restricted to strings and integers** - Can't use booleans, floats, arrays, or objects as keys.
 - **No type safety** - Arrays accept any mix of types without validation.
 - **Type coercion issues** - Keys like `1`, `'1'`, `true`, and `1.0` all become the same key.
-- **Limited operations** - Built-in array functions lack chaining, immutability, and advanced transformations. Errors and exceptions are inconsistent.
+- **Limited operations** - Built-in array functions lack chaining, immutability, and advanced transformations. Errors
+  and exceptions are inconsistent.
 
 Mossy2100 Collections solves these problems with:
 
@@ -58,7 +64,10 @@ Before using this package, you may want to check out these PHP extensions:
 - [Standard PHP Library](https://www.php.net/manual/en/book.spl.php)
 - [Data Structures](https://www.php.net/manual/en/book.ds.php)
 
-These are official PHP extensions that provide efficient data structure implementations and will probably be well-supported going forward. However, if you need runtime type safety and generics-like behavior, or simply prefer a more functional style of programming, Mossy2100 Collections provides features that these extensions lack, including type constraints, type inference, and type-safe operations.
+These are official PHP extensions that provide efficient data structure implementations and will probably be
+well-supported going forward. However, if you need runtime type safety and generics-like behavior, or simply prefer a
+more functional style of programming, Mossy2100 Collections provides features that these extensions lack, including type
+constraints, type inference, and type-safe operations.
 
 ---
 

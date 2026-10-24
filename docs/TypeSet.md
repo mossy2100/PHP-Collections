@@ -4,9 +4,11 @@ A type-safe set of type names used internally by collections to enforce type con
 
 ## Overview
 
-TypeSet is a utility class that manages a set of allowed type names for collection values. It provides runtime type validation, type inference, and default value inference for PHP's type system.
+TypeSet is a utility class that manages a set of allowed type names for collection values. It provides runtime type
+validation, type inference, and default value inference for PHP's type system.
 
-While primarily used internally by Sequence, Dictionary, Set, and Collection classes, TypeSet can be useful in your own code when you need flexible runtime type checking.
+While primarily used internally by Sequence, Dictionary, Set, and Collection classes, TypeSet can be useful in your own
+code when you need flexible runtime type checking.
 
 ### Key Features
 
@@ -51,8 +53,7 @@ Must be specified in the format returned by `get_debug_type()`:
 - Trait names: `MyTrait`
 - Leading backslashes are optional and will be stripped
 
-**Inheritance Support:**
-Values are matched against parent classes, interfaces, and traits:
+**Inheritance Support:** Values are matched against parent classes, interfaces, and traits:
 
 ```php
 $ts = new TypeSet('Exception');
@@ -82,7 +83,8 @@ of those names: `'Number'` is treated as a class name.
 private(set) array $types = []
 ```
 
-The set of type names. Uses PHP 8.4 asymmetric visibility - readable internally, not directly modifiable from outside. Use `add()` or `addValueType()` to add types.
+The set of type names. Uses PHP 8.4 asymmetric visibility - readable internally, not directly modifiable from outside.
+Use `add()` or `addValueType()` to add types.
 
 ## Constructor
 
@@ -173,8 +175,8 @@ public function addValueType(mixed $value): self
 
 Infer the type from a value and add it to the TypeSet. Returns `$this` for chaining.
 
-An anonymous class has no usable name, so for an instance of one, its parent class is added if it has one, and
-otherwise `object`.
+An anonymous class has no usable name, so for an instance of one, its parent class is added if it has one, and otherwise
+`object`.
 
 **Examples:**
 ```php
@@ -202,8 +204,7 @@ echo $ts; // {int, string, float, bool, null}
 public function addValueTypes(iterable $values): self
 ```
 
-Infer the type of each value, as for [addValueType()](#addvaluetype), and add them to the TypeSet. Returns `$this` for
-chaining.
+Infer the type of each value, as for [addValueType()](#addvaluetype), and add them to the TypeSet. Returns `$this` for chaining.
 
 **Example:**
 ```php
@@ -219,8 +220,8 @@ echo $ts; // {int, string, float, bool, null}
 public function union(self $other): self
 ```
 
-Return a new TypeSet that allows every value either TypeSet allows. If either one allows any type (see
-[anyOk()](#anyok)), so does the result. Otherwise, it contains the types from both. Neither TypeSet is modified.
+Return a new TypeSet that allows every value either TypeSet allows. If either one allows any type (see [anyOk()](#anyok)), so does
+the result. Otherwise, it contains the types from both. Neither TypeSet is modified.
 
 **Examples:**
 ```php

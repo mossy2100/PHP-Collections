@@ -4,9 +4,12 @@ A simple, immutable class for encapsulating a key-value pair where both the key 
 
 ## Overview
 
-Pair is a readonly class used internally by Dictionary to store key-value pairs in its internal array. Since PHP arrays only accept string or integer keys, Dictionary uses Pair objects to enable keys of any type (objects, arrays, resources, etc.).
+Pair is a readonly class used internally by Dictionary to store key-value pairs in its internal array. Since PHP arrays
+only accept string or integer keys, Dictionary uses Pair objects to enable keys of any type (objects, arrays, resources,
+etc.).
 
-While primarily an internal implementation detail, Pair can be useful in your own code when you need to represent a key-value association with unrestricted types.
+While primarily an internal implementation detail, Pair can be useful in your own code when you need to represent a
+key-value association with unrestricted types.
 
 ### Key Features
 
@@ -140,7 +143,8 @@ echo $pair->value; // 'value'
 $newPair = new Pair('new key', 'new value');
 ```
 
-This immutability ensures that Pair objects are safe to use in collections without worrying about external modifications.
+This immutability ensures that Pair objects are safe to use in collections without worrying about external
+modifications.
 
 ### Type Preservation
 
