@@ -37,7 +37,7 @@ The code is checked with:
 
 ---
 
-## Why Mossy2100 Collections?
+## Why these collections?
 
 PHP's native arrays are powerful but have limitations:
 - **Keys restricted to strings and integers** - Can't use booleans, floats, arrays, or objects as keys.
@@ -46,7 +46,7 @@ PHP's native arrays are powerful but have limitations:
 - **Limited operations** - Built-in array functions lack chaining, immutability, and advanced transformations. Errors
   and exceptions are inconsistent.
 
-Mossy2100 Collections solves these problems with:
+The collection classes in this package solve these problems with:
 
 ✅ **Any type as keys** - Use objects, arrays, booleans, floats, null as Dictionary keys.
 
@@ -71,8 +71,8 @@ Before using this package, you may want to check out these PHP extensions:
 
 These are official PHP extensions that provide efficient data structure implementations and will probably be
 well-supported going forward. However, if you need runtime type safety and generics-like behavior, or simply prefer a
-more functional style of programming, Mossy2100 Collections provides features that these extensions lack, including type
-constraints, type inference, and type-safe operations.
+more functional style of programming, the collection classes in this package provides features that these extensions
+lack, including type constraints, type inference, and type-safe operations.
 
 ---
 

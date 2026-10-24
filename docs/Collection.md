@@ -1,6 +1,6 @@
 # Collection
 
-The abstract base class for all collection types in the Mossy2100 Collections library.
+The abstract base class for all collection classes in my Collections package.
 
 ---
 
