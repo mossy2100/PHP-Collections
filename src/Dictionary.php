@@ -563,16 +563,11 @@ final class Dictionary extends Collection implements ArrayAccess
         $valueTypes = $this->valueTypes->union($other->valueTypes);
         $result = new self($keyTypes, $valueTypes);
 
-        // Copy pairs from this dictionary.
-        foreach ($this->items as $index => $pair) {
-            /** @var Pair $pair */
-            $result->items[$index] = clone $pair;
-        }
-
-        // Copy pairs from the other dictionary.
+        // Copy pairs from both dictionaries. Pairs are immutable, so they can be shared. For a key in both, the pair
+        // from the other dictionary replaces this one's, in this one's position, as with array_merge().
+        $result->items = $this->items;
         foreach ($other->items as $index => $pair) {
-            /** @var Pair $pair */
-            $result->items[$index] = clone $pair;
+            $result->items[$index] = $pair;
         }
 
         return $result;

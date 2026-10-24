@@ -723,8 +723,8 @@ final class Sequence extends Collection implements ArrayAccess
         // Merge the two sequences.
         $items = array_merge($this->items, $other->items);
 
-        // Construct the result.
-        return $this->fromSubset($items);
+        // Construct the result. The other Sequence's items may not be allowed by this one's types, so check them.
+        return new self($this->valueTypes, $items);
     }
 
     /**
@@ -1248,16 +1248,19 @@ final class Sequence extends Collection implements ArrayAccess
     }
 
     /**
-     * Create a new Sequence with the same types as the calling object, and items copied from a source iterable
-     * (typically items from the calling Sequence, although this is not enforced).
+     * Create a new Sequence with the same types as the calling object, and items taken from the calling Sequence.
      *
-     * @param iterable<mixed> $items The iterable to copy items from.
+     * The items aren't type-checked, since they come from this Sequence and so are already allowed.
+     *
+     * @param array<mixed> $items The items, which must all come from this Sequence. Keys are discarded.
      * @return self The new Sequence.
      */
-    private function fromSubset(iterable $items): self
+    private function fromSubset(array $items): self
     {
         // Construct the new Sequence.
-        return new self($this->valueTypes, $items);
+        $result = new self($this->valueTypes);
+        $result->items = array_values($items);
+        return $result;
     }
 
     /**
