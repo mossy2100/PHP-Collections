@@ -396,21 +396,22 @@ var_dump($ts4->nullOk()); // false
 ### checkValueType()
 
 ```php
-public function checkValueType(mixed $value, string $label = ''): void
+public function checkValueType(mixed $value, string $label = 'value'): void
 ```
 
-Check if a value matches the types. Throws `TypeError` if the value doesn't match.
+Check if a value matches the types. Throws `InvalidArgumentException` if it doesn't. The optional label says what the
+value is, for the message.
 
 **Examples:**
 ```php
 $ts = new TypeSet('int');
 
 $ts->checkValueType(42);        // OK, no exception
-$ts->checkValueType('hello');   // TypeError: Disallowed type: string.
+$ts->checkValueType('hello');   // InvalidArgumentException: Invalid value type: string. Must be int.
 
 // With custom label
 $ts->checkValueType(42, 'age');        // OK
-$ts->checkValueType('text', 'age');    // TypeError: Disallowed age type: string.
+$ts->checkValueType('text', 'age');    // InvalidArgumentException: Invalid age type: string. Must be int.
 ```
 
 ## Extraction Methods
@@ -555,7 +556,7 @@ class Config
 $config = new Config('int|string');
 $config->setValue(42);      // OK
 $config->setValue('text');  // OK
-$config->setValue(true);    // TypeError: Disallowed config value type: bool.
+$config->setValue(true);    // InvalidArgumentException: Invalid config value type: bool. Must be int|string.
 ```
 
 ## See Also

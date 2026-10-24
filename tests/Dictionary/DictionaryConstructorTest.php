@@ -591,7 +591,7 @@ class DictionaryConstructorTest extends TestCase
         $values = [1, 2]; // One less value
 
         $this->expectException(LengthException::class);
-        $this->expectExceptionMessage('Cannot combine: keys count (3) does not match values count (2).');
+        $this->expectExceptionMessage('Cannot combine due to incorrect values count: 2. Expected 3.');
 
         Dictionary::combine($keys, $values);
     }
@@ -605,7 +605,7 @@ class DictionaryConstructorTest extends TestCase
         $values = [1, 2, 3];
 
         $this->expectException(OutOfBoundsException::class);
-        $this->expectExceptionMessage('Cannot combine: keys are not unique.');
+        $this->expectExceptionMessage('Cannot combine. Keys are not unique.');
 
         Dictionary::combine($keys, $values);
     }
@@ -622,7 +622,7 @@ class DictionaryConstructorTest extends TestCase
         $values = ['first', 'second'];
 
         $this->expectException(OutOfBoundsException::class);
-        $this->expectExceptionMessage('Cannot combine: keys are not unique.');
+        $this->expectExceptionMessage('Cannot combine. Keys are not unique.');
 
         Dictionary::combine($keys, $values);
     }

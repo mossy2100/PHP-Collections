@@ -293,4 +293,28 @@ class DictionaryAddRemoveTest extends TestCase
         $this->assertSame(1, $dict->removeByValue(-0.0));
         $this->assertSame(['a'], $dict->keys);
     }
+
+    /**
+     * Test the message when the one-argument form isn't given a Pair.
+     */
+    public function testAddNonPairMessage(): void
+    {
+        $dict = new Dictionary();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid argument type: int. Must be Pair.');
+        $dict->add(5);
+    }
+
+    /**
+     * Test the message for a key of a disallowed type.
+     */
+    public function testKeyTypeMessage(): void
+    {
+        $dict = new Dictionary('string', 'int');
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid key type: float. Must be string.');
+        $dict->add(1.5, 1);
+    }
 }

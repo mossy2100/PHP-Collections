@@ -287,4 +287,16 @@ class SetTransformTest extends TestCase
 
         $this->assertCount(0, $mapped);
     }
+
+    /**
+     * Test the message when the filter callback doesn't return a bool.
+     */
+    public function testFilterCallbackReturnTypeMessage(): void
+    {
+        $set = new Set('int', [1]);
+
+        $this->expectException(UnexpectedValueException::class);
+        $this->expectExceptionMessage('Invalid callback return type: int. Must be bool.');
+        $set->filter(static fn ($value) => $value);
+    }
 }

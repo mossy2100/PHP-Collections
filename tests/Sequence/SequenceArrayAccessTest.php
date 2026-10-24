@@ -401,4 +401,52 @@ class SequenceArrayAccessTest extends TestCase
         $this->assertIsArray($array);
         $this->assertSame([1, 2, 3, 4, 5], $array);
     }
+
+    /**
+     * Test the message for an index beyond the end.
+     */
+    public function testOutOfRangeIndexMessage(): void
+    {
+        $seq = new Sequence('int', [1, 2, 3]);
+
+        $this->expectException(OutOfRangeException::class);
+        $this->expectExceptionMessage('Invalid index: 5. Must be in the range 0-2.');
+        $seq[5];
+    }
+
+    /**
+     * Test the message for any index into an empty Sequence.
+     */
+    public function testEmptySequenceIndexMessage(): void
+    {
+        $seq = new Sequence('int');
+
+        $this->expectException(OutOfRangeException::class);
+        $this->expectExceptionMessage('Invalid index: 0. Sequence is empty.');
+        $seq[0];
+    }
+
+    /**
+     * Test the message for an index of the wrong type.
+     */
+    public function testIndexTypeMessage(): void
+    {
+        $seq = new Sequence('int', [1]);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid index type: string. Must be int.');
+        $seq['0'];
+    }
+
+    /**
+     * Test the message for a value of a disallowed type.
+     */
+    public function testValueTypeMessage(): void
+    {
+        $seq = new Sequence('int|float');
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid value type: string. Must be int|float.');
+        $seq[] = 'x';
+    }
 }

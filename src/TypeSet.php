@@ -383,15 +383,18 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
     /**
      * Checks if the given value matches the set of types.
      *
+     * The exception message names the allowed types in union syntax, e.g.
+     * "Invalid key type: float. Must be int|string."
+     *
      * @param mixed $value The value to check.
-     * @param string $label Optional label to include in error message (e.g., 'key', 'value').
+     * @param string $label What the value is, for the error message (default 'value'), e.g. 'key'.
      * @throws InvalidArgumentException If the value's type is not allowed by the TypeSet.
      */
-    public function checkValueType(mixed $value, string $label = ''): void
+    public function checkValueType(mixed $value, string $label = 'value'): void
     {
         if (!$this->match($value)) {
             throw new InvalidArgumentException(
-                'Disallowed ' . ($label ? $label . ' ' : '') . 'type: ' . get_debug_type($value) . '.'
+                "Invalid $label type: " . get_debug_type($value) . '. Must be ' . implode('|', $this->types) . '.'
             );
         }
     }

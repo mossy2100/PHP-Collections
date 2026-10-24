@@ -39,6 +39,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   now throw `DomainException`, instead of being accepted as class names.
 - **`Dictionary::add()` throws `BadMethodCallException` for more than 2 arguments (breaking),** instead of
   `ArgumentCountError`, following the package's exception conventions.
+- **Exception messages follow the package's conventions.** For example, a disallowed type now gives
+  "Invalid key type: float. Must be int|string.", and an out-of-range index gives "Invalid index: 5. Must be in the
+  range 0-2." (or "Sequence is empty."). `TypeSet::checkValueType()`'s `$label` now defaults to `'value'`.
 - **Adding several items is now all-or-nothing.** If any item has a disallowed type, `Sequence::append()`,
   `prepend()` and `import()`, `Set::add()` and `import()`, and `Dictionary::import()` throw without adding anything.
   Previously the items before the bad one were added.

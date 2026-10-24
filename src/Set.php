@@ -373,7 +373,7 @@ final class Set extends Collection
             // Validate the result of the callback.
             if (!is_bool($keep)) {
                 throw new UnexpectedValueException(
-                    'Cannot filter: callback returned ' . Types::getBasicType($keep) . ', expected bool.'
+                    'Invalid callback return type: ' . get_debug_type($keep) . '. Must be bool.'
                 );
             }
 

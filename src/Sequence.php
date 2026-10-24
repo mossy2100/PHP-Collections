@@ -683,7 +683,7 @@ final class Sequence extends Collection implements ArrayAccess
             // Validate the result of the callback.
             if (!is_bool($keep)) {
                 throw new UnexpectedValueException(
-                    'Cannot filter: callback returned ' . Types::getBasicType($keep) . ', expected bool.'
+                    'Invalid callback return type: ' . get_debug_type($keep) . '. Must be bool.'
                 );
             }
 
@@ -1102,7 +1102,7 @@ final class Sequence extends Collection implements ArrayAccess
     {
         // Check the index is an integer.
         if (!is_int($offset)) {
-            throw new InvalidArgumentException('Invalid index type: ' . get_debug_type($offset) . '.');
+            throw new InvalidArgumentException('Invalid index type: ' . get_debug_type($offset) . '. Must be int.');
         }
 
         return array_key_exists($offset, $this->items);
@@ -1228,7 +1228,7 @@ final class Sequence extends Collection implements ArrayAccess
     {
         // Check the index is an integer.
         if (!is_int($index)) {
-            throw new InvalidArgumentException('Invalid index type: ' . get_debug_type($index) . '.');
+            throw new InvalidArgumentException('Invalid index type: ' . get_debug_type($index) . '. Must be int.');
         }
 
         // Check the index isn't negative.
@@ -1238,8 +1238,11 @@ final class Sequence extends Collection implements ArrayAccess
 
         // Check the index isn't too large.
         if ($checkUpperBound && $index >= count($this->items)) {
+            if ($this->empty()) {
+                throw new OutOfRangeException("Invalid index: $index. Sequence is empty.");
+            }
             throw new OutOfRangeException(
-                "Index $index is outside the valid range 0-" . (count($this->items) - 1) . '.'
+                "Invalid index: $index. Must be in the range 0-" . (count($this->items) - 1) . '.'
             );
         }
     }

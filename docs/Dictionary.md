@@ -202,11 +202,11 @@ $dict->add(123, 'text'); // Works
 
 // Error: Mismatched counts
 $dict = Dictionary::combine(['a', 'b', 'c'], [1, 2]);
-// LengthException: Cannot combine: keys count (3) does not match values count (2).
+// LengthException: Cannot combine due to incorrect values count: 2. Expected 3.
 
 // Error: Duplicate keys
 $dict = Dictionary::combine(['a', 'b', 'a'], [1, 2, 3]);
-// OutOfBoundsException: Cannot combine: keys are not unique.
+// OutOfBoundsException: Cannot combine. Keys are not unique.
 ```
 
 ## Modification Methods

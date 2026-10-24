@@ -152,9 +152,7 @@ final class Dictionary extends Collection implements ArrayAccess
         $keyCount = count($keysArray);
         $valueCount = count($valuesArray);
         if ($keyCount !== $valueCount) {
-            throw new LengthException(
-                "Cannot combine: keys count ($keyCount) does not match values count ($valueCount)."
-            );
+            throw new LengthException("Cannot combine due to incorrect values count: $valueCount. Expected $keyCount.");
         }
 
         // Create a new Dictionary and add items, checking for duplicate keys along the way.
@@ -165,7 +163,7 @@ final class Dictionary extends Collection implements ArrayAccess
 
             // Check for duplicate keys.
             if (isset($dict[$key])) {
-                throw new OutOfBoundsException('Cannot combine: keys are not unique.');
+                throw new OutOfBoundsException('Cannot combine. Keys are not unique.');
             }
 
             // Get the value.
@@ -208,7 +206,7 @@ final class Dictionary extends Collection implements ArrayAccess
         if ($nArgs === 1) {
             if (!$keyOrPair instanceof Pair) {
                 throw new InvalidArgumentException(
-                    'Cannot add: expected a Pair, got ' . get_debug_type($keyOrPair) . '.'
+                    'Invalid argument type: ' . get_debug_type($keyOrPair) . '. Must be Pair.'
                 );
             }
             $key = $keyOrPair->key;
@@ -437,7 +435,7 @@ final class Dictionary extends Collection implements ArrayAccess
             // Validate the result of the callback.
             if (!is_bool($keep)) {
                 throw new UnexpectedValueException(
-                    'Cannot filter: callback returned ' . Types::getBasicType($keep) . ', expected bool.'
+                    'Invalid callback return type: ' . get_debug_type($keep) . '. Must be bool.'
                 );
             }
 
@@ -469,7 +467,7 @@ final class Dictionary extends Collection implements ArrayAccess
 
             // Check if this value already exists as a key in the result.
             if ($result->keyExists($pair->value)) {
-                throw new OutOfBoundsException('Cannot flip Dictionary: values are not unique.');
+                throw new OutOfBoundsException('Cannot flip Dictionary. Values are not unique.');
             }
 
             // Add the flipped key-value pair to the result. Calls offsetSet().
@@ -525,14 +523,14 @@ final class Dictionary extends Collection implements ArrayAccess
             // Validate the result is a Pair.
             if (!$newPair instanceof Pair) {
                 throw new UnexpectedValueException(
-                    'Cannot map: callback returned ' . Types::getBasicType($newPair) . ', expected Pair.'
+                    'Invalid callback return type: ' . get_debug_type($newPair) . '. Must be Pair.'
                 );
             }
 
             // Check for duplicate keys.
             if ($result->keyExists($newPair->key)) {
                 throw new OutOfBoundsException(
-                    'Callback produced a duplicate key: ' . Stringify::abbrev($newPair->key) . '.'
+                    'Cannot map Dictionary. Callback produced duplicate key: ' . Stringify::abbrev($newPair->key) . '.'
                 );
             }
 

@@ -75,7 +75,7 @@ class DictionaryTransformTest extends TestCase
 
         // Test flipping with duplicate values throws RuntimeException.
         $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Cannot flip Dictionary: values are not unique.');
+        $this->expectExceptionMessage('Cannot flip Dictionary. Values are not unique.');
         $dict->flip();
     }
 
@@ -464,7 +464,7 @@ class DictionaryTransformTest extends TestCase
 
         // Test callback returning non-Pair throws UnexpectedValueException.
         $this->expectException(UnexpectedValueException::class);
-        $this->expectExceptionMessage('Cannot map: callback returned int, expected Pair.');
+        $this->expectExceptionMessage('Invalid callback return type: int. Must be Pair.');
         // @phpstan-ignore binaryOp.invalid
         $dict->map(static fn ($pair) => $pair->value * 2); // Returns int, not Pair
     }
@@ -481,7 +481,7 @@ class DictionaryTransformTest extends TestCase
 
         // Test mapping to same key throws OutOfBoundsException.
         $this->expectException(OutOfBoundsException::class);
-        $this->expectExceptionMessage("Callback produced a duplicate key: 'same'.");
+        $this->expectExceptionMessage("Cannot map Dictionary. Callback produced duplicate key: 'same'.");
         $dict->map(static fn ($pair) => new Pair('same', $pair->value));
     }
 
