@@ -128,7 +128,7 @@ class TypeSetModificationTest extends TestCase
         $ts = new TypeSet();
 
         $this->expectException(InvalidArgumentException::class);
-        $ts->add([123]); // Array with integer instead of string
+        $ts->add([123]); // @phpstan-ignore argument.type (array with an integer instead of a string)
     }
 
     /**

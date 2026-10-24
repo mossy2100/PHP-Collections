@@ -342,7 +342,7 @@ class DictionaryTransformationTest extends TestCase
         // Test callback returning non-Pair throws UnexpectedValueException.
         $this->expectException(UnexpectedValueException::class);
         $this->expectExceptionMessage('Invalid callback return type: int. Must be Pair.');
-        // @phpstan-ignore binaryOp.invalid
+        // @phpstan-ignore binaryOp.invalid, argument.type
         $dict->map(static fn ($pair) => $pair->value * 2); // Returns int, not Pair
     }
 
@@ -395,6 +395,7 @@ class DictionaryTransformationTest extends TestCase
 
         // Test complex mapping that changes both keys and values.
         $mapped = $dict->map(static fn ($pair) => new Pair(
+            // @phpstan-ignore argument.type
             strtoupper($pair->key),
             // @phpstan-ignore binaryOp.invalid
             $pair->value * 2 + 10
