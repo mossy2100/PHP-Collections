@@ -211,15 +211,7 @@ class SequenceConstructorTest extends TestCase
     public function testConstructorInfersMultipleTypes(): void
     {
         // Test: Create Sequence with various types
-        $seq = new Sequence(source: [
-            1,
-            'hello',
-            3.14,
-            true,
-            false,
-            null,
-            [],
-        ]);
+        $seq = new Sequence(source: [1, 'hello', 3.14, true, false, null, []]);
 
         // Test: Verify all unique types were inferred
         $this->assertTrue($seq->valueTypes->containsOnly('int', 'string', 'float', 'bool', 'null', 'array'));

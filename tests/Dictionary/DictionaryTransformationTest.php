@@ -514,10 +514,7 @@ class DictionaryTransformationTest extends TestCase
         $any = new Dictionary(null, null);
         $any['a'] = 'x';
 
-        $results = [
-            $typed->merge($any),
-            $any->merge($typed),
-        ];
+        $results = [$typed->merge($any), $any->merge($typed)];
         foreach ($results as $merged) {
             $this->assertTrue($merged->keyTypes->anyOk());
             $this->assertTrue($merged->valueTypes->anyOk());

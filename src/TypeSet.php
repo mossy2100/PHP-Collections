@@ -83,7 +83,15 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
      * @var list<string>
      */
     private const array RESERVED_TYPES = [
-        'null',     'bool',     'int',      'float',    'string',   'array',    'object',   'iterable', 'callable',
+        'null',
+        'bool',
+        'int',
+        'float',
+        'string',
+        'array',
+        'object',
+        'iterable',
+        'callable',
         'mixed',
     ];
 

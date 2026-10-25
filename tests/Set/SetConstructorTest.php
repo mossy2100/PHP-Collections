@@ -218,15 +218,7 @@ class SetConstructorTest extends TestCase
      */
     public function testConstructorInfersMultipleTypes(): void
     {
-        $set = new Set(source: [
-            1,
-            'hello',
-            3.14,
-            true,
-            false,
-            null,
-            [],
-        ]);
+        $set = new Set(source: [1, 'hello', 3.14, true, false, null, []]);
 
         $this->assertTrue($set->valueTypes->containsOnly('int', 'string', 'float', 'bool', 'null', 'array'));
     }

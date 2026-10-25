@@ -163,15 +163,15 @@ class TypeSetModificationTest extends TestCase
     public static function unsupportedTypeProvider(): array
     {
         return [
-            'void'   => ['void'],
-            'never'  => ['never'],
-            'false'  => ['false'],
-            'true'   => ['true'],
-            'self'   => ['self'],
+            'void' => ['void'],
+            'never' => ['never'],
+            'false' => ['false'],
+            'true' => ['true'],
+            'self' => ['self'],
             'static' => ['static'],
             'parent' => ['parent'],
-            'False'  => ['False'],
-            '?void'  => ['?void'],
+            'False' => ['False'],
+            '?void' => ['?void'],
         ];
     }
 

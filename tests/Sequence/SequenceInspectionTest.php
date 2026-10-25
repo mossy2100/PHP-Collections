@@ -85,10 +85,7 @@ class SequenceInspectionTest extends TestCase
      */
     public function testContainsWithNestedFloats(): void
     {
-        $seq = new Sequence(source: [
-            [1, NAN],
-            [0.0],
-        ]);
+        $seq = new Sequence(source: [[1, NAN], [0.0]]);
 
         $this->assertTrue($seq->contains([1, NAN]));
         $this->assertFalse($seq->contains([-0.0]));
@@ -100,11 +97,7 @@ class SequenceInspectionTest extends TestCase
      */
     public function testContainsDistinguishesTypes(): void
     {
-        $seq = new Sequence(source: [
-            1,
-            '2',
-            [3],
-        ]);
+        $seq = new Sequence(source: [1, '2', [3]]);
 
         $this->assertFalse($seq->contains(1.0));
         $this->assertFalse($seq->contains(2));

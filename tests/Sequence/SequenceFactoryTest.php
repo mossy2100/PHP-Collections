@@ -153,14 +153,7 @@ class SequenceFactoryTest extends TestCase
      */
     public function testRangeFloatSweepMatchesNativeRange(): void
     {
-        $steps = [
-            0.1,
-            0.2,
-            0.3,
-            0.7,
-            0.01,
-            1 / 3,
-        ];
+        $steps = [0.1, 0.2, 0.3, 0.7, 0.01, 1 / 3];
         foreach ($steps as $step) {
             for ($n = 1; $n <= 50; $n++) {
                 $end = $n * $step;
@@ -179,19 +172,11 @@ class SequenceFactoryTest extends TestCase
     public function testRangeAtIntLimits(): void
     {
         $this->assertSame(
-            [
-                PHP_INT_MAX - 2,
-                PHP_INT_MAX - 1,
-                PHP_INT_MAX,
-            ],
+            [PHP_INT_MAX - 2, PHP_INT_MAX - 1, PHP_INT_MAX],
             Sequence::range(PHP_INT_MAX - 2, PHP_INT_MAX)->toArray()
         );
         $this->assertSame(
-            [
-                PHP_INT_MIN + 2,
-                PHP_INT_MIN + 1,
-                PHP_INT_MIN,
-            ],
+            [PHP_INT_MIN + 2, PHP_INT_MIN + 1, PHP_INT_MIN],
             Sequence::range(PHP_INT_MIN + 2, PHP_INT_MIN, -1)->toArray()
         );
     }
@@ -205,10 +190,10 @@ class SequenceFactoryTest extends TestCase
     {
         return [
             'start NAN' => [NAN, 1, 1, 'Invalid start: NAN. Must be finite.'],
-            'end INF'   => [0, INF, 1, 'Invalid end: INF. Must be finite.'],
-            'end -INF'  => [0, -INF, -1, 'Invalid end: -INF. Must be finite.'],
-            'step NAN'  => [0, 1, NAN, 'Invalid step size: NAN. Must be finite.'],
-            'step INF'  => [0, 1, INF, 'Invalid step size: INF. Must be finite.'],
+            'end INF' => [0, INF, 1, 'Invalid end: INF. Must be finite.'],
+            'end -INF' => [0, -INF, -1, 'Invalid end: -INF. Must be finite.'],
+            'step NAN' => [0, 1, NAN, 'Invalid step size: NAN. Must be finite.'],
+            'step INF' => [0, 1, INF, 'Invalid step size: INF. Must be finite.'],
         ];
     }
 

@@ -177,10 +177,7 @@ class DictionaryModificationTest extends TestCase
         // Test: Import items from an array
         $dict = new Dictionary('string', 'int');
         $dict->add('a', 1);
-        $result = $dict->import([
-            'b' => 2,
-            'c' => 3,
-        ]);
+        $result = $dict->import(['b' => 2, 'c' => 3]);
 
         // Test: Verify items were imported
         $this->assertSame($dict, $result); // Returns $this for chaining
@@ -239,10 +236,7 @@ class DictionaryModificationTest extends TestCase
         $dict = new Dictionary('string', 'int');
         $dict->add('a', 1);
         $dict->add('b', 2);
-        $dict->import([
-            'c' => 3,
-            'd' => 4,
-        ]);
+        $dict->import(['c' => 3, 'd' => 4]);
 
         // Test: Verify existing items preserved
         $this->assertCount(4, $dict);
@@ -259,18 +253,9 @@ class DictionaryModificationTest extends TestCase
     {
         // Test: Chain multiple import calls
         $dict = new Dictionary('string', 'int');
-        $dict->import([
-            'a' => 1,
-            'b' => 2,
-        ])
-            ->import([
-                'c' => 3,
-                'd' => 4,
-            ])
-            ->import([
-                'e' => 5,
-                'f' => 6,
-            ]);
+        $dict->import(['a' => 1, 'b' => 2])
+            ->import(['c' => 3, 'd' => 4])
+            ->import(['e' => 5, 'f' => 6]);
 
         // Test: Verify all items imported
         $this->assertCount(6, $dict);
@@ -287,9 +272,7 @@ class DictionaryModificationTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
 
         $dict = new Dictionary('string', 'int');
-        $dict->import([
-            'key' => 'invalid',
-        ]); // String value, int expected
+        $dict->import(['key' => 'invalid']); // String value, int expected
     }
 
     /**
@@ -301,9 +284,7 @@ class DictionaryModificationTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
 
         $dict = new Dictionary('string', 'int');
-        $dict->import([
-            123 => 1,
-        ]); // Int key, string expected
+        $dict->import([123 => 1]); // Int key, string expected
     }
 
     /**
@@ -316,10 +297,7 @@ class DictionaryModificationTest extends TestCase
         $dict->add('a', 1);
         $dict->add('b', 2);
 
-        $dict->import([
-            'b' => 20,
-            'c' => 3,
-        ]);
+        $dict->import(['b' => 20, 'c' => 3]);
 
         // Test: Verify overlapping key has updated value
         $this->assertCount(3, $dict);
@@ -362,11 +340,7 @@ class DictionaryModificationTest extends TestCase
         $dict->add('a', 1);
 
         try {
-            $dict->import([
-                'b' => 2,
-                'c' => 'invalid',
-                'd' => 4,
-            ]);
+            $dict->import(['b' => 2, 'c' => 'invalid', 'd' => 4]);
             $this->fail('Expected InvalidArgumentException was not thrown');
         } catch (InvalidArgumentException) {
             // Test: Verify the Dictionary is unchanged
@@ -384,13 +358,7 @@ class DictionaryModificationTest extends TestCase
     {
         // Test: Import into Dictionary with union type constraints
         $dict = new Dictionary('int|string', 'int|string');
-        $dict->import([
-            1      => 'one',
-            'two'  => 2,
-            3      => 'three',
-            'four' => 4,
-
-        ]);
+        $dict->import([1 => 'one', 'two' => 2, 3 => 'three', 'four' => 4]);
 
         // Test: Verify both key and value types accepted
         $this->assertCount(4, $dict);
@@ -407,11 +375,7 @@ class DictionaryModificationTest extends TestCase
     {
         // Test: Import into a new empty Dictionary
         $dict = new Dictionary('string', 'int');
-        $dict->import([
-            'a' => 10,
-            'b' => 20,
-            'c' => 30,
-        ]);
+        $dict->import(['a' => 10, 'b' => 20, 'c' => 30]);
 
         // Test: Verify items imported
         $this->assertCount(3, $dict);
@@ -426,12 +390,7 @@ class DictionaryModificationTest extends TestCase
     {
         // Test: Import from associative array
         $dict = new Dictionary('string', 'string');
-        $dict->import([
-            'first_name' => 'John',
-            'last_name'  => 'Doe',
-            'email'      => 'john@example.com',
-
-        ]);
+        $dict->import(['first_name' => 'John', 'last_name' => 'Doe', 'email' => 'john@example.com']);
 
         // Test: Verify all key-value pairs imported
         $this->assertCount(3, $dict);
@@ -448,10 +407,7 @@ class DictionaryModificationTest extends TestCase
         // Test: Import items and verify order
         $dict = new Dictionary('string', 'int');
         $dict->add('first', 1);
-        $dict->import([
-            'second' => 2,
-            'third'  => 3,
-        ]);
+        $dict->import(['second' => 2, 'third' => 3]);
 
         // Test: Verify order is maintained
         $keys = $dict->keys;
@@ -465,10 +421,7 @@ class DictionaryModificationTest extends TestCase
     {
         $dict = new Dictionary('string', 'int');
         $dict['a'] = 1;
-        $source = [
-            'b' => 2,
-            5   => 3,
-        ];
+        $source = ['b' => 2, 5 => 3];
 
         try {
             $dict->import($source);

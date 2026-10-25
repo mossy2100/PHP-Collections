@@ -142,11 +142,7 @@ class DictionaryConstructorTest extends TestCase
      */
     public function testConstructorWithSourceArray(): void
     {
-        $arr = [
-            'a' => 1,
-            'b' => 2,
-            'c' => 3,
-        ];
+        $arr = ['a' => 1, 'b' => 2, 'c' => 3];
         $dict = new Dictionary(source: $arr);
 
         // Test all items were copied.
@@ -174,12 +170,7 @@ class DictionaryConstructorTest extends TestCase
      */
     public function testConstructorInfersMixedKeyAndValueTypes(): void
     {
-        $arr = [
-            1     => 'one',
-            'two' => 2,
-            3     => true,
-
-        ];
+        $arr = [1 => 'one', 'two' => 2, 3 => true];
         $dict = new Dictionary(source: $arr);
 
         // Check the key typeset includes both types.
@@ -221,10 +212,7 @@ class DictionaryConstructorTest extends TestCase
      */
     public function testConstructorInfersTypes(): void
     {
-        $arr = [
-            'key1' => 10,
-            'key2' => 20,
-        ];
+        $arr = ['key1' => 10, 'key2' => 20];
         $dict = new Dictionary(source: $arr);
 
         // Test the dictionary works with the inferred types.
@@ -241,10 +229,7 @@ class DictionaryConstructorTest extends TestCase
     public function testConstructorWithExplicitTypesAndSource(): void
     {
         // Test: Create Dictionary with explicit type constraints
-        $arr = [
-            'a' => 1,
-            'b' => 2,
-        ];
+        $arr = ['a' => 1, 'b' => 2];
         $dict = new Dictionary('string', 'int', $arr);
 
         // Test: Verify type constraints applied
@@ -260,10 +245,7 @@ class DictionaryConstructorTest extends TestCase
         // Test: Attempt to create Dictionary with mismatched explicit types
         $this->expectException(InvalidArgumentException::class);
 
-        $arr = [
-            'a' => 1,
-            'b' => 2,
-        ];
+        $arr = ['a' => 1, 'b' => 2];
         new Dictionary('string', 'string', $arr); // Values are int, not string
     }
 
@@ -273,10 +255,7 @@ class DictionaryConstructorTest extends TestCase
     public function testConstructorWithNullTypeParameters(): void
     {
         // Test: Create Dictionary with null type parameters
-        $arr = [
-            'a' => 1,
-            'b' => 'two',
-        ];
+        $arr = ['a' => 1, 'b' => 'two'];
         $dict = new Dictionary(null, null, $arr);
 
         // Test: Verify any types allowed
@@ -315,11 +294,7 @@ class DictionaryConstructorTest extends TestCase
     public function testConstructorInfersNullableValueTypes(): void
     {
         // Test: Create Dictionary with null values (types inferred)
-        $arr = [
-            'a' => 1,
-            'b' => null,
-            'c' => 3,
-        ];
+        $arr = ['a' => 1, 'b' => null, 'c' => 3];
         $dict = new Dictionary(source: $arr);
 
         // Test: Verify all items preserved
@@ -357,15 +332,7 @@ class DictionaryConstructorTest extends TestCase
     public function testConstructorInfersMultipleValueTypes(): void
     {
         // Test: Create Dictionary with various value types
-        $arr = [
-            'a' => 1,
-            'b' => 'hello',
-            'c' => 3.14,
-            'd' => true,
-            'e' => null,
-            'f' => [],
-
-        ];
+        $arr = ['a' => 1, 'b' => 'hello', 'c' => 3.14, 'd' => true, 'e' => null, 'f' => []];
         $dict = new Dictionary(source: $arr);
 
         // Test: Verify all unique value types were inferred
@@ -396,11 +363,7 @@ class DictionaryConstructorTest extends TestCase
     public function testConstructorWithOnlyNullValues(): void
     {
         // Test: Create Dictionary containing only nulls
-        $arr = [
-            'a' => null,
-            'b' => null,
-            'c' => null,
-        ];
+        $arr = ['a' => null, 'b' => null, 'c' => null];
         $dict = new Dictionary(source: $arr);
 
         // Test: Verify null value type inferred
@@ -416,10 +379,7 @@ class DictionaryConstructorTest extends TestCase
     public function testConstructorWithExplicitTypesDisablesInference(): void
     {
         // Test: Create Dictionary with explicit types
-        $arr = [
-            'a' => 1,
-            'b' => 2,
-        ];
+        $arr = ['a' => 1, 'b' => 2];
         $dict = new Dictionary('string', 'int', $arr);
 
         // Test: Verify only explicit types, no additional inference
@@ -433,10 +393,7 @@ class DictionaryConstructorTest extends TestCase
     public function testConstructorWithUnionTypeStringForKeys(): void
     {
         // Test: Create Dictionary with union type for keys
-        $arr = [
-            1     => 'one',
-            'two' => 2,
-        ];
+        $arr = [1 => 'one', 'two' => 2];
         $dict = new Dictionary('int|string', 'int|string', $arr);
 
         // Test: Verify both key types accepted

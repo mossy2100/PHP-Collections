@@ -541,14 +541,7 @@ class SequenceAggregationTest extends TestCase
      */
     public function testJoinWithMixedTypes(): void
     {
-        $seq = new Sequence(source: [
-            1,
-            2.0,
-            true,
-            null,
-            'x',
-            [1, 'a'],
-        ]);
+        $seq = new Sequence(source: [1, 2.0, true, null, 'x', [1, 'a']]);
 
         $this->assertSame("1, 2.0, true, null, x, [1, 'a']", $seq->join(', '));
     }

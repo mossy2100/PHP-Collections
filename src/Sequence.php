@@ -138,11 +138,7 @@ final class Sequence extends Collection implements ArrayAccess
     public static function range(int|float $start, int|float $end, int|float $step = 1): self
     {
         // Check the arguments are finite.
-        $args = [
-            'start'     => $start,
-            'end'       => $end,
-            'step size' => $step,
-        ];
+        $args = ['start' => $start, 'end' => $end, 'step size' => $step];
         foreach ($args as $name => $value) {
             if (!is_finite($value)) {
                 throw new DomainException("Invalid $name: " . Stringify::stringify($value) . '. Must be finite.');

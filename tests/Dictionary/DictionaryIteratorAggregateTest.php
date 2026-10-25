@@ -32,11 +32,7 @@ class DictionaryIteratorAggregateTest extends TestCase
 
         // Test associative array is created.
         $this->assertIsArray($array);
-        $this->assertEquals([
-            'a' => 1,
-            'b' => 2,
-            'c' => 3,
-        ], $array);
+        $this->assertEquals(['a' => 1, 'b' => 2, 'c' => 3], $array);
     }
 
     /**
@@ -259,11 +255,7 @@ class DictionaryIteratorAggregateTest extends TestCase
 
         // Test correct array was created.
         $this->assertIsArray($array);
-        $this->assertEquals([
-            'a' => 1,
-            'b' => 2,
-            'c' => 3,
-        ], $array);
+        $this->assertEquals(['a' => 1, 'b' => 2, 'c' => 3], $array);
     }
 
     /**

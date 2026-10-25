@@ -127,10 +127,7 @@ class SetOperationsTest extends TestCase
         $typed = new Set('int', [1]);
         $any = new Set(null, ['x']);
 
-        $results = [
-            $typed->union($any),
-            $any->union($typed),
-        ];
+        $results = [$typed->union($any), $any->union($typed)];
         foreach ($results as $result) {
             $this->assertTrue($result->valueTypes->anyOk());
             $this->assertTrue($result->contains(1));

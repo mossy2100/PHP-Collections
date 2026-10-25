@@ -39,14 +39,7 @@ class SequenceConversionTest extends TestCase
      */
     public function testToStringWithMixedTypes(): void
     {
-        $seq = new Sequence(source: [
-            1,
-            'a',
-            2.0,
-            true,
-            null,
-            [1, 2],
-        ]);
+        $seq = new Sequence(source: [1, 'a', 2.0, true, null, [1, 2]]);
 
         // Test: Verify each value is formatted with Stringify
         $this->assertSame("[1, 'a', 2.0, true, null, [1, 2]]", (string) $seq);

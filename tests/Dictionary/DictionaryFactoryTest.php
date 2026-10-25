@@ -77,12 +77,8 @@ class DictionaryFactoryTest extends TestCase
      */
     public function testCombineWithObjectKeys(): void
     {
-        $obj1 = (object) [
-            'id' => 1,
-        ];
-        $obj2 = (object) [
-            'id' => 2,
-        ];
+        $obj1 = (object) ['id' => 1];
+        $obj2 = (object) ['id' => 2];
         $keys = [$obj1, $obj2];
         $values = ['first', 'second'];
 
@@ -168,9 +164,7 @@ class DictionaryFactoryTest extends TestCase
      */
     public function testCombineThrowsOutOfBoundsExceptionForDuplicateObjectKeys(): void
     {
-        $obj = (object) [
-            'id' => 1,
-        ];
+        $obj = (object) ['id' => 1];
         $keys = [$obj, $obj]; // Same object twice
         $values = ['first', 'second'];
 
@@ -206,11 +200,7 @@ class DictionaryFactoryTest extends TestCase
      */
     public function testCombineWithArrayKeys(): void
     {
-        $keys = [
-            [1, 2],
-            [3, 4],
-            [5, 6],
-        ];
+        $keys = [[1, 2], [3, 4], [5, 6]];
         $values = ['first', 'second', 'third'];
 
         $dict = Dictionary::combine($keys, $values);

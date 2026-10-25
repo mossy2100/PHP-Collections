@@ -417,11 +417,7 @@ class SequenceModificationTest extends TestCase
     {
         // Test: Import from associative array
         $seq = new Sequence('string');
-        $seq->import([
-            'a' => 'apple',
-            'b' => 'banana',
-            'c' => 'cherry',
-        ]);
+        $seq->import(['a' => 'apple', 'b' => 'banana', 'c' => 'cherry']);
 
         // Test: Verify values imported with sequential indexes
         $this->assertCount(3, $seq);
@@ -454,10 +450,7 @@ class SequenceModificationTest extends TestCase
         $seq = new Sequence('int');
         $arr1 = [1, 2, 3];
         $arr2 = [4, 5, 6];
-        $seq->import([
-            ...$arr1,
-            ...$arr2,
-        ]);
+        $seq->import([...$arr1, ...$arr2]);
 
         // Test: Verify all items imported
         $this->assertCount(6, $seq);
