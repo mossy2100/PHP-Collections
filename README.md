@@ -21,15 +21,17 @@ A type-safe collection library featuring runtime type validation, immutable oper
 
 ## Development and Quality Assurance
 
-This package was developed with [Claude Chat](https://claude.ai) and [Claude Code](https://www.claude.com/product/claude-code):
+This package was developed with [Claude Code](https://claude.com/product/claude-code):
 
-- The author designed, coded and commented the core classes.
-- Claude helped with code review, suggested improvements, debugged, and generated tests and documentation.
-- The author reviewed all the code.
+- The author developed the initial concept, designed the public API, and did most of the initial coding.
+- Claude Code wrote the tests and most of the documentation.
+- Claude Code also assisted with multiple code reviews, which led to bug fixes, performance improvements and other
+  refinements.
 
 The code is checked with:
 
-- [PHP_CodeSniffer](https://github.com/PHPCSStandards/PHP_CodeSniffer/), for [PSR-12](https://www.php-fig.org/psr/psr-12/) compliance plus the Mossy2100 coding standard
+- [PHP_CodeSniffer](https://github.com/PHPCSStandards/PHP_CodeSniffer/), for [PSR-12](https://www.php-fig.org/psr/psr-12/)
+  compliance plus the Mossy2100 coding standard
 - [PHPStan](https://phpstan.org/), at level 9
 - [PHPUnit](https://phpunit.de/index.html), with 100% code coverage
 
