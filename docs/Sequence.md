@@ -128,6 +128,8 @@ public static function range(int|float $start, int|float $end, int|float $step =
 Generate a Sequence of numbers spanning a given range, like PHP's `range()` for numbers.
 
 - Each value is `$start + $i * $step`, so float steps don't accumulate rounding errors.
+- If a float step lands on `$end` within rounding error, the last value is exactly `$end`. For example,
+  `range(0, 0.3, 0.1)` gives `[0.0, 0.1, 0.2, 0.3]`, where PHP's `range()` gives `[0.0, 0.1, 0.2]`.
 - The sign of `$step` must match the direction of the range.
 - If `$start` equals `$end`, or `$step` is larger than the distance between them, the result is just `[$start]`.
 - If any argument is a float, the values are floats; otherwise, ints.

@@ -53,8 +53,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Fixed
 
 - **`Sequence::range()`** now calculates each value as `start + i * step`, so float steps no longer accumulate rounding
-  errors. Previously, many float ranges had the wrong number of values, and `range(0, 1, 0.1)` ended at
-  `0.9999999999999999` instead of `1.0`.
+  errors. If a float step lands on `end` within rounding error, the last value is exactly `end`, so
+  `range(0, 0.3, 0.1)` gives `[0.0, 0.1, 0.2, 0.3]`, where PHP's `range()` drops the `0.3`. Previously, many float
+  ranges had the wrong number of values, and `range(0, 1, 0.1)` ended at `0.9999999999999999` instead of `1.0`.
 - **`Sequence::range()`** with `start` equal to `end` returns `[start]`, instead of throwing `DomainException`.
 - **`Sequence::range()`** no longer throws when the range ends at `PHP_INT_MAX` or `PHP_INT_MIN`.
 - **`Sequence::chooseRand()` and `removeRand()`** return the items in random order, as documented. Previously they came

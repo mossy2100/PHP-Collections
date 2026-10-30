@@ -149,6 +149,31 @@ class SequenceFactoryTest extends TestCase
     }
 
     /**
+     * Test range ends exactly on the end value when a float step lands on it within rounding error.
+     */
+    public function testRangeFloatIncludesEnd(): void
+    {
+        // The last step falls just short of the end value, so PHP's range() drops it.
+        $this->assertSame([0.0, 0.1, 0.2, 0.3], Sequence::range(0, 0.3, 0.1)->toArray());
+        $expected = [0.3, 0.19999999999999998, 0.09999999999999998, 0.0];
+        $this->assertSame($expected, Sequence::range(0.3, 0, -0.1)->toArray());
+        $seq = Sequence::range(0, 0.7, 0.1);
+        $this->assertCount(8, $seq);
+        $this->assertSame(0.7, $seq->last());
+
+        // The step is just larger than the distance between start and end.
+        $this->assertSame([0.1, 0.3], Sequence::range(0.1, 0.3, 0.2)->toArray());
+
+        // The last value is just short of the end value.
+        $this->assertSame([0.0, 0.3, 0.6, 0.9], Sequence::range(0, 0.9, 0.3)->toArray());
+
+        // An end value the step doesn't land on isn't added.
+        $seq = Sequence::range(0.0, 1e9 + 0.6, 1e8);
+        $this->assertCount(11, $seq);
+        $this->assertSame(1e9, $seq->last());
+    }
+
+    /**
      * Test range matches PHP's range() for float steps, which compute each value as start + i * step.
      */
     public function testRangeFloatSweepMatchesNativeRange(): void

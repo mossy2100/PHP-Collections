@@ -10,6 +10,7 @@ use DomainException;
 use InvalidArgumentException;
 use LengthException;
 use LogicException;
+use Mossy2100\Core\Floats;
 use Mossy2100\Core\Stringify;
 use Mossy2100\Core\Types;
 use OutOfRangeException;
@@ -118,6 +119,8 @@ final class Sequence extends Collection implements ArrayAccess
      * @see https://www.php.net/manual/en/function.range.php
      *
      * The values are calculated as $start + $i * $step, so rounding errors don't accumulate with float steps.
+     * If a float step lands on $end within rounding error, the last value is exactly $end. For example,
+     * range(0, 0.3, 0.1) gives [0.0, 0.1, 0.2, 0.3], where PHP's range() gives [0.0, 0.1, 0.2].
      * If $start equals $end, or the step is larger than the distance between them, the result holds just $start.
      *
      * If any of the arguments are floats, the result is a Sequence of floats; otherwise, ints.
@@ -166,15 +169,29 @@ final class Sequence extends Collection implements ArrayAccess
 
         // If the step reaches past $end, the range holds just $start. range() would throw for this case.
         if (abs($step) > abs($end - $start)) {
-            return new self($type, [$start]);
+            $items = [$start];
+        } else {
+            // Generate the range. range() takes the step size without a sign, and gets the direction from $start and
+            // $end.
+            try {
+                $items = range($start, $end, abs($step));
+            } catch (ValueError) {
+                // The other cases range() rejects have been checked above, so the range must be too large.
+                throw new LengthException('Cannot create range. It would have too many values.');
+            }
         }
 
-        // Generate the range. range() takes the step size without a sign, and gets the direction from $start and $end.
-        try {
-            $items = range($start, $end, abs($step));
-        } catch (ValueError) {
-            // The other cases range() rejects have been checked above, so the range must be too large.
-            throw new LengthException('Cannot create range. It would have too many values.');
+        // A decimal step usually isn't exact in binary, so the last step can land just short of $end or overshoot it
+        // (0.3 / 0.1 is 2.9999999999999996, so range(0, 0.3, 0.1) stops at 0.2). If the last or next value is within
+        // rounding error of $end, make the last value exactly $end.
+        if ($type === 'float') {
+            $tolerance = 4 * Floats::ulp((float) max(abs($start), abs($end)));
+            $lastKey = array_key_last($items);
+            if (abs($items[$lastKey] - $end) <= $tolerance) {
+                $items[$lastKey] = (float) $end;
+            } elseif (abs($start + count($items) * $step - $end) <= $tolerance) {
+                $items[] = (float) $end;
+            }
         }
 
         // Return the new Sequence.
