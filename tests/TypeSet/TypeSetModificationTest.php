@@ -7,6 +7,7 @@ namespace Mossy2100\Collections\Tests\TypeSet;
 use DateTime;
 use DomainException;
 use InvalidArgumentException;
+use Mossy2100\Collections\Sequence;
 use Mossy2100\Collections\Tests\Fixtures\ChildClass;
 use Mossy2100\Collections\Tests\Fixtures\ParentClass;
 use Mossy2100\Collections\TypeSet;
@@ -233,6 +234,29 @@ class TypeSetModificationTest extends TestCase
 
         // Resource type will be something like 'resource (stream)'
         $this->assertCount(1, $ts);
+    }
+
+    /**
+     * Test a resource type containing a hyphen can be named.
+     */
+    public function testAddResourceTypeWithHyphen(): void
+    {
+        $ts = new TypeSet('resource (stream-context)');
+
+        $this->assertTrue($ts->contains('resource (stream-context)'));
+        $this->assertTrue($ts->match(stream_context_create()));
+    }
+
+    /**
+     * Test a resource type containing a hyphen can be inferred.
+     */
+    public function testAddValueTypeWithStreamContext(): void
+    {
+        $context = stream_context_create();
+        $ts = new TypeSet()->addValueType($context);
+
+        $this->assertTrue($ts->containsOnly('resource (stream-context)'));
+        $this->assertCount(1, new Sequence(source: [$context]));
     }
 
     /**

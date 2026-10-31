@@ -73,6 +73,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - **`Set::union()` and `Dictionary::merge()`** no longer restrict the result's types when one side allows any type.
   Previously, merging an unconstrained collection with an `int` one gave an `int`-only result that still held the other
   values and rejected new ones.
+- **`TypeSet`** accepts resource types containing a hyphen, such as `resource (stream-context)`. Previously, naming
+  one, or inferring it from a stream context, threw `DomainException`.
 
 ### Documentation
 

@@ -570,7 +570,7 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
      */
     private static function isResourceType(string $type): bool
     {
-        return (bool) preg_match('/^resource \([\w. ]+\)$/', $type);
+        return (bool) preg_match('/^resource \([^()]+\)$/', $type);
     }
 
     /**
