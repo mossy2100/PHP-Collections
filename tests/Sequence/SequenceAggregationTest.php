@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace Mossy2100\Collections\Tests\Sequence;
 
+use DomainException;
+use InvalidArgumentException;
 use LengthException;
 use Mossy2100\Collections\Dictionary;
 use Mossy2100\Collections\Sequence;
+use Mossy2100\Core\Exceptions\ArithmeticException;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use stdClass;
-use TypeError;
 
 /**
  * Tests for Sequence aggregation methods.
@@ -154,19 +157,6 @@ class SequenceAggregationTest extends TestCase
     }
 
     /**
-     * Test product method throws TypeError for non-numeric values.
-     */
-    public function testProductThrowsTypeErrorForNonNumericValues(): void
-    {
-        // Test: Attempt to calculate product with strings
-        $seq = new Sequence('string');
-        $seq->append('1', '2', '3');
-
-        $this->expectException(TypeError::class);
-        $seq->product();
-    }
-
-    /**
      * Test product method with negative numbers.
      */
     public function testProductWithNegativeNumbers(): void
@@ -245,19 +235,6 @@ class SequenceAggregationTest extends TestCase
 
         // Test: Verify returns the value itself
         $this->assertSame(42, $seq->sum());
-    }
-
-    /**
-     * Test sum method throws TypeError for non-numeric values.
-     */
-    public function testSumThrowsTypeErrorForNonNumericValues(): void
-    {
-        // Test: Attempt to calculate sum with strings
-        $seq = new Sequence('string');
-        $seq->append('1', '2', '3');
-
-        $this->expectException(TypeError::class);
-        $seq->sum();
     }
 
     /**
@@ -465,6 +442,115 @@ class SequenceAggregationTest extends TestCase
 
         $seq = new Sequence('int');
         $seq->average();
+    }
+
+    #endregion
+
+    #region Number validation tests
+
+    /**
+     * Data provider for the methods that require a Sequence of finite numbers.
+     *
+     * @return array<string, array{string, string}>
+     */
+    public static function numericMethodProvider(): array
+    {
+        return [
+            'sum' => ['sum', 'sum'],
+            'product' => ['product', 'product'],
+            'min' => ['min', 'minimum value'],
+            'max' => ['max', 'maximum value'],
+            'average' => ['average', 'sum'],
+        ];
+    }
+
+    /**
+     * Test the numeric methods throw InvalidArgumentException for a non-number.
+     */
+    #[DataProvider('numericMethodProvider')]
+    public function testNumericMethodThrowsInvalidArgumentExceptionForNonNumber(string $method, string $operation): void
+    {
+        $seq = new Sequence(['int', 'string'], [1, '2', 3]);
+
+        $this->expectException(InvalidArgumentException::class);
+        $message = "Cannot find the $operation of the Sequence. It contains a value that is not a number: '2'.";
+        $this->expectExceptionMessage($message);
+        $seq->$method();
+    }
+
+    /**
+     * Test the numeric methods throw DomainException for NAN, wherever it is.
+     */
+    #[DataProvider('numericMethodProvider')]
+    public function testNumericMethodThrowsDomainExceptionForNan(string $method, string $operation): void
+    {
+        foreach ([[NAN, 1.0, 2.0], [1.0, NAN, 2.0], [1.0, 2.0, NAN]] as $items) {
+            $seq = new Sequence('float', $items);
+            try {
+                $seq->$method();
+                $this->fail("Expected DomainException for $method().");
+            } catch (DomainException $e) {
+                $this->assertSame("Cannot find the $operation of the Sequence. It contains NAN.", $e->getMessage());
+            }
+        }
+    }
+
+    /**
+     * Test min and max accept infinite values.
+     */
+    public function testMinMaxWithInfinity(): void
+    {
+        $seq = new Sequence('number', [1, INF, -INF, 2.5]);
+
+        $this->assertSame(-INF, $seq->min());
+        $this->assertSame(INF, $seq->max());
+    }
+
+    /**
+     * Test sum, product and average accept infinite values when the result is defined.
+     */
+    public function testSumProductAverageWithInfinity(): void
+    {
+        $seq = new Sequence('number', [INF, 2, 3]);
+
+        $this->assertSame(INF, $seq->sum());
+        $this->assertSame(INF, $seq->product());
+        $this->assertSame(INF, $seq->average());
+        $this->assertSame(-INF, new Sequence('number', [-INF, 2])->product());
+    }
+
+    /**
+     * Data provider for numeric methods whose result is undefined.
+     *
+     * @return array<string, array{string, list<int|float>, string}>
+     */
+    public static function undefinedResultProvider(): array
+    {
+        return [
+            'sum INF - INF' => ['sum', [INF, 1, -INF], 'sum'],
+            'product 0 * INF' => ['product', [0, 2, INF], 'product'],
+            'average INF - INF' => ['average', [-INF, INF], 'sum'],
+        ];
+    }
+
+    /**
+     * Test sum, product and average throw ArithmeticException when the result is undefined.
+     *
+     * @param list<int|float> $items
+     */
+    #[DataProvider('undefinedResultProvider')]
+    public function testNumericMethodThrowsArithmeticExceptionForUndefinedResult(
+        string $method,
+        array $items,
+        string $operation
+    ): void {
+        $seq = new Sequence('number', $items);
+
+        $this->expectException(ArithmeticException::class);
+        $this->expectExceptionMessage(
+            "Cannot find the $operation of the Sequence. The result is undefined for the given values."
+        );
+        $seq->$method();
     }
 
     #endregion

@@ -27,6 +27,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   properties. `Collection::__toString()` is now abstract, so custom subclasses of `Collection` must implement it.
 - **`Sequence::range()` ignores the sign of the step, like PHP's `range()`.** The direction comes from `start` and
   `end`, so `range(10, 1)` gives `[10, 9, ..., 1]`. Previously, a step with the wrong sign threw `DomainException`.
+- **`Sequence::sum()`, `product()`, `min()`, `max()` and `average()` validate the items (breaking).** A non-number
+  throws `InvalidArgumentException` instead of `TypeError`, and `NAN` throws `DomainException` instead of giving a
+  `NAN` or order-dependent result. `INF` and `-INF` are allowed, but if `sum()`, `product()` or `average()` would give
+  `NAN` (from `INF - INF` or `0 * INF`), it throws `ArithmeticException`.
 - **`Sequence::filter()` now requires the callback to return a bool (breaking),** like `Set` and `Dictionary`. It throws
   `UnexpectedValueException` otherwise, instead of accepting truthy values.
 - **`Sequence` and `Dictionary` now compare values the same way as `Set` (breaking for special floats).** They use

@@ -664,6 +664,14 @@ echo $seq[0];      // 'a' (unchanged)
 
 ## Aggregation Methods
 
+`product()`, `sum()`, `min()`, `max()` and `average()` require every item to be a number other than `NAN`. `INF` and
+`-INF` are allowed.
+
+- `InvalidArgumentException` - If an item is not an int or float.
+- `DomainException` - If an item is `NAN`.
+- `ArithmeticException` - From `sum()`, `product()` or `average()`, if the result is undefined (`INF - INF` or
+  `0 * INF`).
+
 ### count()
 
 ```php
@@ -703,7 +711,7 @@ echo $sum; // 15
 public function product(): float|int
 ```
 
-Calculate the product of all values.
+Calculate the product of all values. Returns `1` if empty.
 
 **Example:**
 ```php
@@ -718,7 +726,7 @@ echo $seq->product(); // 24
 public function sum(): float|int
 ```
 
-Calculate the sum of all values.
+Calculate the sum of all values. Returns `0` if empty.
 
 **Example:**
 ```php

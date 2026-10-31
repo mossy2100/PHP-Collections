@@ -10,7 +10,9 @@ use DomainException;
 use InvalidArgumentException;
 use LengthException;
 use LogicException;
+use Mossy2100\Core\Exceptions\ArithmeticException;
 use Mossy2100\Core\Floats;
+use Mossy2100\Core\Numbers;
 use Mossy2100\Core\Stringify;
 use Mossy2100\Core\Types;
 use OutOfRangeException;
@@ -787,31 +789,35 @@ final class Sequence extends Collection implements ArrayAccess
     /**
      * Find the product of the values in the Sequence.
      *
+     * The product of an empty Sequence is 1.
+     *
      * @return int|float The product of the values in the Sequence.
+     * @throws InvalidArgumentException If the Sequence contains a non-number.
+     * @throws DomainException If the Sequence contains NAN.
+     * @throws ArithmeticException If the result is undefined, from INF - INF or 0 * INF.
      */
     public function product(): int|float
     {
-        // Use a custom reducer to find the product instead of array_product(), because that function will allow
-        // non-numbers, and this one will not. It's more consistent with the type-safe philosophy of this
-        // library to be strict.
+        // Use numReduce() instead of array_product(), which allows non-numbers.
         $prod = static fn (int|float $acc, int|float $item): int|float => $acc * $item;
-        /** @var int|float */
-        return $this->reduce($prod, 1);
+        return $this->numReduce($prod, 'product', 1);
     }
 
     /**
      * Find the sum of the values in the Sequence.
      *
+     * The sum of an empty Sequence is 0.
+     *
      * @return int|float The sum of the values in the Sequence.
+     * @throws InvalidArgumentException If the Sequence contains a non-number.
+     * @throws DomainException If the Sequence contains NAN.
+     * @throws ArithmeticException If the result is undefined, from INF - INF or 0 * INF.
      */
     public function sum(): int|float
     {
-        // Use a custom reducer to find the sum instead of array_sum(), because that function will allow
-        // non-numbers, and this one will not. It's more consistent with the type-safe philosophy of this
-        // library to be strict.
+        // Use numReduce() instead of array_sum(), which allows non-numbers.
         $sum = static fn (int|float $acc, int|float $item): int|float => $acc + $item;
-        /** @var int|float */
-        return $this->reduce($sum, 0);
+        return $this->numReduce($sum, 'sum', 0);
     }
 
     /**
@@ -819,20 +825,14 @@ final class Sequence extends Collection implements ArrayAccess
      *
      * @return int|float The minimum value in the Sequence.
      * @throws LengthException If the Sequence is empty.
+     * @throws InvalidArgumentException If the Sequence contains a non-number.
+     * @throws DomainException If the Sequence contains NAN.
      */
     public function min(): int|float
     {
-        // Check we have items.
-        if (empty($this->items)) {
-            throw new LengthException('Cannot find the minimum value of an empty Sequence.');
-        }
-
-        // Use a custom reducer to find the minimum value instead of min(), because that function will allow
-        // non-numbers, and this one will not. It's more consistent with the type-safe philosophy of this
-        // library to be strict.
+        // Use numReduce() instead of min() on the items, which allows non-numbers.
         $min = static fn (int|float $min, int|float $item): int|float => min($item, $min);
-        /** @var int|float */
-        return $this->reduce($min, $this->items[0]);
+        return $this->numReduce($min, 'minimum value');
     }
 
     /**
@@ -840,20 +840,14 @@ final class Sequence extends Collection implements ArrayAccess
      *
      * @return int|float The maximum value in the Sequence.
      * @throws LengthException If the Sequence is empty.
+     * @throws InvalidArgumentException If the Sequence contains a non-number.
+     * @throws DomainException If the Sequence contains NAN.
      */
     public function max(): int|float
     {
-        // Check we have items.
-        if (empty($this->items)) {
-            throw new LengthException('Cannot find the maximum value of an empty Sequence.');
-        }
-
-        // Use a custom reducer to find the maximum value instead of max(), because that function will allow
-        // non-numbers, and this one will not. It's more consistent with the type-safe philosophy of this
-        // library to be strict.
+        // Use numReduce() instead of max() on the items, which allows non-numbers.
         $max = static fn (int|float $max, int|float $item): int|float => max($item, $max);
-        /** @var int|float */
-        return $this->reduce($max, $this->items[0]);
+        return $this->numReduce($max, 'maximum value');
     }
 
     /**
@@ -861,6 +855,9 @@ final class Sequence extends Collection implements ArrayAccess
      *
      * @return int|float The average value in the Sequence.
      * @throws LengthException If the Sequence is empty.
+     * @throws InvalidArgumentException If the Sequence contains a non-number.
+     * @throws DomainException If the Sequence contains NAN.
+     * @throws ArithmeticException If the result is undefined, from INF - INF or 0 * INF.
      */
     public function average(): int|float
     {
@@ -1299,6 +1296,52 @@ final class Sequence extends Collection implements ArrayAccess
 
         /** @var list<int> $indexes */
         return $indexes;
+    }
+
+    /**
+     * Reduce a Sequence of numbers to a single value using a callback function, starting with the first item.
+     *
+     * @param callable(int|float, int|float): (int|float) $fn Callback function (accumulator, item) => new accumulator.
+     * @param string $operation What is being found, for the exception messages, e.g. 'sum' or 'minimum value'.
+     * @param int|float|null $emptyResult The result for an empty Sequence, or null if it has no result.
+     * @return int|float The final result.
+     * @throws LengthException If the Sequence is empty and $emptyResult is null.
+     * @throws InvalidArgumentException If the Sequence contains a non-number.
+     * @throws DomainException If the Sequence contains NAN.
+     * @throws ArithmeticException If the result is undefined, from INF - INF or 0 * INF.
+     */
+    private function numReduce(callable $fn, string $operation, int|float|null $emptyResult = null): int|float
+    {
+        // Check we have items.
+        if (empty($this->items)) {
+            return $emptyResult ?? throw new LengthException("Cannot find the $operation of an empty Sequence.");
+        }
+
+        $accumulator = null;
+        foreach ($this->items as $item) {
+            // Check for a valid number. INF and -INF are allowed.
+            if (!Numbers::isNumber($item)) {
+                throw new InvalidArgumentException(Stringify::prepEx(
+                    "Cannot find the $operation of the Sequence. It contains a value that is not a number: ?.",
+                    $item
+                ));
+            }
+            if (is_nan($item)) {
+                throw new DomainException("Cannot find the $operation of the Sequence. It contains NAN.");
+            }
+
+            // Accumulate the value, starting with the first one.
+            $accumulator = $accumulator === null ? $item : $fn($accumulator, $item);
+        }
+
+        // Without NAN items, a NAN result can only come from INF - INF or 0 * INF.
+        if (is_nan($accumulator)) {
+            throw new ArithmeticException(
+                "Cannot find the $operation of the Sequence. The result is undefined for the given values."
+            );
+        }
+
+        return $accumulator;
     }
 
     #endregion
