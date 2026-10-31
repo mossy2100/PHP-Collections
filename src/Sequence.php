@@ -114,8 +114,8 @@ final class Sequence extends Collection implements ArrayAccess
     /**
      * Generate a new Sequence of numbers spanning a given range, using a given step size.
      *
-     * This method is analogous to range(), except it does not support strings, and the sign of the step size must
-     * match the direction of the range.
+     * This method is analogous to range(), except it does not support strings. As with range(), the sign of the step
+     * size is ignored, and the direction comes from $start and $end.
      * @see https://www.php.net/manual/en/function.range.php
      *
      * The values are calculated as $start + $i * $step, so rounding errors don't accumulate with float steps.
@@ -128,14 +128,14 @@ final class Sequence extends Collection implements ArrayAccess
      * @example
      * Sequence::range(1, 10);          // [1, 2, 3, ..., 10]
      * Sequence::range(0, 1, 0.1);      // [0.0, 0.1, 0.2, ..., 1.0]
-     * Sequence::range(10, 1, -1);      // [10, 9, 8, ..., 1]
+     * Sequence::range(10, 1);          // [10, 9, 8, ..., 1]
      * Sequence::range(5, 5);           // [5]
      *
      * @param int|float $start The start of the range.
      * @param int|float $end The end of the range.
      * @param int|float $step The step size (default 1).
      * @return self The new Sequence.
-     * @throws DomainException If an argument is not finite, or the step size is invalid for the range specified.
+     * @throws DomainException If an argument is not finite, or the step size is zero.
      * @throws LengthException If the range has too many values to fit in an array.
      */
     public static function range(int|float $start, int|float $end, int|float $step = 1): self
@@ -151,12 +151,6 @@ final class Sequence extends Collection implements ArrayAccess
         // Validate step size. Use loose comparison here to validate either an int or float argument.
         if ($step == 0) {
             throw new DomainException('Cannot create range with a zero step size.');
-        }
-        if ($start < $end && $step < 0) {
-            throw new DomainException('Cannot create an increasing range with a negative step size.');
-        }
-        if ($start > $end && $step > 0) {
-            throw new DomainException('Cannot create a decreasing range with a positive step size.');
         }
 
         // If any of the arguments are floats, generate a Sequence of floats; otherwise, ints.
@@ -189,7 +183,7 @@ final class Sequence extends Collection implements ArrayAccess
             $lastKey = array_key_last($items);
             if (abs($items[$lastKey] - $end) <= $tolerance) {
                 $items[$lastKey] = (float) $end;
-            } elseif (abs($start + count($items) * $step - $end) <= $tolerance) {
+            } elseif (abs($start + count($items) * ($start < $end ? 1 : -1) * abs($step) - $end) <= $tolerance) {
                 $items[] = (float) $end;
             }
         }

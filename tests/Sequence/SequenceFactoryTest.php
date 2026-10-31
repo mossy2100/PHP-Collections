@@ -73,27 +73,17 @@ class SequenceFactoryTest extends TestCase
     }
 
     /**
-     * Test range method throws DomainException for invalid positive step.
+     * Test range ignores the sign of the step, like PHP's range(), and gets the direction from start and end.
      */
-    public function testRangeThrowsDomainExceptionForInvalidPositiveStep(): void
+    public function testRangeIgnoresStepSign(): void
     {
-        // Test: Attempt descending range with positive step
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Cannot create a decreasing range with a positive step size');
+        $this->assertSame([10, 7, 4, 1], Sequence::range(10, 1, 3)->toArray());
+        $this->assertSame([1, 2, 3, 4, 5], Sequence::range(1, 5, -1)->toArray());
+        $this->assertSame([5, 4, 3, 2, 1], Sequence::range(5, 1)->toArray());
 
-        Sequence::range(10, 1, 1);
-    }
-
-    /**
-     * Test range method throws DomainException for invalid negative step.
-     */
-    public function testRangeThrowsDomainExceptionForInvalidNegativeStep(): void
-    {
-        // Test: Attempt ascending range with negative step
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Cannot create an increasing range with a negative step size');
-
-        Sequence::range(1, 10, -1);
+        // The end value is still exact for a float step.
+        $expected = [0.3, 0.19999999999999998, 0.09999999999999998, 0.0];
+        $this->assertSame($expected, Sequence::range(0.3, 0, 0.1)->toArray());
     }
 
     /**

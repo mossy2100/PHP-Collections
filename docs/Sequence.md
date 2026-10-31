@@ -130,13 +130,13 @@ Generate a Sequence of numbers spanning a given range, like PHP's `range()` for 
 - Each value is `$start + $i * $step`, so float steps don't accumulate rounding errors.
 - If a float step lands on `$end` within rounding error, the last value is exactly `$end`. For example,
   `range(0, 0.3, 0.1)` gives `[0.0, 0.1, 0.2, 0.3]`, where PHP's `range()` gives `[0.0, 0.1, 0.2]`.
-- The sign of `$step` must match the direction of the range.
+- As with PHP's `range()`, the sign of `$step` is ignored. The direction comes from `$start` and `$end`.
 - If `$start` equals `$end`, or `$step` is larger than the distance between them, the result is just `[$start]`.
 - If any argument is a float, the values are floats; otherwise, ints.
 
 **Throws:**
 
-- `DomainException` - If an argument is not finite, `$step` is zero, or its sign doesn't match the direction.
+- `DomainException` - If an argument is not finite, or `$step` is zero.
 - `LengthException` - If the range would have too many values to fit in an array.
 
 **Examples:**
@@ -145,7 +145,7 @@ Generate a Sequence of numbers spanning a given range, like PHP's `range()` for 
 $seq = Sequence::range(1, 10);        // [1, 2, 3, ..., 10]
 
 // Descending integers
-$seq = Sequence::range(10, 1, -1);    // [10, 9, 8, ..., 1]
+$seq = Sequence::range(10, 1);        // [10, 9, 8, ..., 1]
 
 // Floats with step
 $seq = Sequence::range(0.0, 1.0, 0.2); // [0.0, 0.2, 0.4, ..., 1.0]
