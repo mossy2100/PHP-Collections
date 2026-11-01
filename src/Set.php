@@ -199,7 +199,8 @@ final class Set extends Collection
     /**
      * Check if the Set contains one or more items.
      *
-     * Strict equality is used to compare items, i.e. the item must match on both value and type.
+     * Items are compared with Types::identical(), which is strict equality (===), except that floats are compared by
+     * bit pattern. So NAN matches NAN, and -0.0 doesn't match 0.0.
      *
      * @param mixed $value The items to check for.
      * @return bool True if the Set contains the item, false otherwise.
@@ -220,7 +221,7 @@ final class Set extends Collection
      * "Equal" in this case means that the Sets have the same:
      * - type (i.e. they are both instances of Set)
      * - number of items
-     * - item values (strict equality)
+     * - item values (compared with Types::identical())
      *
      * Type constraints are not considered, because these are only relevant when adding values to a Set.
      * Therefore, if the first Set only permits 'int' values whereas the second permits both 'int' and 'string',
@@ -306,7 +307,6 @@ final class Set extends Collection
      * Generate a string representation of the Set.
      *
      * @return string The string representation of the Set.
-     * @throws DomainException If any value cannot be stringified.
      */
     #[Override]
     public function __toString(): string

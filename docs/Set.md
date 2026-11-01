@@ -293,7 +293,8 @@ var_dump($set->empty()); // false
 public function contains(mixed $value): bool
 ```
 
-Check if the Set contains a value. Uses strict equality (value and type must match).
+Check if the Set contains a value. Values are compared with `Types::identical()`, which is strict equality (`===`),
+except that floats are compared by bit pattern. So `NAN` matches `NAN`, and `-0.0` doesn't match `0.0`.
 
 **Examples:**
 ```php
