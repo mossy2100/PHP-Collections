@@ -54,7 +54,8 @@ The `$types` parameter accepts:
 - `string` - A type name, or multiple types using union type or nullable type syntax (e.g., `'string'`, `'int|null'`,
   `'?int'`)
 - `iterable` - Array or other collection of type names (e.g., `['string', 'int']`)
-- `true` (default) - Types will be inferred automatically from the source iterable's values
+- `true` (default) - Types will be inferred automatically from the source iterable's values. With an empty source,
+  nothing can be inferred, so any type is allowed.
 
 **Automatic Default Values:**
 
@@ -607,7 +608,8 @@ echo $evens->count(); // 3
 public function map(callable $fn): self
 ```
 
-Return a new Sequence with the callback applied to each item. Types are inferred from results.
+Return a new Sequence with the callback applied to each item. Types are inferred from the results. If the Sequence is
+empty, there's nothing to infer from, so the new Sequence allows any type.
 
 **Example:**
 ```php

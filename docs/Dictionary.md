@@ -110,7 +110,8 @@ The `$keyTypes` and `$valueTypes` parameters accept:
 - `string` - A type name, or multiple types using union type or nullable type syntax (e.g., `'int'`, `'int|string'`,
   `'?int'`)
 - `iterable` - Array or other collection of type names (e.g., `['int', 'string']`)
-- `true` (default) - Types will be inferred automatically from the source iterable's keys and values
+- `true` (default) - Types will be inferred automatically from the source iterable's keys and values. With an empty
+  source, nothing can be inferred, so any key and value type is allowed.
 
 **Note:** String union syntax and array syntax cannot be combined. Use `'int|string'` OR `['int', 'string']`, not
 `['int|string', 'float']`.
@@ -177,7 +178,8 @@ Create a new Dictionary by combining separate iterables of keys and values.
 **Parameters:**
 - `$keys` (iterable) - Iterable of keys
 - `$values` (iterable) - Iterable of values
-- `$inferTypes` (bool) - Whether to infer key and value types from the data (default: `true`)
+- `$inferTypes` (bool) - Whether to infer key and value types from the data (default: `true`). With no keys,
+  nothing can be inferred, so any key and value type is allowed.
 
 **Returns:** A new Dictionary with the combined keys and values.
 
@@ -532,7 +534,7 @@ public function map(callable $fn): self
 ```
 
 Transform each key-value pair. The callback receives a `Pair` and must return a new `Pair`. Types are automatically
-inferred from results.
+inferred from the results. If the Dictionary is empty, the new Dictionary allows any key and value type.
 
 **Throws:**
 - `UnexpectedValueException` - If the callback doesn't return a Pair

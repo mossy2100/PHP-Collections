@@ -67,7 +67,8 @@ The `$types` parameter accepts:
 - `string` - A type name, or multiple types using union type or nullable type syntax (e.g., `'string'`, `'int|null'`,
   `'?int'`)
 - `iterable` - Array or other collection of type names (e.g., `['string', 'int']`)
-- `true` (default) - Types will be inferred automatically from the source iterable's values
+- `true` (default) - Types will be inferred automatically from the source iterable's values. With an empty source,
+  nothing can be inferred, so any type is allowed.
 
 **Examples:**
 ```php
@@ -472,7 +473,7 @@ public function map(callable $fn): self
 ```
 
 Return a new Set with the callback applied to each item. Types are inferred from the results, and duplicate results are
-removed.
+removed. If the Set is empty, there's nothing to infer from, so the new Set allows any type.
 
 **Example:**
 ```php
