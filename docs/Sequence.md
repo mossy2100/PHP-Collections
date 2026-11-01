@@ -569,6 +569,8 @@ public function fill(int $startIndex, int $count, mixed $value): self
 
 Fill a portion of the Sequence with a value. Returns `$this` for chaining.
 
+Throws `DomainException` if `$count` is negative. A count of 0 does nothing.
+
 **Examples:**
 ```php
 $seq = new Sequence('int');

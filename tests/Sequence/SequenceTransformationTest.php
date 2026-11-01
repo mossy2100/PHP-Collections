@@ -102,6 +102,33 @@ class SequenceTransformationTest extends TestCase
         $this->assertSame(99, $seq[4]);
     }
 
+    /**
+     * Test fill method with a count of 0 does nothing.
+     */
+    public function testFillWithZeroCount(): void
+    {
+        $seq = new Sequence('int', [1, 2, 3]);
+        $seq->fill(1, 0, 99);
+
+        $this->assertSame([1, 2, 3], $seq->toArray());
+    }
+
+    /**
+     * Test fill method throws DomainException for a negative count, leaving the Sequence unchanged.
+     */
+    public function testFillThrowsDomainExceptionForNegativeCount(): void
+    {
+        $seq = new Sequence('int', [1, 2, 3]);
+
+        try {
+            $seq->fill(0, -5, 9);
+            $this->fail('Expected DomainException for a negative count.');
+        } catch (DomainException $e) {
+            $this->assertSame('Invalid count: -5. Must not be negative.', $e->getMessage());
+        }
+        $this->assertSame([1, 2, 3], $seq->toArray());
+    }
+
     #endregion
 
     #region Method filter() tests.

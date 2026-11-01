@@ -642,12 +642,18 @@ final class Sequence extends Collection implements ArrayAccess
      * @param int $count The number of items to fill.
      * @param mixed $value The value to fill with.
      * @return $this The calling object, for chaining.
+     * @throws DomainException If the count is negative.
      * @throws OutOfRangeException If the start index is negative.
      * @throws InvalidArgumentException If the value has a disallowed type.
      * @throws LogicException If the fill starts beyond the end, and no default value could be determined for the gap.
      */
     public function fill(int $startIndex, int $count, mixed $value): self
     {
+        // Check the count is valid. A count of 0 does nothing, as with array_fill().
+        if ($count < 0) {
+            throw new DomainException("Invalid count: $count. Must not be negative.");
+        }
+
         // Set the specified Sequence items.
         for ($i = 0; $i < $count; $i++) {
             $this[$startIndex + $i] = $value;
