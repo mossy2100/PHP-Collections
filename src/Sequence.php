@@ -97,7 +97,7 @@ final class Sequence extends Collection implements ArrayAccess
      * @throws InvalidArgumentException If a type is not specified as a string, or any imported values have a disallowed
      * type.
      */
-    public function __construct(null|string|iterable|true $types = true, iterable $source = [])
+    public function __construct(string|iterable|true|null $types = true, iterable $source = [])
     {
         // Get the items. The source may be a generator, which can only be iterated once.
         $items = is_array($source) ? array_values($source) : iterator_to_array($source, false);
@@ -359,7 +359,7 @@ final class Sequence extends Collection implements ArrayAccess
         // Filter the Sequence to remove the matching values.
         $this->items = array_values(array_filter(
             $this->items,
-            static fn ($item) => !Types::identical($item, $value)
+            static fn($item) => !Types::identical($item, $value),
         ));
 
         // Return the number of items removed.
@@ -468,7 +468,7 @@ final class Sequence extends Collection implements ArrayAccess
         }
 
         // Check values are equal.
-        $eq = static fn ($value, $key) => Types::identical($value, $other->items[$key]);
+        $eq = static fn($value, $key) => Types::identical($value, $other->items[$key]);
         return array_all($this->items, $eq);
     }
 
@@ -549,7 +549,7 @@ final class Sequence extends Collection implements ArrayAccess
     public function search(mixed $value): ?int
     {
         /** @var ?int */
-        return array_find_key($this->items, static fn ($item) => Types::identical($item, $value));
+        return array_find_key($this->items, static fn($item) => Types::identical($item, $value));
     }
 
     /**
@@ -688,7 +688,7 @@ final class Sequence extends Collection implements ArrayAccess
             // Validate the result of the callback.
             if (!is_bool($keep)) {
                 throw new UnexpectedValueException(
-                    'Invalid callback return type: ' . get_debug_type($keep) . '. Must be bool.'
+                    'Invalid callback return type: ' . get_debug_type($keep) . '. Must be bool.',
                 );
             }
 
@@ -805,7 +805,7 @@ final class Sequence extends Collection implements ArrayAccess
     public function product(): int|float
     {
         // Use numReduce() instead of array_product(), which allows non-numbers.
-        $prod = static fn (int|float $acc, int|float $item): int|float => $acc * $item;
+        $prod = static fn(int|float $acc, int|float $item): int|float => $acc * $item;
         return $this->numReduce($prod, 'product', 1);
     }
 
@@ -822,7 +822,7 @@ final class Sequence extends Collection implements ArrayAccess
     public function sum(): int|float
     {
         // Use numReduce() instead of array_sum(), which allows non-numbers.
-        $sum = static fn (int|float $acc, int|float $item): int|float => $acc + $item;
+        $sum = static fn(int|float $acc, int|float $item): int|float => $acc + $item;
         return $this->numReduce($sum, 'sum', 0);
     }
 
@@ -837,7 +837,7 @@ final class Sequence extends Collection implements ArrayAccess
     public function min(): int|float
     {
         // Use numReduce() instead of min() on the items, which allows non-numbers.
-        $min = static fn (int|float $min, int|float $item): int|float => min($item, $min);
+        $min = static fn(int|float $min, int|float $item): int|float => min($item, $min);
         return $this->numReduce($min, 'minimum value');
     }
 
@@ -852,7 +852,7 @@ final class Sequence extends Collection implements ArrayAccess
     public function max(): int|float
     {
         // Use numReduce() instead of max() on the items, which allows non-numbers.
-        $max = static fn (int|float $max, int|float $item): int|float => max($item, $max);
+        $max = static fn(int|float $max, int|float $item): int|float => max($item, $max);
         return $this->numReduce($max, 'maximum value');
     }
 
@@ -898,7 +898,7 @@ final class Sequence extends Collection implements ArrayAccess
      */
     public function join(string $glue = ''): string
     {
-        $toString = static fn ($item) => is_string($item) || $item instanceof Stringable
+        $toString = static fn($item) => is_string($item) || $item instanceof Stringable
             ? (string) $item
             : Stringify::stringify($item);
         return implode($glue, array_map($toString, $this->items));
@@ -1244,7 +1244,7 @@ final class Sequence extends Collection implements ArrayAccess
                 throw new OutOfRangeException("Invalid index: $index. Sequence is empty.");
             }
             throw new OutOfRangeException(
-                "Invalid index: $index. Must be in the range 0-" . (count($this->items) - 1) . '.'
+                "Invalid index: $index. Must be in the range 0-" . (count($this->items) - 1) . '.',
             );
         }
     }
@@ -1329,7 +1329,7 @@ final class Sequence extends Collection implements ArrayAccess
             if (!Numbers::isNumber($item)) {
                 throw new InvalidArgumentException(Stringify::prepEx(
                     "Cannot find the $operation of the Sequence. It contains a value that is not a number: ?.",
-                    $item
+                    $item,
                 ));
             }
             if (is_nan($item)) {
@@ -1343,7 +1343,7 @@ final class Sequence extends Collection implements ArrayAccess
         // Without NAN items, a NAN result can only come from INF - INF or 0 * INF.
         if (is_nan($accumulator)) {
             throw new ArithmeticException(
-                "Cannot find the $operation of the Sequence. The result is undefined for the given values."
+                "Cannot find the $operation of the Sequence. The result is undefined for the given values.",
             );
         }
 

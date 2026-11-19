@@ -141,7 +141,7 @@ class SequenceTransformationTest extends TestCase
         // Test: Filter even numbers
         $seq = new Sequence('int');
         $seq->append(1, 2, 3, 4, 5, 6, 7, 8);
-        $filtered = $seq->filter(static fn ($x) => $x % 2 === 0);
+        $filtered = $seq->filter(static fn($x) => $x % 2 === 0);
 
         // Test: Verify only even numbers remain
         $this->assertCount(4, $filtered);
@@ -157,7 +157,7 @@ class SequenceTransformationTest extends TestCase
         // Test: Filter for values greater than 10
         $seq = new Sequence('int');
         $seq->append(1, 2, 3, 4, 5);
-        $filtered = $seq->filter(static fn ($x) => $x > 10);
+        $filtered = $seq->filter(static fn($x) => $x > 10);
 
         // Test: Verify empty Sequence returned
         $this->assertCount(0, $filtered);
@@ -169,7 +169,7 @@ class SequenceTransformationTest extends TestCase
     public function testFilterReindexesAndPreservesTypes(): void
     {
         $seq = new Sequence('int', [1, 2, 3, 4]);
-        $filtered = $seq->filter(static fn ($x) => $x > 2);
+        $filtered = $seq->filter(static fn($x) => $x > 2);
 
         // Test: Verify indexes start from 0 and types are kept
         $this->assertSame([3, 4], $filtered->toArray());
@@ -186,7 +186,7 @@ class SequenceTransformationTest extends TestCase
 
         // Test: A truthy int is not accepted
         $this->expectException(UnexpectedValueException::class);
-        $seq->filter(static fn ($x) => $x - 1);
+        $seq->filter(static fn($x) => $x - 1);
     }
 
     #endregion
@@ -201,7 +201,7 @@ class SequenceTransformationTest extends TestCase
         // Test: Double each value
         $seq = new Sequence('int');
         $seq->append(1, 2, 3, 4, 5);
-        $mapped = $seq->map(static fn ($x) => $x * 2);
+        $mapped = $seq->map(static fn($x) => $x * 2);
 
         // Test: Verify transformation applied
         $this->assertCount(5, $mapped);
@@ -217,7 +217,7 @@ class SequenceTransformationTest extends TestCase
         // Test: Convert integers to strings
         $seq = new Sequence('int');
         $seq->append(1, 2, 3);
-        $mapped = $seq->map(static fn ($x) => "Number $x");
+        $mapped = $seq->map(static fn($x) => "Number $x");
 
         // Test: Verify type changed
         $this->assertSame('Number 1', $mapped[0]);

@@ -49,7 +49,7 @@ abstract class Collection implements Countable, IteratorAggregate, Stringable
      * @throws InvalidArgumentException If a type is not specified as a string.
      * @throws DomainException If a type name is invalid.
      */
-    public function __construct(null|string|iterable $types = null)
+    public function __construct(string|iterable|null $types = null)
     {
         // Convert provided types to a TypeSet object.
         $this->valueTypes = new TypeSet($types);

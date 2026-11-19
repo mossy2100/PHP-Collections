@@ -114,7 +114,8 @@ class DictionaryModificationTest extends TestCase
         $dict = new Dictionary('string', 'int');
 
         // Test chaining add calls.
-        $dict->add('a', 1)
+        $dict
+            ->add('a', 1)
             ->add('b', 2)
             ->add('c', 3);
 
@@ -253,7 +254,8 @@ class DictionaryModificationTest extends TestCase
     {
         // Test: Chain multiple import calls
         $dict = new Dictionary('string', 'int');
-        $dict->import(['a' => 1, 'b' => 2])
+        $dict
+            ->import(['a' => 1, 'b' => 2])
             ->import(['c' => 3, 'd' => 4])
             ->import(['e' => 5, 'f' => 6]);
 

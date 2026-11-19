@@ -21,9 +21,7 @@ readonly class Pair
      * @param mixed $key The key.
      * @param mixed $value The value.
      */
-    public function __construct(public mixed $key, public mixed $value)
-    {
-    }
+    public function __construct(public mixed $key, public mixed $value) {}
 
     #endregion
 }

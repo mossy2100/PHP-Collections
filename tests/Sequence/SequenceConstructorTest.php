@@ -297,8 +297,7 @@ class SequenceConstructorTest extends TestCase
     public function testConstructorInfersTypeFromAnonymousClass(): void
     {
         $seq = new Sequence(source: [
-            new class {
-            },
+            new class {},
         ]);
 
         $this->assertTrue($seq->valueTypes->containsOnly('object'));

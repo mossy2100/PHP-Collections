@@ -79,7 +79,7 @@ class SequenceSortingTest extends TestCase
         // Test: Sort by absolute value
         $seq = new Sequence('int');
         $seq->append(-5, 3, -1, 4, -2);
-        $sorted = $seq->sortBy(static fn ($a, $b) => abs($a) <=> abs($b));
+        $sorted = $seq->sortBy(static fn($a, $b) => abs($a) <=> abs($b));
 
         // Test: Verify sorted by absolute value
         $this->assertSame(-1, $sorted[0]);

@@ -196,7 +196,7 @@ class SequenceExtractionTest extends TestCase
         // Test: Find first even number
         $seq = new Sequence('int');
         $seq->append(1, 3, 4, 6, 8);
-        $result = $seq->find(static fn ($x) => $x % 2 === 0);
+        $result = $seq->find(static fn($x) => $x % 2 === 0);
 
         // Test: Verify first even number returned
         $this->assertSame(4, $result);
@@ -210,7 +210,7 @@ class SequenceExtractionTest extends TestCase
         // Test: Try to find element that doesn't exist
         $seq = new Sequence('int');
         $seq->append(1, 3, 5, 7);
-        $result = $seq->find(static fn ($x) => $x > 10);
+        $result = $seq->find(static fn($x) => $x > 10);
 
         // Test: Verify null returned
         $this->assertNull($result);

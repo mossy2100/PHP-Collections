@@ -195,7 +195,7 @@ class DictionaryInspectionTest extends TestCase
         $dict->add('c', 6);
 
         // Test all items are even.
-        $result = $dict->all(static fn ($pair) => $pair->value % 2 === 0);
+        $result = $dict->all(static fn($pair) => $pair->value % 2 === 0);
 
         $this->assertTrue($result);
     }
@@ -211,7 +211,7 @@ class DictionaryInspectionTest extends TestCase
         $dict->add('c', 4);
 
         // Test not all items are even.
-        $result = $dict->all(static fn ($pair) => $pair->value % 2 === 0);
+        $result = $dict->all(static fn($pair) => $pair->value % 2 === 0);
 
         $this->assertFalse($result);
     }
@@ -224,7 +224,7 @@ class DictionaryInspectionTest extends TestCase
         $dict = new Dictionary();
 
         // Test all on empty dictionary.
-        $result = $dict->all(static fn ($pair) => false);
+        $result = $dict->all(static fn($pair) => false);
 
         $this->assertTrue($result);
     }
@@ -244,7 +244,7 @@ class DictionaryInspectionTest extends TestCase
         $dict->add('c', 3);
 
         // Test at least one item is even.
-        $result = $dict->any(static fn ($pair) => $pair->value % 2 === 0);
+        $result = $dict->any(static fn($pair) => $pair->value % 2 === 0);
 
         $this->assertTrue($result);
     }
@@ -260,7 +260,7 @@ class DictionaryInspectionTest extends TestCase
         $dict->add('c', 5);
 
         // Test no items are even.
-        $result = $dict->any(static fn ($pair) => $pair->value % 2 === 0);
+        $result = $dict->any(static fn($pair) => $pair->value % 2 === 0);
 
         $this->assertFalse($result);
     }
@@ -273,7 +273,7 @@ class DictionaryInspectionTest extends TestCase
         $dict = new Dictionary();
 
         // Test any on empty dictionary.
-        $result = $dict->any(static fn ($pair) => true);
+        $result = $dict->any(static fn($pair) => true);
 
         $this->assertFalse($result);
     }

@@ -129,7 +129,7 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
      * @throws InvalidArgumentException If a type is not specified as a string.
      * @throws DomainException If a type name is invalid.
      */
-    public function __construct(null|string|iterable $types = null)
+    public function __construct(string|iterable|null $types = null)
     {
         // If some types have been provided, add them to the TypeSet.
         if ($types !== null) {
@@ -344,7 +344,7 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
      */
     public function containsAll(string ...$types): bool
     {
-        return array_all($types, fn ($type) => $this->contains($type));
+        return array_all($types, fn($type) => $this->contains($type));
     }
 
     /**
@@ -355,7 +355,7 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
      */
     public function containsAny(string ...$types): bool
     {
-        return array_any($types, fn ($type) => $this->contains($type));
+        return array_any($types, fn($type) => $this->contains($type));
     }
 
     /**
@@ -419,7 +419,7 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
     {
         if (!$this->match($value)) {
             throw new InvalidArgumentException(
-                "Invalid $label type: " . get_debug_type($value) . '. Must be ' . implode('|', $this->types) . '.'
+                "Invalid $label type: " . get_debug_type($value) . '. Must be ' . implode('|', $this->types) . '.',
             );
         }
     }
@@ -601,9 +601,8 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
      */
     private static function isValid(string $type): bool
     {
-        return !empty($type) &&
-               (self::isBasicType($type) || self::isPseudoType($type) || self::isResourceType($type) ||
-                self::isClassType($type));
+        return !empty($type) && (self::isBasicType($type) || self::isPseudoType($type) || self::isResourceType($type)
+            || self::isClassType($type));
     }
 
     /**

@@ -37,7 +37,7 @@ final class Set extends Collection
      * @throws InvalidArgumentException If a type is not specified as a string, or any imported values have disallowed
      * types.
      */
-    public function __construct(null|string|iterable|true $types = true, iterable $source = [])
+    public function __construct(string|iterable|true|null $types = true, iterable $source = [])
     {
         // Get the items. The source may be a generator, which can only be iterated once.
         $items = is_array($source) ? array_values($source) : iterator_to_array($source, false);
@@ -252,7 +252,7 @@ final class Set extends Collection
      */
     public function subset(self $other): bool
     {
-        return array_all($this->items, static fn ($item) => $other->contains($item));
+        return array_all($this->items, static fn($item) => $other->contains($item));
     }
 
     /**
@@ -296,7 +296,7 @@ final class Set extends Collection
      */
     public function disjoint(self $other): bool
     {
-        return array_all($this->items, static fn ($item) => !$other->contains($item));
+        return array_all($this->items, static fn($item) => !$other->contains($item));
     }
 
     #endregion
@@ -311,7 +311,7 @@ final class Set extends Collection
     #[Override]
     public function __toString(): string
     {
-        $items = array_map(static fn ($item) => Stringify::stringify($item), $this->items);
+        $items = array_map(static fn($item) => Stringify::stringify($item), $this->items);
         return '{' . implode(', ', $items) . '}';
     }
 
@@ -366,7 +366,7 @@ final class Set extends Collection
             // Validate the result of the callback.
             if (!is_bool($keep)) {
                 throw new UnexpectedValueException(
-                    'Invalid callback return type: ' . get_debug_type($keep) . '. Must be bool.'
+                    'Invalid callback return type: ' . get_debug_type($keep) . '. Must be bool.',
                 );
             }
 

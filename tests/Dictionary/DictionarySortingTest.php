@@ -27,7 +27,7 @@ class DictionarySortingTest extends TestCase
         $dict->add('c', 2);
 
         // Test sorting with custom descending comparison.
-        $result = $dict->sort(static fn ($a, $b) => $b->value <=> $a->value);
+        $result = $dict->sort(static fn($a, $b) => $b->value <=> $a->value);
 
         // Test values are in descending order.
         $this->assertSame([3, 2, 1], $result->values);
@@ -45,7 +45,7 @@ class DictionarySortingTest extends TestCase
         $dict->add('b', 2);
 
         // Test sorting returns a new instance.
-        $result = $dict->sort(static fn ($a, $b) => $a->value <=> $b->value);
+        $result = $dict->sort(static fn($a, $b) => $a->value <=> $b->value);
         $this->assertNotSame($dict, $result);
 
         // Test the original order is unchanged.
@@ -62,7 +62,7 @@ class DictionarySortingTest extends TestCase
         $dict->add('a', 1);
 
         // Test the result has the same key and value types.
-        $result = $dict->sort(static fn ($a, $b) => $a->value <=> $b->value);
+        $result = $dict->sort(static fn($a, $b) => $a->value <=> $b->value);
         $this->assertTrue($result->keyTypes->containsOnly('string'));
         $this->assertTrue($result->valueTypes->containsOnly('int'));
     }
@@ -77,7 +77,7 @@ class DictionarySortingTest extends TestCase
         $dict->add('a', 1);
 
         // Modify the result.
-        $result = $dict->sort(static fn ($a, $b) => $a->value <=> $b->value);
+        $result = $dict->sort(static fn($a, $b) => $a->value <=> $b->value);
         $result['c'] = 3;
         $result['a'] = 100;
 

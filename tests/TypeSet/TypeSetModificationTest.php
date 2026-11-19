@@ -264,8 +264,7 @@ class TypeSetModificationTest extends TestCase
      */
     public function testAddValueTypeAnonymousClass(): void
     {
-        $obj = new class {
-        };
+        $obj = new class {};
         $ts = new TypeSet()->addValueType($obj);
 
         $this->assertTrue($ts->containsOnly('object'));
@@ -277,8 +276,7 @@ class TypeSetModificationTest extends TestCase
      */
     public function testAddValueTypeAnonymousSubclass(): void
     {
-        $obj = new class extends ParentClass {
-        };
+        $obj = new class extends ParentClass {};
         $ts = new TypeSet()->addValueType($obj);
 
         $this->assertTrue($ts->containsOnly(ParentClass::class));

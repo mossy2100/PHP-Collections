@@ -96,7 +96,7 @@ class TypeSetInspectionTest extends TestCase
     {
         $ts = new TypeSet('callable');
 
-        $this->assertTrue($ts->match(static fn () => null));
+        $this->assertTrue($ts->match(static fn() => null));
         $this->assertTrue($ts->match('strlen'));
         $this->assertFalse($ts->match('not a function'));
         $this->assertFalse($ts->match(42));

@@ -335,7 +335,8 @@ class SequenceModificationTest extends TestCase
     {
         // Test: Chain multiple import calls
         $seq = new Sequence('int');
-        $seq->import([1, 2])
+        $seq
+            ->import([1, 2])
             ->import([3, 4])
             ->import([5, 6]);
 

@@ -43,7 +43,7 @@
             "options": {
                 "symlink": true,
                 "versions": {
-                    "mossy2100/coding-standard": "2.2.0"
+                    "mossy2100/phpcs-jumbo": "2.2.0"
                 }
             }
         }
@@ -57,7 +57,7 @@
         "squizlabs/php_codesniffer": "^4.0",
         "phpstan/phpstan": "^2.1",
         "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
-        "mossy2100/coding-standard": "^2.0"
+        "mossy2100/phpcs-jumbo": "^2.0"
     },
     "config": {
         "allow-plugins": {
@@ -79,7 +79,7 @@
     },
     "scripts": {
         "fix": "vendor/bin/phpcbf -vp",
-        "check": "vendor/bin/phpcs -s",
+        "check": "vendor/bin/phpcs -sv --colors",
         "report": "vendor/bin/phpcs -q --report=summary",
         "analyze": "scripts/analyze",
         "test": "@php -d xdebug.mode=coverage vendor/bin/phpunit --coverage-html build/coverage --coverage-clover build/logs/clover.xml --do-not-cache-result",

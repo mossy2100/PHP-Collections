@@ -99,9 +99,9 @@ final class Dictionary extends Collection implements ArrayAccess
      * disallowed types.
      */
     public function __construct(
-        null|string|iterable|true $keyTypes = true,
-        null|string|iterable|true $valueTypes = true,
-        iterable $source = []
+        string|iterable|true|null $keyTypes = true,
+        string|iterable|true|null $valueTypes = true,
+        iterable $source = [],
     ) {
         // Get the keys and values. The source may be a generator, which can only be iterated once, and may yield keys
         // of any type.
@@ -190,7 +190,7 @@ final class Dictionary extends Collection implements ArrayAccess
         if ($nArgs === 1) {
             if (!$keyOrPair instanceof Pair) {
                 throw new InvalidArgumentException(
-                    'Invalid argument type: ' . get_debug_type($keyOrPair) . '. Must be Pair.'
+                    'Invalid argument type: ' . get_debug_type($keyOrPair) . '. Must be Pair.',
                 );
             }
             $key = $keyOrPair->key;
@@ -419,7 +419,7 @@ final class Dictionary extends Collection implements ArrayAccess
             // Validate the result of the callback.
             if (!is_bool($keep)) {
                 throw new UnexpectedValueException(
-                    'Invalid callback return type: ' . get_debug_type($keep) . '. Must be bool.'
+                    'Invalid callback return type: ' . get_debug_type($keep) . '. Must be bool.',
                 );
             }
 
@@ -506,7 +506,7 @@ final class Dictionary extends Collection implements ArrayAccess
             // Validate the result is a Pair.
             if (!$newPair instanceof Pair) {
                 throw new UnexpectedValueException(
-                    'Invalid callback return type: ' . get_debug_type($newPair) . '. Must be Pair.'
+                    'Invalid callback return type: ' . get_debug_type($newPair) . '. Must be Pair.',
                 );
             }
 
@@ -514,7 +514,7 @@ final class Dictionary extends Collection implements ArrayAccess
             $index = Types::getUniqueString($newPair->key);
             if (isset($newPairs[$index])) {
                 throw new OutOfBoundsException(
-                    'Cannot map Dictionary. Callback produced duplicate key: ' . Stringify::abbrev($newPair->key) . '.'
+                    'Cannot map Dictionary. Callback produced duplicate key: ' . Stringify::abbrev($newPair->key) . '.',
                 );
             }
 
@@ -546,14 +546,14 @@ final class Dictionary extends Collection implements ArrayAccess
         // Copy pairs from this dictionary.
         foreach ($this->items as $index => $pair) {
             /** @var Pair $pair */
-            $result->items[$index] = clone $pair;
+            $result->items[$index] = clone($pair);
         }
 
         // Copy pairs from the other dictionary. For a key in both, this pair replaces the first one, in its position,
         // as with array_merge().
         foreach ($other->items as $index => $pair) {
             /** @var Pair $pair */
-            $result->items[$index] = clone $pair;
+            $result->items[$index] = clone($pair);
         }
 
         return $result;
@@ -594,7 +594,7 @@ final class Dictionary extends Collection implements ArrayAccess
      */
     public function sortByKey(): self
     {
-        $fn = static fn ($a, $b) => $a->key <=> $b->key;
+        $fn = static fn($a, $b) => $a->key <=> $b->key;
         return $this->sort($fn);
     }
 
@@ -607,7 +607,7 @@ final class Dictionary extends Collection implements ArrayAccess
      */
     public function sortByValue(): self
     {
-        $fn = static fn ($a, $b) => $a->value <=> $b->value;
+        $fn = static fn($a, $b) => $a->value <=> $b->value;
         return $this->sort($fn);
     }
 

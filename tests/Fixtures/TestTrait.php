@@ -7,6 +7,4 @@ namespace Mossy2100\Collections\Tests\Fixtures;
 /**
  * Test fixture trait for trait-matching tests.
  */
-trait TestTrait
-{
-}
+trait TestTrait {}

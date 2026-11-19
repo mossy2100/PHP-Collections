@@ -188,11 +188,11 @@ class SequenceFactoryTest extends TestCase
     {
         $this->assertSame(
             [PHP_INT_MAX - 2, PHP_INT_MAX - 1, PHP_INT_MAX],
-            Sequence::range(PHP_INT_MAX - 2, PHP_INT_MAX)->toArray()
+            Sequence::range(PHP_INT_MAX - 2, PHP_INT_MAX)->toArray(),
         );
         $this->assertSame(
             [PHP_INT_MIN + 2, PHP_INT_MIN + 1, PHP_INT_MIN],
-            Sequence::range(PHP_INT_MIN + 2, PHP_INT_MIN, -1)->toArray()
+            Sequence::range(PHP_INT_MIN + 2, PHP_INT_MIN, -1)->toArray(),
         );
     }
 
@@ -220,7 +220,7 @@ class SequenceFactoryTest extends TestCase
         float|int $start,
         float|int $end,
         float|int $step,
-        string $message
+        string $message,
     ): void {
         $this->expectException(DomainException::class);
         $this->expectExceptionMessage($message);

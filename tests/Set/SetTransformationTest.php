@@ -25,7 +25,7 @@ class SetTransformationTest extends TestCase
         $set = new Set('int');
         $set->add(1, 2, 3, 4, 5, 6);
 
-        $filtered = $set->filter(static fn ($value) => $value % 2 === 0);
+        $filtered = $set->filter(static fn($value) => $value % 2 === 0);
 
         $this->assertCount(3, $filtered);
         $this->assertTrue($filtered->contains(2));
@@ -42,7 +42,7 @@ class SetTransformationTest extends TestCase
         $set = new Set('int');
         $set->add(1, 2, 3);
 
-        $filtered = $set->filter(static fn ($value) => $value > 10);
+        $filtered = $set->filter(static fn($value) => $value > 10);
 
         $this->assertCount(0, $filtered);
         $this->assertTrue($filtered->empty());
@@ -55,7 +55,7 @@ class SetTransformationTest extends TestCase
     {
         $set = new Set('int');
 
-        $filtered = $set->filter(static fn ($value) => true);
+        $filtered = $set->filter(static fn($value) => true);
 
         $this->assertCount(0, $filtered);
     }
@@ -68,7 +68,7 @@ class SetTransformationTest extends TestCase
         $set = new Set('int');
         $set->add(1, 2, 3, 4, 5);
 
-        $filtered = $set->filter(static fn ($value) => $value > 2);
+        $filtered = $set->filter(static fn($value) => $value > 2);
 
         // Test type constraints are preserved - we can add items with same type.
         $filtered->add(10);
@@ -85,7 +85,7 @@ class SetTransformationTest extends TestCase
 
         // Test callback returning non-bool throws UnexpectedValueException.
         $this->expectException(UnexpectedValueException::class);
-        $set->filter(static fn ($value) => $value); // Returns int, not bool
+        $set->filter(static fn($value) => $value); // Returns int, not bool
     }
 
     /**
@@ -96,7 +96,7 @@ class SetTransformationTest extends TestCase
         $set = new Set('int');
         $set->add(1, 2, 3, 4, 5);
 
-        $filtered = $set->filter(static fn ($value) => true);
+        $filtered = $set->filter(static fn($value) => true);
 
         $this->assertCount(5, $filtered);
         $this->assertTrue($filtered->contains(1));
@@ -111,7 +111,7 @@ class SetTransformationTest extends TestCase
         $set = new Set('int');
         $set->add(1, 2, 3, 4, 5);
 
-        $filtered = $set->filter(static fn ($value) => $value % 2 === 0);
+        $filtered = $set->filter(static fn($value) => $value % 2 === 0);
 
         // Test original set is unchanged.
         $this->assertCount(5, $set);
@@ -129,7 +129,7 @@ class SetTransformationTest extends TestCase
         $set = new Set('string');
         $set->add('apple', 'banana', 'avocado', 'cherry');
 
-        $filtered = $set->filter(static fn ($value) => str_starts_with($value, 'a'));
+        $filtered = $set->filter(static fn($value) => str_starts_with($value, 'a'));
 
         $this->assertCount(2, $filtered);
         $this->assertTrue($filtered->contains('apple'));
@@ -145,7 +145,7 @@ class SetTransformationTest extends TestCase
         $set = new Set('int|string');
         $set->add(1, 'two', 3, 'four', 5);
 
-        $filtered = $set->filter(static fn ($value) => is_int($value));
+        $filtered = $set->filter(static fn($value) => is_int($value));
 
         $this->assertCount(3, $filtered);
         $this->assertTrue($filtered->contains(1));
@@ -163,7 +163,7 @@ class SetTransformationTest extends TestCase
 
         $this->expectException(UnexpectedValueException::class);
         $this->expectExceptionMessage('Invalid callback return type: int. Must be bool.');
-        $set->filter(static fn ($value) => $value);
+        $set->filter(static fn($value) => $value);
     }
 
     #endregion
@@ -177,7 +177,7 @@ class SetTransformationTest extends TestCase
     {
         $set = new Set('int', [1, 2, 3]);
 
-        $mapped = $set->map(static fn ($value) => $value * 10);
+        $mapped = $set->map(static fn($value) => $value * 10);
 
         $this->assertSame([10, 20, 30], $mapped->toArray());
     }
@@ -189,7 +189,7 @@ class SetTransformationTest extends TestCase
     {
         $set = new Set('int', [1, 2, 3]);
 
-        $mapped = $set->map(static fn ($value) => $value + 1);
+        $mapped = $set->map(static fn($value) => $value + 1);
 
         $this->assertNotSame($set, $mapped);
         $this->assertSame([1, 2, 3], $set->toArray());
@@ -202,7 +202,7 @@ class SetTransformationTest extends TestCase
     {
         $set = new Set('int', [1, 2, 3, 4]);
 
-        $mapped = $set->map(static fn ($value) => $value % 2);
+        $mapped = $set->map(static fn($value) => $value % 2);
 
         $this->assertSame([1, 0], $mapped->toArray());
     }
@@ -214,7 +214,7 @@ class SetTransformationTest extends TestCase
     {
         $set = new Set('int', [1, 2]);
 
-        $mapped = $set->map(static fn ($value) => "item$value");
+        $mapped = $set->map(static fn($value) => "item$value");
 
         $this->assertTrue($mapped->valueTypes->containsOnly('string'));
         $this->assertSame(['item1', 'item2'], $mapped->toArray());
@@ -225,7 +225,7 @@ class SetTransformationTest extends TestCase
      */
     public function testMapOnEmptySet(): void
     {
-        $mapped = new Set('int')->map(static fn ($value) => $value * 2);
+        $mapped = new Set('int')->map(static fn($value) => $value * 2);
 
         $this->assertCount(0, $mapped);
     }

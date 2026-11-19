@@ -68,7 +68,7 @@ class SequenceAggregationTest extends TestCase
         // Test: Sum using reduce
         $seq = new Sequence('int');
         $seq->append(1, 2, 3, 4, 5);
-        $sum = $seq->reduce(static fn ($acc, $x) => $acc + $x, 0);
+        $sum = $seq->reduce(static fn($acc, $x) => $acc + $x, 0);
 
         // Test: Verify correct sum
         $this->assertSame(15, $sum);
@@ -82,7 +82,7 @@ class SequenceAggregationTest extends TestCase
         // Test: Concatenate strings
         $seq = new Sequence('string');
         $seq->append('a', 'b', 'c');
-        $result = $seq->reduce(static fn ($acc, $x) => $acc . $x, '');
+        $result = $seq->reduce(static fn($acc, $x) => $acc . $x, '');
 
         // Test: Verify concatenation
         $this->assertSame('abc', $result);
@@ -542,13 +542,13 @@ class SequenceAggregationTest extends TestCase
     public function testNumericMethodThrowsArithmeticExceptionForUndefinedResult(
         string $method,
         array $items,
-        string $operation
+        string $operation,
     ): void {
         $seq = new Sequence('number', $items);
 
         $this->expectException(ArithmeticException::class);
         $this->expectExceptionMessage(
-            "Cannot find the $operation of the Sequence. The result is undefined for the given values."
+            "Cannot find the $operation of the Sequence. The result is undefined for the given values.",
         );
         $seq->$method();
     }

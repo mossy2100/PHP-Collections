@@ -100,7 +100,7 @@ class SetInspectionTest extends TestCase
         $set = new Set('int');
         $set->add(2, 4, 6, 8);
 
-        $result = $set->all(static fn ($value) => $value % 2 === 0);
+        $result = $set->all(static fn($value) => $value % 2 === 0);
 
         $this->assertTrue($result);
     }
@@ -113,7 +113,7 @@ class SetInspectionTest extends TestCase
         $set = new Set('int');
         $set->add(2, 4, 5, 8);
 
-        $result = $set->all(static fn ($value) => $value % 2 === 0);
+        $result = $set->all(static fn($value) => $value % 2 === 0);
 
         $this->assertFalse($result);
     }
@@ -125,7 +125,7 @@ class SetInspectionTest extends TestCase
     {
         $set = new Set('int');
 
-        $result = $set->all(static fn ($value) => $value > 100);
+        $result = $set->all(static fn($value) => $value > 100);
 
         $this->assertTrue($result);
     }
@@ -142,7 +142,7 @@ class SetInspectionTest extends TestCase
         $set = new Set('int');
         $set->add(1, 2, 3, 4, 5);
 
-        $result = $set->any(static fn ($value) => $value > 3);
+        $result = $set->any(static fn($value) => $value > 3);
 
         $this->assertTrue($result);
     }
@@ -155,7 +155,7 @@ class SetInspectionTest extends TestCase
         $set = new Set('int');
         $set->add(1, 2, 3);
 
-        $result = $set->any(static fn ($value) => $value > 10);
+        $result = $set->any(static fn($value) => $value > 10);
 
         $this->assertFalse($result);
     }
@@ -167,7 +167,7 @@ class SetInspectionTest extends TestCase
     {
         $set = new Set('int');
 
-        $result = $set->any(static fn ($value) => true);
+        $result = $set->any(static fn($value) => true);
 
         $this->assertFalse($result);
     }
