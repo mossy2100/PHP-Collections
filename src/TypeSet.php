@@ -601,8 +601,9 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
      */
     private static function isValid(string $type): bool
     {
-        return !empty($type) && (self::isBasicType($type) || self::isPseudoType($type) || self::isResourceType($type)
-            || self::isClassType($type));
+        return !empty($type)
+            && (self::isBasicType($type) || self::isPseudoType($type) || self::isResourceType($type)
+                || self::isClassType($type));
     }
 
     /**
