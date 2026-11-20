@@ -173,10 +173,10 @@ class SequenceFactoryTest extends TestCase
             for ($n = 1; $n <= 50; $n++) {
                 $end = $n * $step;
                 $expected = range(0.0, $end, $step);
-                $this->assertSame($expected, Sequence::range(0, $end, $step)->toArray(), "end=$end, step=$step");
+                $this->assertSame($expected, Sequence::range(0, $end, $step)->toArray(), "end={$end}, step={$step}");
 
                 $expected = range($end, 0.0, $step);
-                $this->assertSame($expected, Sequence::range($end, 0, -$step)->toArray(), "end=$end, step=-$step");
+                $this->assertSame($expected, Sequence::range($end, 0, -$step)->toArray(), "end={$end}, step=-{$step}");
             }
         }
     }

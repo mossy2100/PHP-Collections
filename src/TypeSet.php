@@ -419,7 +419,7 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
     {
         if (!$this->match($value)) {
             throw new InvalidArgumentException(
-                "Invalid $label type: " . get_debug_type($value) . '. Must be ' . implode('|', $this->types) . '.',
+                "Invalid {$label} type: " . get_debug_type($value) . '. Must be ' . implode('|', $this->types) . '.',
             );
         }
     }
@@ -587,7 +587,7 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
     private static function isClassType(string $type): bool
     {
         $classNamePart = "[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*";
-        return (bool) preg_match("/^\\\\?($classNamePart)(?:\\\\$classNamePart)*$/", $type);
+        return (bool) preg_match("/^\\\\?({$classNamePart})(?:\\\\{$classNamePart})*$/", $type);
     }
 
     /**
@@ -623,12 +623,12 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
 
         // Reject PHP types that aren't supported. These would otherwise pass as class names.
         if (in_array(strtolower($type), self::UNSUPPORTED_TYPES, true)) {
-            throw new DomainException("Unsupported type: $type.");
+            throw new DomainException("Unsupported type: {$type}.");
         }
 
         // Check if the type string is valid. This isn't bulletproof, but it will prevent most incorrect strings.
         if (!self::isValid($type)) {
-            throw new DomainException("Invalid type: $type.");
+            throw new DomainException("Invalid type: {$type}.");
         }
 
         // Add the type if new.

@@ -82,7 +82,7 @@ class SequenceAggregationTest extends TestCase
         // Test: Concatenate strings
         $seq = new Sequence('string');
         $seq->append('a', 'b', 'c');
-        $result = $seq->reduce(static fn($acc, $x) => $acc . $x, '');
+        $result = $seq->reduce(static fn($acc, $x) => "{$acc}{$x}", '');
 
         // Test: Verify concatenation
         $this->assertSame('abc', $result);
@@ -473,7 +473,7 @@ class SequenceAggregationTest extends TestCase
         $seq = new Sequence(['int', 'string'], [1, '2', 3]);
 
         $this->expectException(InvalidArgumentException::class);
-        $message = "Cannot find the $operation of the Sequence. It contains a value that is not a number: '2'.";
+        $message = "Cannot find the {$operation} of the Sequence. It contains a value that is not a number: '2'.";
         $this->expectExceptionMessage($message);
         $seq->$method();
     }
@@ -488,9 +488,9 @@ class SequenceAggregationTest extends TestCase
             $seq = new Sequence('float', $items);
             try {
                 $seq->$method();
-                $this->fail("Expected DomainException for $method().");
+                $this->fail("Expected DomainException for {$method}().");
             } catch (DomainException $e) {
-                $this->assertSame("Cannot find the $operation of the Sequence. It contains NAN.", $e->getMessage());
+                $this->assertSame("Cannot find the {$operation} of the Sequence. It contains NAN.", $e->getMessage());
             }
         }
     }
@@ -548,7 +548,7 @@ class SequenceAggregationTest extends TestCase
 
         $this->expectException(ArithmeticException::class);
         $this->expectExceptionMessage(
-            "Cannot find the $operation of the Sequence. The result is undefined for the given values.",
+            "Cannot find the {$operation} of the Sequence. The result is undefined for the given values.",
         );
         $seq->$method();
     }

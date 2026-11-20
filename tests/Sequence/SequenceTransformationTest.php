@@ -217,7 +217,7 @@ class SequenceTransformationTest extends TestCase
         // Test: Convert integers to strings
         $seq = new Sequence('int');
         $seq->append(1, 2, 3);
-        $mapped = $seq->map(static fn($x) => "Number $x");
+        $mapped = $seq->map(static fn($x) => "Number {$x}");
 
         // Test: Verify type changed
         $this->assertSame('Number 1', $mapped[0]);

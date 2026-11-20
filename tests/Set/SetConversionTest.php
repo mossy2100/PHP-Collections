@@ -71,7 +71,7 @@ class SetConversionTest extends TestCase
         $set = new Set('int');
         $set->add(42);
 
-        $output = "Set: $set";
+        $output = "Set: {$set}";
 
         $this->assertStringContainsString('Set:', $output);
         $this->assertStringContainsString('42', $output);

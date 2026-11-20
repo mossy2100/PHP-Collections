@@ -214,7 +214,7 @@ class SetTransformationTest extends TestCase
     {
         $set = new Set('int', [1, 2]);
 
-        $mapped = $set->map(static fn($value) => "item$value");
+        $mapped = $set->map(static fn($value) => "item{$value}");
 
         $this->assertTrue($mapped->valueTypes->containsOnly('string'));
         $this->assertSame(['item1', 'item2'], $mapped->toArray());

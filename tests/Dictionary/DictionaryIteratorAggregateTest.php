@@ -217,7 +217,7 @@ class DictionaryIteratorAggregateTest extends TestCase
             foreach ($dict2 as $key2 => $value2) {
                 /** @var string $key1 */
                 /** @var string $key2 */
-                $results[] = "$key1-$key2";
+                $results[] = "{$key1}-{$key2}";
             }
         }
 

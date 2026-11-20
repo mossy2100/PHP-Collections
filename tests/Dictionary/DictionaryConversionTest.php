@@ -67,7 +67,7 @@ class DictionaryConversionTest extends TestCase
         $dict->add('key', 123);
 
         // Test implicit string conversion.
-        $output = "Dictionary: $dict";
+        $output = "Dictionary: {$dict}";
 
         // Test the string is interpolated.
         $this->assertSame("Dictionary: {'key' => 123}", $output);

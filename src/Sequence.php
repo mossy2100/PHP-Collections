@@ -146,7 +146,7 @@ final class Sequence extends Collection implements ArrayAccess
         $args = ['start' => $start, 'end' => $end, 'step size' => $step];
         foreach ($args as $name => $value) {
             if (!is_finite($value)) {
-                throw new DomainException("Invalid $name: " . Stringify::stringify($value) . '. Must be finite.');
+                throw new DomainException("Invalid {$name}: " . Stringify::stringify($value) . '. Must be finite.');
             }
         }
 
@@ -617,7 +617,7 @@ final class Sequence extends Collection implements ArrayAccess
     {
         // Guard against invalid chunk sizes.
         if ($size <= 0) {
-            throw new DomainException("Invalid chunk size: $size. Must be at least 1.");
+            throw new DomainException("Invalid chunk size: {$size}. Must be at least 1.");
         }
 
         // Break the array of items into chunks.
@@ -651,7 +651,7 @@ final class Sequence extends Collection implements ArrayAccess
     {
         // Check the count is valid. A count of 0 does nothing, as with array_fill().
         if ($count < 0) {
-            throw new DomainException("Invalid count: $count. Must not be negative.");
+            throw new DomainException("Invalid count: {$count}. Must not be negative.");
         }
 
         // Set the specified Sequence items.
@@ -1235,16 +1235,16 @@ final class Sequence extends Collection implements ArrayAccess
 
         // Check the index isn't negative.
         if ($index < 0) {
-            throw new OutOfRangeException("Invalid index: $index. Cannot be negative.");
+            throw new OutOfRangeException("Invalid index: {$index}. Cannot be negative.");
         }
 
         // Check the index isn't too large.
         if ($checkUpperBound && $index >= count($this->items)) {
             if ($this->empty()) {
-                throw new OutOfRangeException("Invalid index: $index. Sequence is empty.");
+                throw new OutOfRangeException("Invalid index: {$index}. Sequence is empty.");
             }
             throw new OutOfRangeException(
-                "Invalid index: $index. Must be in the range 0-" . (count($this->items) - 1) . '.',
+                "Invalid index: {$index}. Must be in the range 0-" . (count($this->items) - 1) . '.',
             );
         }
     }
@@ -1282,10 +1282,10 @@ final class Sequence extends Collection implements ArrayAccess
             throw new LengthException('Cannot choose items from an empty Sequence.');
         }
         if ($count <= 0) {
-            throw new DomainException("Invalid count: $count. Must be at least 1.");
+            throw new DomainException("Invalid count: {$count}. Must be at least 1.");
         }
         if ($count > $this->count()) {
-            throw new LengthException("Cannot choose $count items from a Sequence with {$this->count()} items.");
+            throw new LengthException("Cannot choose {$count} items from a Sequence with {$this->count()} items.");
         }
 
         // Randomly choose one or more indexes.
@@ -1320,7 +1320,7 @@ final class Sequence extends Collection implements ArrayAccess
     {
         // Check we have items.
         if (empty($this->items)) {
-            return $emptyResult ?? throw new LengthException("Cannot find the $operation of an empty Sequence.");
+            return $emptyResult ?? throw new LengthException("Cannot find the {$operation} of an empty Sequence.");
         }
 
         $accumulator = null;
@@ -1328,12 +1328,12 @@ final class Sequence extends Collection implements ArrayAccess
             // Check for a valid number. INF and -INF are allowed.
             if (!Numbers::isNumber($item)) {
                 throw new InvalidArgumentException(Stringify::prepEx(
-                    "Cannot find the $operation of the Sequence. It contains a value that is not a number: ?.",
+                    "Cannot find the {$operation} of the Sequence. It contains a value that is not a number: ?.",
                     $item,
                 ));
             }
             if (is_nan($item)) {
-                throw new DomainException("Cannot find the $operation of the Sequence. It contains NAN.");
+                throw new DomainException("Cannot find the {$operation} of the Sequence. It contains NAN.");
             }
 
             // Accumulate the value, starting with the first one.
@@ -1343,7 +1343,7 @@ final class Sequence extends Collection implements ArrayAccess
         // Without NAN items, a NAN result can only come from INF - INF or 0 * INF.
         if (is_nan($accumulator)) {
             throw new ArithmeticException(
-                "Cannot find the $operation of the Sequence. The result is undefined for the given values.",
+                "Cannot find the {$operation} of the Sequence. The result is undefined for the given values.",
             );
         }
 

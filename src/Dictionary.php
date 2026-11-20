@@ -149,7 +149,9 @@ final class Dictionary extends Collection implements ArrayAccess
         $keyCount = count($keysArray);
         $valueCount = count($valuesArray);
         if ($keyCount !== $valueCount) {
-            throw new LengthException("Cannot combine due to incorrect values count: $valueCount. Expected $keyCount.");
+            throw new LengthException(
+                "Cannot combine due to incorrect values count: {$valueCount}. Expected {$keyCount}.",
+            );
         }
 
         // Pair up the keys and values, checking for duplicate keys.
@@ -198,7 +200,7 @@ final class Dictionary extends Collection implements ArrayAccess
         } elseif ($nArgs === 2) {
             $key = $keyOrPair;
         } else {
-            throw new BadMethodCallException("Invalid argument count: $nArgs. Must be 1 or 2.");
+            throw new BadMethodCallException("Invalid argument count: {$nArgs}. Must be 1 or 2.");
         }
 
         // Check the types are valid.
