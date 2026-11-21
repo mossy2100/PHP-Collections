@@ -87,7 +87,7 @@ class DictionaryTransformationTest extends TestCase
         $dict = new Dictionary();
 
         // Test filtering empty dictionary.
-        $filtered = $dict->filter(static fn($pair) => true);
+        $filtered = $dict->filter(static fn() => true);
 
         // Test result is empty.
         $this->assertCount(0, $filtered);
@@ -154,7 +154,7 @@ class DictionaryTransformationTest extends TestCase
         $dict->add('c', 3);
 
         // Test filtering with always-true callback.
-        $filtered = $dict->filter(static fn($pair) => true);
+        $filtered = $dict->filter(static fn() => true);
 
         // Test all items are kept.
         $this->assertCount(3, $filtered);

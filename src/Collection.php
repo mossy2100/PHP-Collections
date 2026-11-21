@@ -45,7 +45,7 @@ abstract class Collection implements Countable, IteratorAggregate, Stringable
     /**
      * Constructor.
      *
-     * @param null|string|iterable<string> $types Optional value type constraint for collection items.
+     * @param string|iterable<string>|null $types Optional value type constraint for collection items.
      * @throws InvalidArgumentException If a type is not specified as a string.
      * @throws DomainException If a type name is invalid.
      */

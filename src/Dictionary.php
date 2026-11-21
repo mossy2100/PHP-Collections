@@ -91,8 +91,8 @@ final class Dictionary extends Collection implements ArrayAccess
      *
      * If a source iterable is provided, the Dictionary will be initialized with key-value pairs from the iterable.
      *
-     * @param null|string|iterable<string>|true $keyTypes Allowed key types (default true, for infer).
-     * @param null|string|iterable<string>|true $valueTypes Allowed value types (default true, for infer).
+     * @param string|iterable<string>|true|null $keyTypes Allowed key types (default true, for infer).
+     * @param string|iterable<string>|true|null $valueTypes Allowed value types (default true, for infer).
      * @param iterable<mixed, mixed> $source A source iterable to import key-value pairs from (optional).
      * @throws DomainException If a type name is invalid.
      * @throws InvalidArgumentException If a type name is not specified as a string, or any imported keys/values have

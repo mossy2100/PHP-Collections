@@ -91,7 +91,7 @@ final class Sequence extends Collection implements ArrayAccess
      *
      * If a source iterable is provided, the Sequence will be initialized with values from the iterable.
      *
-     * @param null|string|iterable<string>|true $types Allowed value types (default true, for infer).
+     * @param string|iterable<string>|true|null $types Allowed value types (default true, for infer).
      * @param iterable<mixed> $source A source iterable to import values from (optional).
      * @throws DomainException If a type name is invalid.
      * @throws InvalidArgumentException If a type is not specified as a string, or any imported values have a disallowed

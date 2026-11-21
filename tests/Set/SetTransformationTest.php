@@ -55,7 +55,7 @@ class SetTransformationTest extends TestCase
     {
         $set = new Set('int');
 
-        $filtered = $set->filter(static fn($value) => true);
+        $filtered = $set->filter(static fn() => true);
 
         $this->assertCount(0, $filtered);
     }
@@ -96,7 +96,7 @@ class SetTransformationTest extends TestCase
         $set = new Set('int');
         $set->add(1, 2, 3, 4, 5);
 
-        $filtered = $set->filter(static fn($value) => true);
+        $filtered = $set->filter(static fn() => true);
 
         $this->assertCount(5, $filtered);
         $this->assertTrue($filtered->contains(1));

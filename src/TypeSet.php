@@ -125,7 +125,7 @@ class TypeSet implements Countable, Stringable, IteratorAggregate
      * - string = A type name, or multiple types using union or nullable type syntax, e.g. 'string', 'int|null', '?int'
      * - iterable = Array or other collection of type names, e.g. ['string', 'int']
      *
-     * @param null|string|iterable<string> $types The types to add to the TypeSet (default null).
+     * @param string|iterable<string>|null $types The types to add to the TypeSet (default null).
      * @throws InvalidArgumentException If a type is not specified as a string.
      * @throws DomainException If a type name is invalid.
      */

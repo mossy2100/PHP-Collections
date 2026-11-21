@@ -167,7 +167,7 @@ class SetInspectionTest extends TestCase
     {
         $set = new Set('int');
 
-        $result = $set->any(static fn($value) => true);
+        $result = $set->any(static fn() => true);
 
         $this->assertFalse($result);
     }

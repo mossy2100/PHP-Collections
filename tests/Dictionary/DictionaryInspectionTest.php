@@ -224,7 +224,7 @@ class DictionaryInspectionTest extends TestCase
         $dict = new Dictionary();
 
         // Test all on empty dictionary.
-        $result = $dict->all(static fn($pair) => false);
+        $result = $dict->all(static fn() => false);
 
         $this->assertTrue($result);
     }
@@ -273,7 +273,7 @@ class DictionaryInspectionTest extends TestCase
         $dict = new Dictionary();
 
         // Test any on empty dictionary.
-        $result = $dict->any(static fn($pair) => true);
+        $result = $dict->any(static fn() => true);
 
         $this->assertFalse($result);
     }
