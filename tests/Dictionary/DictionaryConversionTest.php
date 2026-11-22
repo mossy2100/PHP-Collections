@@ -208,9 +208,10 @@ class DictionaryConversionTest extends TestCase
 
         // Test modifying array doesn't affect dictionary.
         $array = $dict->toArray();
-        $array = [];
+        $array[1] = '12 monkeys';
 
         // Test dictionary is unchanged.
+        $this->assertCount(2, $array);
         $this->assertCount(1, $dict);
         $this->assertEquals(1, $dict['a']);
     }
