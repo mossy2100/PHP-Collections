@@ -39,7 +39,7 @@
         },
         {
             "type": "path",
-            "url": "../CodingStandard",
+            "url": "../CodingStandard/Jumbo",
             "options": {
                 "symlink": true,
                 "versions": {
